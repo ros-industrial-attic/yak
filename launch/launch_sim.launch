@@ -1,0 +1,65 @@
+<launch>
+    <!-- Remap the depth and color image topics to the ones output by the
+         sensor of your choice -->
+    <remap from="/camera/depth/image_raw" to="/sim_camera/depth"/>
+    <remap from="/camera/rgb/image_rect_color" to="/sim_camera/color"/>
+    
+    <!-- Launch kinfu as a standalone ROS node-->
+    <node name="kinfu" pkg="kinfu_ros" type="kinfu_node" output="screen">
+        <!-- The rosparams can be saved to a .yaml file. They're inlined here
+             for convenience -->
+        <rosparam>
+            # The node reports the transform between the fixed frame and
+            # a given camera frame.
+            fixed_frame: "/map"
+            camera_frame: "/camera_depth_optical_frame"
+            # The bilateral kernel smooths the depth image and 
+            # filters out noise around the edges
+            bilateral_kernel_size: 7
+            bilateral_sigma_depth: 0.04
+            bilateral_sigma_spatial: 4.5
+            # These are parameters for the point-to-plane ICP. The
+            # thresholds prevent ICP from converging to far away/inconsistent
+            # data.
+            icp_angle_thresh: 0.523599
+            icp_dist_thresh: 0.1
+            icp_truncate_depth_dist: 0
+            # ICP gets performed over an image pyramid of depth. These are the
+            # number of iterations performed at each pyramid size.
+            icp_iter_num : [10, 5, 4, 0]
+            # For raycasting display, this is a multiplier on how far the rays
+            # march each iteration, (in multiples of voxels?) Smaller numbers
+            # are more accurate but slower. 
+            raycast_step_factor: 0.05
+            # This is the step size, in voxels, used to compute gradients
+            # in the TSDF. Gradients are linearly interpolated between voxels.
+            gradient_delta_factor: 0.5
+            # The truncated signed distance field stores the dense model.
+            # The maximum weight value of a voxel (integer). Higher values
+            # cause the TSDF to take in more readings before converging,
+            # which will result in a smoother reconstruction
+            tsdf_max_weight: 64
+            # Kinfu will only fuse data into the TSDF when the camera movement
+            # exceeds this distance threshold.
+            tsdf_min_camera_movement: 0
+            # Distance away from surface (in meters) the TSDF will be computed
+            # Higher values result in smoother reconstructions, but less sharp
+            # corners and edges. Lower values result in more accurate 
+            # reconstructions, but too low and noise becomes a major issue.
+            tsdf_trunc_dist: 0.04
+            # The size of the TSDF volume in voxels
+            volume_dims_x: 512
+            volume_dims_y: 512
+            volume_dims_z: 512
+            # The size of the TSDF volume in meters. The size of a voxel is 
+            # volume_size / volume_dims
+            volume_size_x: 3
+            volume_size_y: 3
+            volume_size_z: 3
+            # The position of the topmost corner of the TSDF volume in meters
+            volume_pos_x: -1.5
+            volume_pos_y: -1.5
+            volume_pos_z: 0.5
+        </rosparam>
+    </node>
+</launch>
