@@ -7,33 +7,33 @@ add_definitions(-std=c++11)
 MACRO(CUDA_COMPUTE_TARGET_FLAGS arch_bin arch_ptx cuda_nvcc_target_flags)
     string(REGEX REPLACE "\\." "" ARCH_BIN_WITHOUT_DOTS "${${arch_bin}}")
     string(REGEX REPLACE "\\." "" ARCH_PTX_WITHOUT_DOTS "${${arch_ptx}}")
-                                
-    set(cuda_computer_target_flags_temp "") 
-    
+
+    set(cuda_computer_target_flags_temp "")
+
     # Tell NVCC to add binaries for the specified GPUs
     string(REGEX MATCHALL "[0-9()]+" ARCH_LIST "${ARCH_BIN_WITHOUT_DOTS}")
     foreach(ARCH IN LISTS ARCH_LIST)
         if (ARCH MATCHES "([0-9]+)\\(([0-9]+)\\)")
-            # User explicitly specified PTX for the concrete BIN                    
-            set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode arch=compute_${CMAKE_MATCH_2},code=sm_${CMAKE_MATCH_1})                 
-        else()                  
-            # User didn't explicitly specify PTX for the concrete BIN, we assume PTX=BIN                                
-            set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode arch=compute_${ARCH},code=sm_${ARCH})                   
+            # User explicitly specified PTX for the concrete BIN
+            set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode arch=compute_${CMAKE_MATCH_2},code=sm_${CMAKE_MATCH_1})
+        else()
+            # User didn't explicitly specify PTX for the concrete BIN, we assume PTX=BIN
+            set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode arch=compute_${ARCH},code=sm_${ARCH})
         endif()
     endforeach()
-                
+
     # Tell NVCC to add PTX intermediate code for the specified architectures
     string(REGEX MATCHALL "[0-9]+" ARCH_LIST "${ARCH_PTX_WITHOUT_DOTS}")
-    foreach(ARCH IN LISTS ARCH_LIST)                
-        set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode arch=compute_${ARCH},code=compute_${ARCH})              
-    endforeach()    
-                            
-    set(${cuda_nvcc_target_flags} ${cuda_computer_target_flags_temp})       
+    foreach(ARCH IN LISTS ARCH_LIST)
+        set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode arch=compute_${ARCH},code=compute_${ARCH})
+    endforeach()
+
+    set(${cuda_nvcc_target_flags} ${cuda_computer_target_flags_temp})
 ENDMACRO()
 
 MACRO(APPEND_TARGET_ARCH_FLAGS)
     set(cuda_nvcc_target_flags "")
-    CUDA_COMPUTE_TARGET_FLAGS(CUDA_ARCH_BIN CUDA_ARCH_PTX cuda_nvcc_target_flags)       
+    CUDA_COMPUTE_TARGET_FLAGS(CUDA_ARCH_BIN CUDA_ARCH_PTX cuda_nvcc_target_flags)
     if (cuda_nvcc_target_flags)
         message(STATUS "CUDA NVCC target flags: ${cuda_nvcc_target_flags}")
         list(APPEND CUDA_NVCC_FLAGS ${cuda_nvcc_target_flags})
@@ -46,14 +46,13 @@ message(STATUS "CMAKE MODULE PATH IS ${CMAKE_MODULE_PATH}")
 #include(cmake/Utils.cmake)
 #include(cmake/Targets.cmake)
 
-## System dependencies are found with CMake's conventions
 find_package(OpenCV REQUIRED COMPONENTS core highgui)
 message(STATUS "Found OpenCV At ${OpenCV_INCLUDE_DIRS}")
 
 find_library(OPENVDB_LIBRARY NAMES openvdb)
 find_library(TBB_LIBRARY NAMES tbb)
 find_library(HALF_LIBRARY NAMES Half)
-find_library(PCL REQUIRED)
+find_library(PCL 1.8 REQUIRED COMPONENTS common gpu)
 
 find_package(CUDA REQUIRED)
 if(${CUDA_VERSION_STRING} VERSION_GREATER "4.1")
@@ -95,7 +94,7 @@ generate_messages(
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES kinfu_ros
+  LIBRARIES yak
   CATKIN_DEPENDS cv_bridge image_transport rosconsole roscpp sensor_msgs pcl_ros visualization_msgs
 )
 
@@ -104,17 +103,22 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${CUDA_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
+
+message(STATUS "PCL_INCLUDE_DIRS: ${PCL_INCLUDE_DIRS}")
 
 set(HAVE_CUDA 1)
 #list(APPEND CUDA_NVCC_FLAGS "-arch;compute_20")
 list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_20,code=sm_20;-gencode;arch=compute_20,code=sm_21;-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35")
   list(APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC;")
 
-include_directories(${PROJECT_SOURCE_DIR}/include/kinfu_ros)
+include_directories(${PROJECT_SOURCE_DIR}/include/yak)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-cuda_add_library(kinfu_ros
+link_directories(${PCL_LIBRARY_DIRS})
+
+cuda_add_library(yak
       src/core.cpp
       src/device_memory.cpp
       src/imgproc.cpp
@@ -129,29 +133,42 @@ cuda_add_library(kinfu_ros
       src/ros/kinfu_server.cpp
 )
 
- target_link_libraries(kinfu_ros
+ target_link_libraries(yak
    ${catkin_LIBRARIES}
-   ${CUDA_LIBRARIES} ${CUDA_CUDA_LIBRARY} ${OpenCV_LIBS} openvdb Half tbb
+   ${CUDA_LIBRARIES}
+   ${CUDA_CUDA_LIBRARY}
+   ${OpenCV_LIBS}
+   openvdb
+   Half
+   tbb
  )
 
-add_executable(kinfu_node src/kinfu_node.cpp)
-add_executable(meshing_node src/meshing_node.cpp)
+add_executable(kinfu_node
+  src/kinfu_node.cpp)
+
+add_executable(meshing_node
+  src/meshing_node.cpp)
+
+add_definitions(${PCL_DEFINITIONS})
 
 target_link_libraries(kinfu_node
- kinfu_ros
+ yak
  ${catkin_LIBRARIES}
- ${CUDA_LIBRARIES} ${CUDA_CUDA_LIBRARY} ${OpenCV_LIBS}
+ ${CUDA_LIBRARIES}
+ ${CUDA_CUDA_LIBRARY}
+ ${OpenCV_LIBS}
 )
 
 target_link_libraries(meshing_node
-  kinfu_ros
+  yak
   ${catkin_LIBRARIES}
   ${CUDA_LIBRARIES}
   ${CUDA_CUDA_LIBRARY}
   ${OpenCV_LIBS}
+  ${PCL_COMMON_LIBRARIES}
 )
 
- install(TARGETS kinfu_ros kinfu_node
+ install(TARGETS yak kinfu_node
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

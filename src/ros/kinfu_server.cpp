@@ -160,7 +160,7 @@ namespace kfusion
         return true;
     }
 
-    bool KinFuServer::GetTSDF(kinfu_ros::GetTSDFRequest& req, kinfu_ros::GetTSDFResponse& res)
+    bool KinFuServer::GetTSDF(yak::GetTSDFRequest& req, yak::GetTSDFResponse& res)
     {
         res.tsdf.header.stamp = ros::Time::now();
         res.tsdf.header.frame_id = baseFrame_;
@@ -237,7 +237,7 @@ namespace kfusion
 //    }
 
     /*
-    bool KinFuServer::GetMesh(kinfu_ros::GetMeshRequest& req, kinfu_ros::GetMeshResponse& res)
+    bool KinFuServer::GetMesh(yak::GetMeshRequest& req, yak::GetMeshResponse& res)
     {
       ROS_INFO("Hit service callback");
       //const kfusion::cuda::TsdfVolume& volume = kinfu_->tsdf();

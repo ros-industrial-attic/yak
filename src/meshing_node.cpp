@@ -14,11 +14,11 @@
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 
-#include <kinfu_ros/GetMesh.h>
-#include <kinfu_ros/GetMeshRequest.h>
-#include <kinfu_ros/GetMeshResponse.h>
+#include <yak/GetMesh.h>
+#include <yak/GetMeshRequest.h>
+#include <yak/GetMeshResponse.h>
 
-#include <kinfu_ros/GetTSDF.h>
+#include <yak/GetTSDF.h>
 
 #include <ros/half.hpp>
 #include <openvdb/openvdb.h>
@@ -54,7 +54,7 @@ class GenerateMesh
 public:
   GenerateMesh(ros::NodeHandle& nh)
   {
-    tsdf_client_ = nh.serviceClient<kinfu_ros::GetTSDF>("/kinfu/get_tsdf");
+    tsdf_client_ = nh.serviceClient<yak::GetTSDF>("/kinfu/get_tsdf");
     mesh_server_ = nh.advertiseService("get_mesh", &GenerateMesh::GetMesh, this);
     point_cloud_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("tsdf_cloud", 1);
 
@@ -64,9 +64,9 @@ public:
 
   }
 
-  bool GetMesh(kinfu_ros::GetMeshRequest& req, kinfu_ros::GetMeshResponse& res) {
+  bool GetMesh(yak::GetMeshRequest& req, yak::GetMeshResponse& res) {
     ROS_INFO("Attempting to get TSDF");
-    kinfu_ros::GetTSDF srv;
+    yak::GetTSDF srv;
     if (!tsdf_client_.call(srv))
     {
       ROS_ERROR("Couldn't get TSDF");
@@ -115,13 +115,13 @@ public:
     mesher.operator()<openvdb::FloatGrid>( grid.operator*() );
     ROS_INFO("Done meshing volume");
     WriteMesh("/home/jschornak/clouds/mesh.obj", mesher);
-    //WriteMesh("/home/jschornak/ros/tsdf_ws/src/kinfu_ros/meshes/mesh.obj", mesher);
+    //WriteMesh("/home/jschornak/ros/tsdf_ws/src/yak/meshes/mesh.obj", mesher);
     ROS_INFO("Saved .obj to file");
 
 //    visualization_msgs::Marker marker;
 //    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
 //    //marker.mesh_resource = "package://pr2_description/meshes/base_v0/base.dae";
-//    marker.mesh_resource = "package://kinfu_ros/meshes/mesh.stl";
+//    marker.mesh_resource = "package://yak/meshes/mesh.stl";
 
 //    marker.header.frame_id = "camera_depth_optical_frame";
 //    marker.header.stamp = ros::Time();

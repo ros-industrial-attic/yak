@@ -16,17 +16,16 @@
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 
-#include <kinfu_ros/GetTSDF.h>
-#include <kinfu_ros/TSDF.h>
-#include <kinfu_ros/GetTSDFRequest.h>
-#include <kinfu_ros/GetTSDFResponse.h>
+#include <yak/GetTSDF.h>
+#include <yak/TSDF.h>
+#include <yak/GetTSDFRequest.h>
+#include <yak/GetTSDFResponse.h>
 
 /*
-#include <kinfu_ros/GetMesh.h>
-#include <kinfu_ros/GetMeshRequest.h>
-#include <kinfu_ros/GetMeshResponse.h>
+#include <yak/GetMesh.h>
+#include <yak/GetMeshRequest.h>
+#include <yak/GetMeshResponse.h>
 */
-
 #include <pcl/point_types.h>
 #include <pcl/gpu/kinfu/marching_cubes.h>
 #include <pcl/gpu/kinfu/tsdf_volume.h>
@@ -96,8 +95,8 @@ namespace kfusion
              inline const std::string& GetCameraFrame() { return cameraFrame_; }
 
              // Service calls
-             bool GetTSDF(kinfu_ros::GetTSDFRequest& req, kinfu_ros::GetTSDFResponse& res);
-             //bool GetMesh(kinfu_ros::GetMeshRequest& req, kinfu_ros::GetMeshResponse& res);
+             bool GetTSDF(yak::GetTSDFRequest& req, yak::GetTSDFResponse& res);
+             //bool GetMesh(yak::GetMeshRequest& req, yak::GetMeshResponse& res);
 
 //             bool TruncateTSDF(std::vector<uint32_t> &input);
 

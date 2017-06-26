@@ -5,7 +5,7 @@
     <remap from="/camera/rgb/image_rect_color" to="/camera/rgb/image_rect_color"/>
     
     <!-- Launch kinfu as a standalone ROS node-->
-    <node name="kinfu" pkg="kinfu_ros" type="kinfu_node" output="screen">
+    <node name="kinfu" pkg="yak" type="kinfu_node" output="screen">
         <!-- The rosparams can be saved to a .yaml file. They're inlined here
              for convenience -->
         <rosparam>
@@ -74,5 +74,5 @@
         </rosparam>
     </node>
 
-    <node name="meshing" pkg="kinfu_ros" type="meshing_node" output="screen"/>
+    <node name="meshing" pkg="yak" type="meshing_node" output="screen"/>
 </launch>
