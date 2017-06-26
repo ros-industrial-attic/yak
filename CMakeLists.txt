@@ -105,8 +105,10 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
 )
-
-message(STATUS "PCL_INCLUDE_DIRS: ${PCL_INCLUDE_DIRS}")
+message("debugging")
+message("PCL_INCLUDE_DIRS: ${PCL_INCLUDE_DIRS}")
+message("CUDA_INCLUDE_DIRS: ${CUDA_INCLUDE_DIRS}")
+message("CUDA_CUDA_LIBRARY: ${CUDA_CUDA_LIBRARY}")
 
 set(HAVE_CUDA 1)
 #list(APPEND CUDA_NVCC_FLAGS "-arch;compute_20")
