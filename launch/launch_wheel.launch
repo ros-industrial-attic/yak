@@ -74,5 +74,5 @@
         </rosparam>
     </node>
 
-    <node name="meshing" pkg="yak_meshing" type="meshing_node" output="screen"/>
+    <node name="meshing" pkg="yak_meshing" type="yak_meshing_node" output="screen"/>
 </launch>

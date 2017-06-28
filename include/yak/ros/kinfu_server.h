@@ -8,6 +8,8 @@
 #ifndef KINFUSERVER_H_
 #define KINFUSERVER_H_
 
+#include <stdlib.h>
+
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <kfusion/kinfu.hpp>
@@ -21,6 +23,11 @@
 #include <yak/GetTSDFRequest.h>
 #include <yak/GetTSDFResponse.h>
 
+#include <yak/GetSparseTSDF.h>
+#include <yak/SparseTSDF.h>
+#include <yak/GetSparseTSDFRequest.h>
+#include <yak/GetSparseTSDFResponse.h>
+
 /*
 #include <yak/GetMesh.h>
 #include <yak/GetMeshRequest.h>
@@ -31,6 +38,8 @@
 #include <pcl/gpu/kinfu/tsdf_volume.h>
 
 #include <ros/half.hpp>
+
+//#include <Eigen/Sparse>
 
 //#include <marching_cubes.h>
 
@@ -96,11 +105,13 @@ namespace kfusion
 
              // Service calls
              bool GetTSDF(yak::GetTSDFRequest& req, yak::GetTSDFResponse& res);
+
+             bool GetSparseTSDF(yak::GetSparseTSDFRequest& req, yak::GetSparseTSDFResponse& res);
              //bool GetMesh(yak::GetMeshRequest& req, yak::GetMeshResponse& res);
 
-//             bool TruncateTSDF(std::vector<uint32_t> &input);
+             bool TruncateTSDF(std::vector<uint32_t> &data, std::vector<uint32_t> &dataOut, std::vector<uint16_t> &rows, std::vector<uint16_t> &cols, std::vector<uint16_t> &sheets, int numVoxelsX, int numVoxelsY, int numVoxelsZ);
 
-//             bool GetTSDFData(uint32_t input,  half_float::half& voxelValue, uint16_t& voxelWeight);
+             bool GetTSDFData(uint32_t input,  half_float::half& voxelValue, uint16_t& voxelWeight);
 
         protected:
             bool should_exit_;
@@ -115,7 +126,9 @@ namespace kfusion
             tf::TransformBroadcaster tfBroadcaster_;
             cv::Mat lastDepth_;
             cv::Mat lastColor_;
+
             ros::ServiceServer get_tsdf_server_;
+            ros::ServiceServer get_sparse_tsdf_server_;
             //ros::ServiceServer get_mesh_server_;
     };
 

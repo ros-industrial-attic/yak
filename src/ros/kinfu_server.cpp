@@ -15,6 +15,7 @@ namespace kfusion
     {
         raycastImgPublisher_ = camera->nodeHandle.advertise<sensor_msgs::Image>("raycast_image", 10);
         get_tsdf_server_ = camera->nodeHandle.advertiseService("get_tsdf", &KinFuServer::GetTSDF,  this);
+        get_sparse_tsdf_server_ = camera->nodeHandle.advertiseService("get_sparse_tsdf", &KinFuServer::GetSparseTSDF,  this);
         //get_mesh_server_ = camera->nodeHandle.advertiseService("get_mesh", &KinFuServer::GetMesh, this);
     }
 
@@ -197,40 +198,184 @@ namespace kfusion
         return true;
     }
 
-//    bool KinFuServer::TruncateTSDF(std::vector<uint32_t> &input)
+    bool KinFuServer::GetSparseTSDF(yak::GetSparseTSDFRequest& req, yak::GetSparseTSDFResponse& res)
+    {
+        res.tsdf.header.stamp = ros::Time::now();
+        res.tsdf.header.frame_id = baseFrame_;
+        const kfusion::cuda::TsdfVolume& volume = kinfu_->tsdf();
+        res.tsdf.max_weight = volume.getMaxWeight();
+        res.tsdf. num_voxels_x = volume.getDims().val[0];
+        res.tsdf. num_voxels_y = volume.getDims().val[1];
+        res.tsdf. num_voxels_z = volume.getDims().val[2];
+        res.tsdf.size_x = volume. getSize().val[0];
+        res.tsdf.size_y = volume. getSize().val[1];
+        res.tsdf.size_z = volume. getSize().val[2];
+        res.tsdf.truncation_dist = volume.getTruncDist();
+        res.tsdf.pose.position.x = volume.getPose().translation().val[0];
+        res.tsdf.pose.position.y = volume.getPose().translation().val[1];
+        res.tsdf.pose.position.z = volume.getPose().translation().val[2];
+        cv::Affine3f::Mat3 rot = volume.getPose().rotation();
+        tf::Matrix3x3 tfRot(rot.val[0], rot.val[1], rot.val[2], rot.val[3], rot.val[4], rot.val[5], rot.val[6], rot.val[7], rot.val[8]);
+        tf::Quaternion tfQuat;
+        tfRot.getRotation(tfQuat);
+        res.tsdf.pose.orientation.x = tfQuat.x();
+        res.tsdf.pose.orientation.y = tfQuat.y();
+        res.tsdf.pose.orientation.z = tfQuat.z();
+        res.tsdf.pose.orientation.w = tfQuat.w();
+
+        //res.tsdf.data.resize(res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z, 0);
+
+
+        ROS_INFO("Making array to hold data...");
+        //uint32_t dataTemp[res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z];
+        //std::vector<uint32_t> dataTemp[res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z];
+        std::vector<uint32_t> dataTemp;
+        dataTemp.resize(res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z);
+        ROS_INFO("About to download sparse TSDF data...");
+        //uint32_t dataOut[res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z];
+        volume.data().download(dataTemp.data());
+//        std::fill(dataTemp, dataTemp + res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z, 0);
+//        dataTemp[0]=4209160;
+//        dataTemp[1]=4209160;
+//        dataTemp[32]=4209160;
+//        dataTemp[res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z - 32] = 4209160;
+        //volume.data().download(res.tsdf.data.data());
+        ROS_INFO("Just downloaded TSDF data");
+
+
+        //Eigen::SparseMatrix<uint32_t> mat
+
+
+        //4209160
+
+        // Use 3D compressed row notation to convert the dense TSDF serialization to a sparse one.
+        //bool dataInCol = false;
+        //bool dataInSheet = false;
+
+        std::vector<uint32_t> dataOut;
+        std::vector<uint16_t> rows;
+        std::vector<uint16_t> cols;
+        std::vector<uint16_t> sheets;
+
+        ROS_INFO("Iterating through volume to find nonzero voxels...");
+        for (uint16_t i = 0; i < res.tsdf.num_voxels_x; i++) {
+          for (uint16_t j = 0; j < res.tsdf.num_voxels_y; j++) {
+            for (uint16_t k = 0; k < res.tsdf.num_voxels_z; k++) {
+              // Get the contents of every element of the serialized TSDF volume.
+
+              uint32_t currentData = dataTemp[res.tsdf.num_voxels_y*res.tsdf.num_voxels_z*k + res.tsdf.num_voxels_y*j + i];
+              half_float::half currentValue;
+              uint16_t currentWeight;
+              KinFuServer::GetTSDFData(currentData, currentValue, currentWeight);
+
+              // If the weight is nonzero, save the data and row (X) coordinate and flag that the column (Y) and sheet (Z) also contain at least one value.
+              if (currentWeight > 0 && currentValue < 1) {
+                dataOut.push_back(currentData);
+                rows.push_back(i);
+                cols.push_back(j);
+                sheets.push_back(k);
+
+//                if (dataInCol == false){
+//                  // first data in column
+//                  // Add index of the row of the first element in this column
+//                  cols.push_back(rows.size()-1);
+//                }
+//                if (dataInCol == false) {
+//                  // first data in sheet
+//                  // Add index of the row of the first element in this sheet
+//                  sheets.push_back(rows.size()-1);
+//                }
+
+                //dataInCol = true;
+                //dataInSheet = true;
+              }
+            }
+            //dataInCol = false;
+          }
+          //dataInSheet = false;
+        }
+
+        // Resize the arrays in the message to match the actual lengths of the vectors.
+        // Assign data to the SparseTSDF message.
+        ROS_INFO("Assigning data to result...");
+        res.tsdf.data.resize(dataOut.size());
+        std::vector<uint32_t>::iterator itA;
+        itA = dataOut.begin();
+        res.tsdf.data.assign(itA, dataOut.end());
+
+        res.tsdf.rows.resize(rows.size());
+        std::vector<uint16_t>::iterator itB;
+        itB = rows.begin();
+        res.tsdf.rows.assign(itB, rows.end());
+
+        res.tsdf.cols.resize(cols.size());
+        itB = cols.begin();
+        res.tsdf.cols.assign(itB, cols.end());
+
+        res.tsdf.sheets.resize(sheets.size());
+        itB = sheets.begin();
+        res.tsdf.sheets.assign(itB, sheets.end());
+        ROS_INFO("Created sparse TSDF structure");
+
+        //KinFuServer::TruncateTSDF(dataTemp, res.tsdf.num_voxels_x, res.tsdf.num_voxels_y, res.tsdf.num_voxels_z);
+
+        // res.tsdf.data is a vector<uint32>. Need to figure out how to assign a vector to it en masse.
+        //res.tsdf.data.assign(dataTemp);
+        //volume.data().download(res.tsdf.data.data());
+        return true;
+    }
+
+    bool KinFuServer::GetTSDFData(uint32_t input,  half_float::half& voxelValue, uint16_t& voxelWeight) {
+      std::memcpy(&voxelValue, &input, 2);
+      std::memcpy(&voxelWeight, ((char*)(&input)) + 2, 2);
+      return true;
+    }
+
+//    bool KinFuServer::TruncateTSDF(std::vector<uint32_t> &data, std::vector<uint32_t> &dataOut, std::vector<uint16_t> &rows, std::vector<uint16_t> &cols, std::vector<uint16_t> &sheets, int numVoxelsX, int numVoxelsY, int numVoxelsZ)
 //    {
-//      uint32_t emptyCounter = 0;
-//      uint16_t lastWeight = 0;
-//      for (int i = 0; i < input.size(); i++) {
-//        half_float::half value;
-//        uint16_t weight;
-//        KinFuServer::GetTSDFData(input[i], value, weight);
-//        if (weight == 0) {
-//          // current weight is 0 and last weight was 0 -> no change
-//          if (lastWeight == 0) {
-//            emptyCounter++;
+//      std::vector<uint32_t> dataOut;
+//      std::vector<uint16_t> rows;
+//      std::vector<uint16_t> cols;
+//      std::vector<uint16_t> sheets;
+
+//      bool dataInCol = false;
+//      bool dataInSheet = false;
+
+//      for (uint16_t k = 0; k < numVoxelsZ; k++) {
+//        for (uint16_t j = 0; j < numVoxelsY; j++) {
+//          for (uint16_t i = 0; i < numVoxelsX; i++) {
+//            uint32_t currentData = data[numVoxelsY*numVoxelsZ*k + numVoxelsY*j + i];
+//            half_float::half currentValue;
+//            //float currentValue;
+
+//            uint16_t currentWeight;
+
+//            GetTSDFData(currentData, currentValue, currentWeight);
+//  //          ROS_INFO_STREAM("Current weight: " << currentWeight);
+//            if (currentWeight > 0) {
+//              dataOut.push_back(currentData);
+//              rows.push_back(i);
+//              dataInCol = true;
+//              dataInSheet = true;
+//            }
 //          }
-//          // otherwise, just left an area of measurement
-//        } else {
-//          // current weight isn't 0 but last weight was 0 -> hit an area of measurement, reset counter
-//          if (lastWeight == 0) {
-//            emptyCounter = 0;
+//          if (dataInCol) {
+//            cols.push_back(j);
+//            dataInCol = false;
 //          }
-//          // current weight isn't 0 and last weight isn't 0 -> still in an area of measurement
-//          // either way, need to serialize current voxel with actual TSDF data
+//        }
+//        if (dataInSheet) {
+//          sheets.push_back(k);
+//          dataInSheet = false;
 //        }
 //      }
 
 //      return true;
 //    }
 
-//    bool GetTSDFData(uint32_t input,  half_float::half& voxelValue, uint16_t& voxelWeight) {
-//      std::memcpy(&voxelValue, &input, 2);
-//      std::memcpy(&voxelWeight, ((char*)(&input)) + 2, 2);
-//      return true;
-//    }
 
-//    bool MakeSDFData(uint32_t& output,  half_float::half voxelValue, uint16_t voxelWeight) {
+
+//    bool MakeTSDFData(uint32_t& output,  half_float::half voxelValue, uint16_t voxelWeight) {
 //      std::memcpy(((char*)(&output)), voxelValue, 2);
 //      std::memcpy(((char*)(&output)) + 2, voxelWeight, 2);
 //      return true;

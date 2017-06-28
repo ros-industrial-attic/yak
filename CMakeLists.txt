@@ -77,12 +77,14 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
  FILES
  TSDF.msg
+ SparseTSDF.msg
 )
 
 add_service_files(
  FILES
  GetTSDF.srv
- GetMesh.srv
+ GetSparseTSDF.srv
+ #GetMesh.srv
 )
 
 

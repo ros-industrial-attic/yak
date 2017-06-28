@@ -54,12 +54,12 @@
             # Higher values result in smoother reconstructions, but less sharp
             # corners and edges. Lower values result in more accurate 
             # reconstructions, but too low and noise becomes a major issue.
-            tsdf_trunc_dist: 0.025
+            tsdf_trunc_dist: 0.04
 
             # The size of the TSDF volume in voxels
-            volume_dims_x: 512
-            volume_dims_y: 512
-            volume_dims_z: 512
+            volume_dims_x: 32
+            volume_dims_y: 32
+            volume_dims_z: 32
 
             # The size of the TSDF volume in meters. The size of a voxel is 
             # volume_size / volume_dims

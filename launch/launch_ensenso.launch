@@ -1,8 +1,8 @@
 <launch>
     <!-- Remap the depth and color image topics to the ones output by the
          sensor of your choice -->
-    <remap from="/camera/depth/image_raw" to="/camera/depth/image_raw"/>
-    <remap from="/camera/rgb/image_rect_color" to="/camera/rgb/image_rect_color"/>
+    <remap from="/camera/depth/image_raw" to="/depth/image"/>
+    <remap from="/camera/rgb/image_rect_color" to="/depth/image"/>
     
     <!-- Launch kinfu as a standalone ROS node-->
     <node name="kinfu" pkg="yak" type="kinfu_node" output="screen">
@@ -16,7 +16,7 @@
 
             # The bilateral kernel smooths the depth image and 
             # filters out noise around the edges
-            bilateral_kernel_size: 7
+            bilateral_kernel_size: 4
             bilateral_sigma_depth: 0.04
             bilateral_sigma_spatial: 4.5
 
@@ -54,23 +54,23 @@
             # Higher values result in smoother reconstructions, but less sharp
             # corners and edges. Lower values result in more accurate 
             # reconstructions, but too low and noise becomes a major issue.
-            tsdf_trunc_dist: 0.025
+            tsdf_trunc_dist: 0.04
 
             # The size of the TSDF volume in voxels
-            volume_dims_x: 512
-            volume_dims_y: 512
-            volume_dims_z: 512
+            volume_dims_x: 704
+            volume_dims_y: 704
+            volume_dims_z: 704
 
             # The size of the TSDF volume in meters. The size of a voxel is 
             # volume_size / volume_dims
-            volume_size_x: 2
-            volume_size_y: 2
-            volume_size_z: 2
+            volume_size_x: 1.6
+            volume_size_y: 1.6
+            volume_size_z: 1.6
 
             # The position of the topmost corner of the TSDF volume in meters
-            volume_pos_x: -1
-            volume_pos_y: -1
-            volume_pos_z: 0.5
+            volume_pos_x: 0.0
+            volume_pos_y: 0.0
+            volume_pos_z: 0.0
         </rosparam>
     </node>
 
