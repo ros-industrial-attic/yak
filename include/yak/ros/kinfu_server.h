@@ -88,7 +88,7 @@ namespace kfusion
             // Publishes the current camera transform.
             bool PublishTransform();
             // Does a single KinFu step given a depth and (optional) color image.
-            bool KinFu(const cv::Mat& depth, const cv::Mat& color);
+            bool KinFu(const Affine3f& poseHint, const cv::Mat& depth, const cv::Mat& color);
 
              inline bool ShouldExit() const { return should_exit_; }
              inline void SetExit(bool value) { should_exit_ = value; }
@@ -126,6 +126,7 @@ namespace kfusion
             tf::TransformBroadcaster tfBroadcaster_;
             cv::Mat lastDepth_;
             cv::Mat lastColor_;
+            Affine3f lastPoseHint_;
 
             ros::ServiceServer get_tsdf_server_;
             ros::ServiceServer get_sparse_tsdf_server_;

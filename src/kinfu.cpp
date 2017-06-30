@@ -1,6 +1,7 @@
 #include "precomp.hpp"
 #include "internal.hpp"
 #include <stdio.h>
+#include <ros/ros.h>
 using namespace std;
 using namespace kfusion;
 using namespace kfusion::cuda;
@@ -58,10 +59,11 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
     volume_->setMaxWeight(params_.tsdf_max_weight);
     volume_->setSize(params_.volume_size);
     volume_->setPose(params_.volume_pose);
+    //ROS_INFO_STREAM("Volume pose: " << params_.volume_pose.matrix);
     volume_->setRaycastStepFactor(params_.raycast_step_factor);
     volume_->setGradientDeltaFactor(params_.gradient_delta_factor);
 
-     // TODO: Modify ICP to optionally use TF pose as hit for camera pose calculation.
+     // TODO: Modify ICP to optionally use TF pose as hint for camera pose calculation.
     icp_ = cv::Ptr<cuda::ProjectiveICP>(new cuda::ProjectiveICP());
     icp_->setDistThreshold(params_.icp_dist_thres);
     icp_->setAngleThreshold(params_.icp_angle_thres);
@@ -146,9 +148,14 @@ void kfusion::KinFu::reset()
     frame_counter_ = 0;
     poses_.clear();
     poses_.reserve(30000);
-    Affine3f thing = Affine3f::Identity();
-    poses_.push_back(thing);
-    cout << thing.matrix << endl;
+
+//    Affine3f thing = Affine3f::Identity();
+//    poses_.push_back(thing);
+//    cout << thing.matrix << endl;
+
+    poses_.push_back(params_.volume_pose.matrix);
+    cout << params_.volume_pose.matrix << endl;
+
     volume_->clear();
 }
 
@@ -159,7 +166,7 @@ kfusion::Affine3f kfusion::KinFu::getCameraPose(int time) const
     return poses_[time];
 }
 
-bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion::cuda::Image& /*image*/)
+bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::Depth& depth, const kfusion::cuda::Image& /*image*/)
 {
     const KinFuParams& p = params_;
     const int LEVELS = icp_->getUsedLevelsNum();
@@ -197,12 +204,22 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // ICP
-    Affine3f affine; // cuur -> prev
+
+    // ICP compares the points and normals between the current and previous depth images to estimate the affine transform from the previous image pose to the current image pose.
+    // If it finds a transform with error below the threshold, the previous pose is multiplied by the affine transform to produce the new pose.
+    // If no transform is found (for one reason or another) a reset is triggered.
+
+
+    // TODO: Make TF listener. Calculate affine transform between last pose and the new pose from TF. Pass this into estimateTransform and don't overwrite it with an identity matrix.
+
+    //Affine3f affine = Affine3f::Identity(); // cuur -> prev
+    Affine3f affine = poseHint;
     {
         //ScopeTime time("icp");
 #if defined USE_DEPTH
         bool ok = icp_->estimateTransform(affine, p.intr, curr_.depth_pyr, curr_.normals_pyr, prev_.depth_pyr, prev_.normals_pyr);
 #else
+
         bool ok = icp_->estimateTransform(affine, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
 #endif
         if (!ok)

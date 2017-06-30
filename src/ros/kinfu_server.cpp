@@ -35,7 +35,10 @@ namespace kfusion
     
     void KinFuServer::Update()
     {
+        // Try to grab an image from the camera. If it doesn't work, spin once and try again.
         bool has_frame = camera_->Grab(lastDepth_, lastColor_);
+
+        lastPoseHint_ = Affine3f::Identity();
 
         if (!has_frame)
         {
@@ -43,7 +46,7 @@ namespace kfusion
             return;
         }
 
-        bool has_image = KinFu(lastDepth_, lastColor_);
+        bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 
         if (has_image)
         {
@@ -62,6 +65,7 @@ namespace kfusion
 
         kfusion::KinFu& kinfu = *kinfu_;
 
+        // TODO: Need to change this to reflect actual sensor refresh rate? (e.g. Ensenso at ~4Hz)
         ROS_INFO("Starting tracking...\n");
         ros::Rate trackHz(30.0f);
         for (int i = 0; !should_exit_ && ros::ok(); ++i)
@@ -73,7 +77,7 @@ namespace kfusion
         return true;
     }
 
-    bool KinFuServer::KinFu(const cv::Mat& depth, const cv::Mat& color)
+    bool KinFuServer::KinFu(const Affine3f& poseHint, const cv::Mat& depth, const cv::Mat& color)
     {
         depthDevice_.upload(depth.data, depth.step, depth.rows, depth.cols);
         return(* kinfu_)(depthDevice_);
@@ -133,12 +137,20 @@ namespace kfusion
         volPosY = params.volume_pose.translation().val[1];
         volPosZ = params.volume_pose.translation().val[2];
 
+        ROS_INFO_STREAM("volPos (default): " << volPosX << ", " << volPosY << ", " << volPosZ);
+
         LoadParam(volPosX, "volume_pos_x");
         LoadParam(volPosY, "volume_pos_y");
         LoadParam(volPosZ, "volume_pos_z");
 
+        ROS_INFO_STREAM("volPos (loaded): " << volPosX << ", " << volPosY << ", " << volPosZ);
+        ROS_INFO_STREAM("translation: " << cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
+// problem's here somewhere????
+//        params.volume_pose = Affine3f().translate(Vec3f(volPosX, volPosY,volPosZ));
+
         params.volume_pose.translate(-params.volume_pose.translation());
         params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
+
 
         kinfu_ = KinFu::Ptr(new kfusion::KinFu(params));
         return true;
