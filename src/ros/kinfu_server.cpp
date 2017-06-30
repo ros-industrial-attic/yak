@@ -16,6 +16,9 @@ namespace kfusion
         raycastImgPublisher_ = camera->nodeHandle.advertise<sensor_msgs::Image>("raycast_image", 10);
         get_tsdf_server_ = camera->nodeHandle.advertiseService("get_tsdf", &KinFuServer::GetTSDF,  this);
         get_sparse_tsdf_server_ = camera->nodeHandle.advertiseService("get_sparse_tsdf", &KinFuServer::GetSparseTSDF,  this);
+
+        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), previous_world_to_sensor_transform_);
         //get_mesh_server_ = camera->nodeHandle.advertiseService("get_mesh", &KinFuServer::GetMesh, this);
     }
 
@@ -38,13 +41,30 @@ namespace kfusion
         // Try to grab an image from the camera. If it doesn't work, spin once and try again.
         bool has_frame = camera_->Grab(lastDepth_, lastColor_);
 
-        lastPoseHint_ = Affine3f::Identity();
-
         if (!has_frame)
         {
             ros::spinOnce();
             return;
         }
+
+        // Once we have a new image, find the transform between the poses where the current image and the previous image were captured.
+        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
+//        tf::StampedTransform current_world_to_sensor;
+//        tf::StampedTransform past_world_to_sensor;
+
+//        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+//        ros::Time present = ros::Time::now();
+//        ros::Time past = present - ros::Duration(1.0);
+//        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor);
+//        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", past, past_world_to_sensor);
+
+        tf::Transform past_to_current_sensor = previous_world_to_sensor_transform_.inverse() * current_world_to_sensor_transform_;
+        previous_world_to_sensor_transform_ = current_world_to_sensor_transform_;
+
+        ROS_INFO_STREAM("Sensor transform (X): " << past_to_current_sensor.getOrigin().getX());
+
+        lastPoseHint_ = Affine3f::Identity();
 
         bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 

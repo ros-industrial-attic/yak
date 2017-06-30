@@ -105,10 +105,10 @@ namespace kfusion
              inline const std::string& GetCameraFrame() { return cameraFrame_; }
 
              // Service calls
+
              bool GetTSDF(yak::GetTSDFRequest& req, yak::GetTSDFResponse& res);
 
              bool GetSparseTSDF(yak::GetSparseTSDFRequest& req, yak::GetSparseTSDFResponse& res);
-             //bool GetMesh(yak::GetMeshRequest& req, yak::GetMeshResponse& res);
 
              bool TruncateTSDF(std::vector<uint32_t> &data, std::vector<uint32_t> &dataOut, std::vector<uint16_t> &rows, std::vector<uint16_t> &cols, std::vector<uint16_t> &sheets, int numVoxelsX, int numVoxelsY, int numVoxelsZ);
 
@@ -125,6 +125,11 @@ namespace kfusion
             std::string baseFrame_;
             std::string cameraFrame_;
             tf::TransformBroadcaster tfBroadcaster_;
+            tf::TransformListener tfListener_;
+
+            tf::StampedTransform current_world_to_sensor_transform_;
+            tf::StampedTransform previous_world_to_sensor_transform_;
+
             cv::Mat lastDepth_;
             cv::Mat lastColor_;
             Affine3f lastPoseHint_;

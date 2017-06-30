@@ -63,9 +63,9 @@
 
             # The size of the TSDF volume in meters. The size of a voxel is 
             # volume_size / volume_dims
-            volume_size_x: 0.75
-            volume_size_y: 0.75
-            volume_size_z: 0.75
+            volume_size_x: 1.5
+            volume_size_y: 1.5
+            volume_size_z: 1.5
 
             # The position of the topmost corner of the TSDF volume in meters
             volume_pos_x: 0.5
