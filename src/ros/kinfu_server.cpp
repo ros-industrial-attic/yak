@@ -80,7 +80,7 @@ namespace kfusion
     bool KinFuServer::KinFu(const Affine3f& poseHint, const cv::Mat& depth, const cv::Mat& color)
     {
         depthDevice_.upload(depth.data, depth.step, depth.rows, depth.cols);
-        return(* kinfu_)(depthDevice_);
+        return(* kinfu_)(lastPoseHint_, depthDevice_);
     }
 
     bool KinFuServer::ConnectCamera()

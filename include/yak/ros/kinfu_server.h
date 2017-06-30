@@ -38,6 +38,7 @@
 #include <pcl/gpu/kinfu/tsdf_volume.h>
 
 #include <ros/half.hpp>
+#include <tf/transform_listener.h>
 
 //#include <Eigen/Sparse>
 

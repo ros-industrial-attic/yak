@@ -7,8 +7,6 @@
 #include <vector>
 #include <string>
 
-#include <tf/transform_listener.h>
-
 namespace kfusion
 {
     namespace cuda
