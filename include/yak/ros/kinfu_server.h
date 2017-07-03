@@ -40,6 +40,12 @@
 #include <ros/half.hpp>
 #include <tf/transform_listener.h>
 
+#include "tf/transform_datatypes.h"
+#include "Eigen/Core"
+#include "Eigen/Geometry"
+#include <tf_conversions/tf_eigen.h>
+#include <opencv2/core/eigen.hpp>
+
 //#include <Eigen/Sparse>
 
 //#include <marching_cubes.h>

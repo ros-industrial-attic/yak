@@ -59,21 +59,37 @@ namespace kfusion
 //        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor);
 //        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", past, past_world_to_sensor);
 
+        // Seems to log more quickly than sensor returns new positions.
+
         tf::Transform past_to_current_sensor = previous_world_to_sensor_transform_.inverse() * current_world_to_sensor_transform_;
-        previous_world_to_sensor_transform_ = current_world_to_sensor_transform_;
+
 
         ROS_INFO_STREAM("Sensor transform (X): " << past_to_current_sensor.getOrigin().getX());
 
-        lastPoseHint_ = Affine3f::Identity();
+        //lastPoseHint_ = Affine3f::Identity();
+        //lastPoseHint_ = (Affine3f)past_to_current_sensor;
+        Eigen::Affine3d lastPoseHintTemp;
+        tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
+        //lastPoseHintTemp.
+        //Eigen::Affine3f lastPoseHintFloatTemp = lastPoseHintTemp.cast<float>();
+
+        cv::Mat tempOut(4,4, CV_32F);
+        cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
+        lastPoseHint_ = Affine3f(tempOut);
+        //lastPoseHint_ = lastPoseHintTemp.cast<float>();
+
+        ROS_INFO_STREAM("Sensor transform (X): " << lastPoseHint_.matrix);
 
         bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 
         if (has_image)
         {
             PublishRaycastImage();
+            previous_world_to_sensor_transform_ = current_world_to_sensor_transform_;
         }
 
         PublishTransform();
+
     }
 
     bool KinFuServer::ExecuteBlocking()
