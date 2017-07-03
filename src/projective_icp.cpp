@@ -196,7 +196,10 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Int
     StreamHelper& sh = *shelp_;
 
     device::ComputeIcpHelper helper(dist_thres_, angle_thres_);
-    affine = Affine3f::Identity();
+
+    // This is equivalent to assuming that the transform between the previous and current pose is identity, i.e. the poses are identical.
+    // Changing this to the actual transform between the prev and TF-derived current pose should help the calculation of the new pose.
+    //affine = Affine3f::Identity();
 
     for (int level_index = LEVELS - 1; level_index >= 0; --level_index)
     {

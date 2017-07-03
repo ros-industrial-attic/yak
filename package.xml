@@ -17,8 +17,13 @@
   <depend>sensor_msgs</depend>
   <depend>tf</depend>
   <depend>pcl_ros</depend>
-  <depend>cpu_tsdf</depend>
   <depend>visualization_msgs</depend>
+  <depend>Eigen3</depend>
+  <depend>tf_conversions</depend>
+
+
+
+
 
   <export>
   </export>

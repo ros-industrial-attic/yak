@@ -16,6 +16,9 @@ namespace kfusion
         raycastImgPublisher_ = camera->nodeHandle.advertise<sensor_msgs::Image>("raycast_image", 10);
         get_tsdf_server_ = camera->nodeHandle.advertiseService("get_tsdf", &KinFuServer::GetTSDF,  this);
         get_sparse_tsdf_server_ = camera->nodeHandle.advertiseService("get_sparse_tsdf", &KinFuServer::GetSparseTSDF,  this);
+
+        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), previous_world_to_sensor_transform_);
         //get_mesh_server_ = camera->nodeHandle.advertiseService("get_mesh", &KinFuServer::GetMesh, this);
     }
 
@@ -35,6 +38,7 @@ namespace kfusion
     
     void KinFuServer::Update()
     {
+        // Try to grab an image from the camera. If it doesn't work, spin once and try again.
         bool has_frame = camera_->Grab(lastDepth_, lastColor_);
 
         if (!has_frame)
@@ -43,14 +47,47 @@ namespace kfusion
             return;
         }
 
-        bool has_image = KinFu(lastDepth_, lastColor_);
+        // Once we have a new image, find the transform between the poses where the current image and the previous image were captured.
+        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
+//        tf::StampedTransform current_world_to_sensor;
+//        tf::StampedTransform past_world_to_sensor;
+
+//        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+//        ros::Time present = ros::Time::now();
+//        ros::Time past = present - ros::Duration(1.0);
+//        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor);
+//        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", past, past_world_to_sensor);
+
+        // Seems to log more quickly than sensor returns new positions.
+
+        tf::Transform past_to_current_sensor = previous_world_to_sensor_transform_.inverse() * current_world_to_sensor_transform_;
+
+
+        //ROS_INFO_STREAM("Sensor transform (X): " << past_to_current_sensor.getOrigin().getX());
+
+        Eigen::Affine3d lastPoseHintTemp;
+        tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
+        cv::Mat tempOut(4,4, CV_32F);
+        cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
+        lastPoseHint_ = Affine3f(tempOut);
+
+        ros::Duration timeElapsed = current_world_to_sensor_transform_.stamp_ - previous_world_to_sensor_transform_.stamp_;
+        ROS_INFO_STREAM("deltaT: " << timeElapsed << " s");
+        double distanceMoved = sqrt(pow(past_to_current_sensor.getOrigin().getX(),2) + pow(past_to_current_sensor.getOrigin().getY(),2) + pow(past_to_current_sensor.getOrigin().getZ(),2));
+        ROS_INFO_STREAM("deltaD: " << distanceMoved << " m");
+        //ROS_INFO_STREAM("Sensor transform: " << lastPoseHint_.matrix);
+
+        bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 
         if (has_image)
         {
             PublishRaycastImage();
+            previous_world_to_sensor_transform_ = current_world_to_sensor_transform_;
         }
 
         PublishTransform();
+
     }
 
     bool KinFuServer::ExecuteBlocking()
@@ -62,6 +99,7 @@ namespace kfusion
 
         kfusion::KinFu& kinfu = *kinfu_;
 
+        // TODO: Need to change this to reflect actual sensor refresh rate? (e.g. Ensenso at ~4Hz)
         ROS_INFO("Starting tracking...\n");
         ros::Rate trackHz(30.0f);
         for (int i = 0; !should_exit_ && ros::ok(); ++i)
@@ -73,10 +111,10 @@ namespace kfusion
         return true;
     }
 
-    bool KinFuServer::KinFu(const cv::Mat& depth, const cv::Mat& color)
+    bool KinFuServer::KinFu(const Affine3f& poseHint, const cv::Mat& depth, const cv::Mat& color)
     {
         depthDevice_.upload(depth.data, depth.step, depth.rows, depth.cols);
-        return(* kinfu_)(depthDevice_);
+        return(* kinfu_)(lastPoseHint_, depthDevice_);
     }
 
     bool KinFuServer::ConnectCamera()
@@ -133,12 +171,20 @@ namespace kfusion
         volPosY = params.volume_pose.translation().val[1];
         volPosZ = params.volume_pose.translation().val[2];
 
+        ROS_INFO_STREAM("volPos (default): " << volPosX << ", " << volPosY << ", " << volPosZ);
+
         LoadParam(volPosX, "volume_pos_x");
         LoadParam(volPosY, "volume_pos_y");
         LoadParam(volPosZ, "volume_pos_z");
 
+        ROS_INFO_STREAM("volPos (loaded): " << volPosX << ", " << volPosY << ", " << volPosZ);
+        ROS_INFO_STREAM("translation: " << cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
+// problem's here somewhere????
+//        params.volume_pose = Affine3f().translate(Vec3f(volPosX, volPosY,volPosZ));
+
         params.volume_pose.translate(-params.volume_pose.translation());
         params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
+
 
         kinfu_ = KinFu::Ptr(new kfusion::KinFu(params));
         return true;

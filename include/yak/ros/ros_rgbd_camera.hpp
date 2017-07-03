@@ -58,6 +58,8 @@ namespace kfusion
             bool hasNewRGB;
             bool subscribedDepth;
             bool subscribedRGB;
+
+            ros::Time lastImageTime;
     };
 
 } /* namespace kfusion */

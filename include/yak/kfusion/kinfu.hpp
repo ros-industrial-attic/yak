@@ -26,7 +26,7 @@ namespace kfusion
             int cols;  //pixels
             int rows;  //pixels
 
-            Intr intr;  //Camera parameters
+            Intr intr;  //Camera intrinsic parameters
 
             Vec3i volume_dims; //number of voxels
             Vec3f volume_size; //meters
@@ -41,7 +41,7 @@ namespace kfusion
             float icp_angle_thres;         //radians
             std::vector<int> icp_iter_num; //iterations for level index 0,1,..,3
 
-            float tsdf_min_camera_movement; //meters, integrate only if exceedes
+            float tsdf_min_camera_movement; //meters, integrate only if exceeds
             float tsdf_trunc_dist;             //meters;
             int tsdf_max_weight;               //frames
 
@@ -70,7 +70,7 @@ namespace kfusion
 
             void reset();
 
-            bool operator()(const cuda::Depth& dpeth, const cuda::Image& image = cuda::Image());
+            bool operator()(const Affine3f& poseHint, const cuda::Depth& depth, const cuda::Image& image = cuda::Image());
 
             void renderImage(cuda::Image& image, int flags = 0);
             void renderImage(cuda::Image& image, const Affine3f& pose, int flags = 0);
@@ -82,6 +82,7 @@ namespace kfusion
             int frame_counter_;
             KinFuParams params_;
 
+            // Sensor pose, currenly calculated  via ICP
             std::vector<Affine3f> poses_;
 
             cuda::Dists dists_;

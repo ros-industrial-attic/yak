@@ -1,11 +1,8 @@
 <launch>
     <!-- Remap the depth and color image topics to the ones output by the
          sensor of your choice -->
-    <!--<remap from="/camera/depth/image_raw" to="/camera/depth/image_raw"/>
-    <remap from="/camera/rgb/image_rect_color" to="/camera/rgb/image_rect_color"/>
-    -->
-    <remap from="/camera/depth/image_raw" to="/depth/image"/>
-    <remap from="/camera/rgb/image_rect_color" to="/depth/image"/>
+     <remap from="/camera/depth/image_raw" to="/camera/depth/image_raw"/>
+     <remap from="/camera/rgb/image_rect_color" to="/camera/rgb/image_rect_color"/>
     
     <!-- Launch kinfu as a standalone ROS node-->
     <node name="kinfu" pkg="yak" type="kinfu_node" output="screen">
@@ -19,7 +16,7 @@
 
             # The bilateral kernel smooths the depth image and 
             # filters out noise around the edges
-            bilateral_kernel_size: 7
+            bilateral_kernel_size: 4
             bilateral_sigma_depth: 0.04
             bilateral_sigma_spatial: 4.5
 
@@ -71,9 +68,9 @@
             volume_size_z: 1.5
 
             # The position of the topmost corner of the TSDF volume in meters
-            volume_pos_x: -1.0
-            volume_pos_y: -1.0
-            volume_pos_z: 0.5
+            volume_pos_x: 0.5
+            volume_pos_y: 0.5
+            volume_pos_z: -1.0
         </rosparam>
     </node>
 

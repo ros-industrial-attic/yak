@@ -72,6 +72,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   pcl_ros
   visualization_msgs
+  tf_conversions
 )
 
 add_message_files(
@@ -97,7 +98,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES yak
-  CATKIN_DEPENDS cv_bridge image_transport rosconsole roscpp sensor_msgs pcl_ros visualization_msgs
+  CATKIN_DEPENDS cv_bridge image_transport rosconsole roscpp sensor_msgs pcl_ros visualization_msgs Eigen3 tf_conversions
 )
 
 

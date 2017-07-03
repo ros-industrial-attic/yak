@@ -23,8 +23,8 @@
             # These are parameters for the point-to-plane ICP. The
             # thresholds prevent ICP from converging to far away/inconsistent
             # data.
-            icp_angle_thresh: 0.523599
-            icp_dist_thresh: 0.1
+            icp_angle_thresh: 0.25
+            icp_dist_thresh: 0.05
             icp_truncate_depth_dist: 0
 
             # ICP gets performed over an image pyramid of depth. These are the
@@ -57,20 +57,24 @@
             tsdf_trunc_dist: 0.04
 
             # The size of the TSDF volume in voxels
-            volume_dims_x: 704
-            volume_dims_y: 704
-            volume_dims_z: 704
+            #volume_dims_x: 704
+            #volume_dims_y: 704
+            #volume_dims_z: 704
+            volume_dims_x: 512
+            volume_dims_y: 512
+            volume_dims_z: 512
+
 
             # The size of the TSDF volume in meters. The size of a voxel is 
             # volume_size / volume_dims
-            volume_size_x: 1.6
-            volume_size_y: 1.6
-            volume_size_z: 1.6
+            volume_size_x: 1.5
+            volume_size_y: 1.5
+            volume_size_z: 1.5
 
             # The position of the topmost corner of the TSDF volume in meters
-            volume_pos_x: 0.0
-            volume_pos_y: 0.0
-            volume_pos_z: 0.0
+            volume_pos_x: 0.5
+            volume_pos_y: 0.5
+            volume_pos_z: -1.0
         </rosparam>
     </node>
 

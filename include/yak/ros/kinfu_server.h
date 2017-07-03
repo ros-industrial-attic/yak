@@ -9,6 +9,7 @@
 #define KINFUSERVER_H_
 
 #include <stdlib.h>
+#include <math.h>
 
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -38,6 +39,13 @@
 #include <pcl/gpu/kinfu/tsdf_volume.h>
 
 #include <ros/half.hpp>
+#include <tf/transform_listener.h>
+
+#include "tf/transform_datatypes.h"
+#include "Eigen/Core"
+#include "Eigen/Geometry"
+#include <tf_conversions/tf_eigen.h>
+#include <opencv2/core/eigen.hpp>
 
 //#include <Eigen/Sparse>
 
@@ -88,7 +96,7 @@ namespace kfusion
             // Publishes the current camera transform.
             bool PublishTransform();
             // Does a single KinFu step given a depth and (optional) color image.
-            bool KinFu(const cv::Mat& depth, const cv::Mat& color);
+            bool KinFu(const Affine3f& poseHint, const cv::Mat& depth, const cv::Mat& color);
 
              inline bool ShouldExit() const { return should_exit_; }
              inline void SetExit(bool value) { should_exit_ = value; }
@@ -104,10 +112,10 @@ namespace kfusion
              inline const std::string& GetCameraFrame() { return cameraFrame_; }
 
              // Service calls
+
              bool GetTSDF(yak::GetTSDFRequest& req, yak::GetTSDFResponse& res);
 
              bool GetSparseTSDF(yak::GetSparseTSDFRequest& req, yak::GetSparseTSDFResponse& res);
-             //bool GetMesh(yak::GetMeshRequest& req, yak::GetMeshResponse& res);
 
              bool TruncateTSDF(std::vector<uint32_t> &data, std::vector<uint32_t> &dataOut, std::vector<uint16_t> &rows, std::vector<uint16_t> &cols, std::vector<uint16_t> &sheets, int numVoxelsX, int numVoxelsY, int numVoxelsZ);
 
@@ -124,8 +132,14 @@ namespace kfusion
             std::string baseFrame_;
             std::string cameraFrame_;
             tf::TransformBroadcaster tfBroadcaster_;
+            tf::TransformListener tfListener_;
+
+            tf::StampedTransform current_world_to_sensor_transform_;
+            tf::StampedTransform previous_world_to_sensor_transform_;
+
             cv::Mat lastDepth_;
             cv::Mat lastColor_;
+            Affine3f lastPoseHint_;
 
             ros::ServiceServer get_tsdf_server_;
             ros::ServiceServer get_sparse_tsdf_server_;
