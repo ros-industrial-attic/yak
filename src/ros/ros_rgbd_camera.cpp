@@ -79,6 +79,7 @@ namespace kfusion
         lastDepthImage = image;
         lastDepthInfo = cameraInfo;
         hasNewDepth = true;
+
     }
 
     void RosRGBDCamera::RGBCallback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& cameraInfo)

@@ -64,21 +64,19 @@ namespace kfusion
         tf::Transform past_to_current_sensor = previous_world_to_sensor_transform_.inverse() * current_world_to_sensor_transform_;
 
 
-        ROS_INFO_STREAM("Sensor transform (X): " << past_to_current_sensor.getOrigin().getX());
+        //ROS_INFO_STREAM("Sensor transform (X): " << past_to_current_sensor.getOrigin().getX());
 
-        //lastPoseHint_ = Affine3f::Identity();
-        //lastPoseHint_ = (Affine3f)past_to_current_sensor;
         Eigen::Affine3d lastPoseHintTemp;
         tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
-        //lastPoseHintTemp.
-        //Eigen::Affine3f lastPoseHintFloatTemp = lastPoseHintTemp.cast<float>();
-
         cv::Mat tempOut(4,4, CV_32F);
         cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
         lastPoseHint_ = Affine3f(tempOut);
-        //lastPoseHint_ = lastPoseHintTemp.cast<float>();
 
-        ROS_INFO_STREAM("Sensor transform (X): " << lastPoseHint_.matrix);
+        ros::Duration timeElapsed = current_world_to_sensor_transform_.stamp_ - previous_world_to_sensor_transform_.stamp_;
+        ROS_INFO_STREAM("deltaT: " << timeElapsed << " s");
+        double distanceMoved = sqrt(pow(past_to_current_sensor.getOrigin().getX(),2) + pow(past_to_current_sensor.getOrigin().getY(),2) + pow(past_to_current_sensor.getOrigin().getZ(),2));
+        ROS_INFO_STREAM("deltaD: " << distanceMoved << " m");
+        //ROS_INFO_STREAM("Sensor transform: " << lastPoseHint_.matrix);
 
         bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 

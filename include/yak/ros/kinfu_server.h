@@ -9,6 +9,7 @@
 #define KINFUSERVER_H_
 
 #include <stdlib.h>
+#include <math.h>
 
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
