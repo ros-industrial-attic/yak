@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_library(OPENVDB_LIBRARY NAMES openvdb)
 find_library(TBB_LIBRARY NAMES tbb)
 find_library(HALF_LIBRARY NAMES Half)
+#find_library(OPENEXR_LIBRARY REQUIRED NAMES OpenEXR)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -131,8 +132,9 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
-include_directories(${PROJECT_SOURCE_DIR}/include)
+#include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -162,7 +164,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 # Specify libraries to link a library or executable target against
  target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
-   openvdb Half tbb
+   openvdb tbb Half
  )
 
 #############

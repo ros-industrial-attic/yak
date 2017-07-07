@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <half.hpp>
+
 #include <unistd.h>
 
 #include <tf/tf.h>
@@ -14,7 +16,9 @@
 
 #include <yak/GetSparseTSDF.h>
 
-#include <half.hpp>
+//#include <OpenEXR/half.h>
+
+
 #include <openvdb/openvdb.h>
 
 #include <openvdb/tools/VolumeToMesh.h>
@@ -22,6 +26,10 @@
 #include <openvdb/tools/MeshToVolume.h>
 #include <openvdb/tools/LevelSetSphere.h>
 #include <openvdb/util/Util.h>
+
+
+
+
 
 
 class GenerateMesh
@@ -136,7 +144,7 @@ public:
     openvdb::tools::VolumeToMesh mesher;
     mesher.operator()<openvdb::FloatGrid>( grid.operator*() );
     ROS_INFO("Done meshing volume");
-    WriteMesh("/home/jschornak/clouds/mesh.obj", mesher);
+    WriteMesh("/home/joe/meshes/new_mesh.obj", mesher);
     //WriteMesh("/home/jschornak/ros/tsdf_ws/src/kinfu_ros/meshes/mesh.obj", mesher);
     ROS_INFO("Saved .obj to file");
 

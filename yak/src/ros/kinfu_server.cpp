@@ -17,8 +17,14 @@ namespace kfusion
         get_tsdf_server_ = camera->nodeHandle.advertiseService("get_tsdf", &KinFuServer::GetTSDF,  this);
         get_sparse_tsdf_server_ = camera->nodeHandle.advertiseService("get_sparse_tsdf", &KinFuServer::GetSparseTSDF,  this);
 
-        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
-        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), previous_world_to_sensor_transform_);
+        tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+        tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), previous_world_to_sensor_transform_);
+
+        camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
+//        tfListener_.waitForTransform("volume_frame", "tool0", ros::Time::now(), ros::Duration(0.5));
+//        tfListener_.lookupTransform("volume_frame", "tool0", ros::Time(0), previous_world_to_sensor_transform_);
+//        tfListener_.waitForTransform("tool0", "base_link", ros::Time::now(), ros::Duration(0.5));
+//        tfListener_.lookupTransform("tool0", "base_link", ros::Time(0), previous_world_to_sensor_transform_);
         //get_mesh_server_ = camera->nodeHandle.advertiseService("get_mesh", &KinFuServer::GetMesh, this);
     }
 
@@ -47,9 +53,26 @@ namespace kfusion
             return;
         }
 
+        //ensenso_sensor_optical_frame
         // Once we have a new image, find the transform between the poses where the current image and the previous image were captured.
-        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
-        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
+        tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+        tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
+
+
+
+//        tfListener_.waitForTransform("volume_frame", "tool0", ros::Time::now(), ros::Duration(0.5));
+//        tfListener_.lookupTransform("volume_frame", "tool0", ros::Time(0), current_world_to_sensor_transform_);
+//        tfListener_.waitForTransform("tool0", "base_link", ros::Time::now(), ros::Duration(0.5));
+//        tfListener_.lookupTransform("tool0", "base_link", ros::Time(0), current_world_to_sensor_transform_);
+
+        ROS_INFO_STREAM("Sensor pose: " << current_world_to_sensor_transform_.getOrigin().getX() << ", " << current_world_to_sensor_transform_.getOrigin().getY() << ", " << current_world_to_sensor_transform_.getOrigin().getZ());
+
+//        Eigen::Affine3d tformTemp;
+//        tf::transformTFToEigen(current_world_to_sensor_transform_, tformTemp);
+//        cv::Mat tempOut2(4,4, CV_32F);
+//        cv::eigen2cv(tformTemp.cast<float>().matrix(), tempOut2);
+//        Affine3f tformAffineTemp = Affine3f(tempOut2);
+//        ROS_INFO_STREAM("World to Sensor: " << tformAffineTemp.matrix);
 //        tf::StampedTransform current_world_to_sensor;
 //        tf::StampedTransform past_world_to_sensor;
 
@@ -61,8 +84,11 @@ namespace kfusion
 
         // Seems to log more quickly than sensor returns new positions.
 
-        tf::Transform past_to_current_sensor = previous_world_to_sensor_transform_.inverse() * current_world_to_sensor_transform_;
+        tf::Transform past_to_current_sensor = current_world_to_sensor_transform_.inverse() * previous_world_to_sensor_transform_;
+        //tf::Transform past_to_current_sensor = previous_world_to_sensor_transform_.inverse() * current_world_to_sensor_transform_;
+        // * camera_to_tool0_
 
+        //tf::Transform past_to_current_sensor = current_world_to_sensor_transform_ * previous_world_to_sensor_transform_.inverse();
 
         //ROS_INFO_STREAM("Sensor transform (X): " << past_to_current_sensor.getOrigin().getX());
 
@@ -70,13 +96,19 @@ namespace kfusion
         tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
         cv::Mat tempOut(4,4, CV_32F);
         cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
+
         lastPoseHint_ = Affine3f(tempOut);
 
-        ros::Duration timeElapsed = current_world_to_sensor_transform_.stamp_ - previous_world_to_sensor_transform_.stamp_;
-        ROS_INFO_STREAM("deltaT: " << timeElapsed << " s");
-        double distanceMoved = sqrt(pow(past_to_current_sensor.getOrigin().getX(),2) + pow(past_to_current_sensor.getOrigin().getY(),2) + pow(past_to_current_sensor.getOrigin().getZ(),2));
-        ROS_INFO_STREAM("deltaD: " << distanceMoved << " m");
-        //ROS_INFO_STREAM("Sensor transform: " << lastPoseHint_.matrix);
+//        Affine3f cvTemp = Affine3f(tempOut);
+//        lastPoseHint_ = cvTemp.rotate(Vec3f(0,0,1.5708));
+
+//        lastPoseHint_ = Affine3f::Identity();
+
+//        ros::Duration timeElapsed = current_world_to_sensor_transform_.stamp_ - previous_world_to_sensor_transform_.stamp_;
+//        ROS_INFO_STREAM("deltaT: " << timeElapsed << " s");
+//        double distanceMoved = sqrt(pow(past_to_current_sensor.getOrigin().getX(),2) + pow(past_to_current_sensor.getOrigin().getY(),2) + pow(past_to_current_sensor.getOrigin().getZ(),2));
+//        ROS_INFO_STREAM("deltaD: " << distanceMoved << " m");
+//        ROS_INFO_STREAM("Pose hint: " << lastPoseHint_.matrix);
 
         bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 

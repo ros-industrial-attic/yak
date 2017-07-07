@@ -151,9 +151,20 @@ cuda_add_library(yak
 add_executable(kinfu_node
   src/kinfu_node.cpp)
 
+add_executable(volume_tf_broadcaster
+  src/ros/volume_tf_broadcaster.cpp)
+
 add_definitions(${PCL_DEFINITIONS})
 
 target_link_libraries(kinfu_node
+ yak
+ ${catkin_LIBRARIES}
+ ${CUDA_LIBRARIES}
+ ${CUDA_CUDA_LIBRARY}
+ ${OpenCV_LIBS}
+)
+
+target_link_libraries(volume_tf_broadcaster
  yak
  ${catkin_LIBRARIES}
  ${CUDA_LIBRARIES}

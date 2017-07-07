@@ -34,9 +34,9 @@
 #include <yak/GetMeshRequest.h>
 #include <yak/GetMeshResponse.h>
 */
-#include <pcl/point_types.h>
-#include <pcl/gpu/kinfu/marching_cubes.h>
-#include <pcl/gpu/kinfu/tsdf_volume.h>
+//#include <pcl/point_types.h>
+//#include <pcl/gpu/kinfu/marching_cubes.h>
+//#include <pcl/gpu/kinfu/tsdf_volume.h>
 
 #include <ros/half.hpp>
 #include <tf/transform_listener.h>
@@ -133,6 +133,9 @@ namespace kfusion
             std::string cameraFrame_;
             tf::TransformBroadcaster tfBroadcaster_;
             tf::TransformListener tfListener_;
+
+            tf::Transform camera_to_tool0_;
+
 
             tf::StampedTransform current_world_to_sensor_transform_;
             tf::StampedTransform previous_world_to_sensor_transform_;
