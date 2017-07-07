@@ -58,57 +58,35 @@ namespace kfusion
         tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
         tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
 
-
-
-//        tfListener_.waitForTransform("volume_frame", "tool0", ros::Time::now(), ros::Duration(0.5));
-//        tfListener_.lookupTransform("volume_frame", "tool0", ros::Time(0), current_world_to_sensor_transform_);
-//        tfListener_.waitForTransform("tool0", "base_link", ros::Time::now(), ros::Duration(0.5));
-//        tfListener_.lookupTransform("tool0", "base_link", ros::Time(0), current_world_to_sensor_transform_);
-
         ROS_INFO_STREAM("Sensor pose: " << current_world_to_sensor_transform_.getOrigin().getX() << ", " << current_world_to_sensor_transform_.getOrigin().getY() << ", " << current_world_to_sensor_transform_.getOrigin().getZ());
 
-//        Eigen::Affine3d tformTemp;
-//        tf::transformTFToEigen(current_world_to_sensor_transform_, tformTemp);
-//        cv::Mat tempOut2(4,4, CV_32F);
-//        cv::eigen2cv(tformTemp.cast<float>().matrix(), tempOut2);
-//        Affine3f tformAffineTemp = Affine3f(tempOut2);
-//        ROS_INFO_STREAM("World to Sensor: " << tformAffineTemp.matrix);
-//        tf::StampedTransform current_world_to_sensor;
-//        tf::StampedTransform past_world_to_sensor;
-
-//        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
-//        ros::Time present = ros::Time::now();
-//        ros::Time past = present - ros::Duration(1.0);
-//        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor);
-//        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", past, past_world_to_sensor);
-
-        // Seems to log more quickly than sensor returns new positions.
-
+        // Calculate the difference between the previous camera pose and the current camera pose
         tf::Transform past_to_current_sensor = current_world_to_sensor_transform_.inverse() * previous_world_to_sensor_transform_;
-        //tf::Transform past_to_current_sensor = previous_world_to_sensor_transform_.inverse() * current_world_to_sensor_transform_;
-        // * camera_to_tool0_
 
-        //tf::Transform past_to_current_sensor = current_world_to_sensor_transform_ * previous_world_to_sensor_transform_.inverse();
+        // Existing method that works OK except for the Z-axis
+//        Eigen::Affine3d lastPoseHintTemp;
+//        tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
+//        cv::Mat tempOut(4,4, CV_32F);
+//        cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
 
-        //ROS_INFO_STREAM("Sensor transform (X): " << past_to_current_sensor.getOrigin().getX());
+        // New kludgey way to put affine tform into same frame as voxel volume
+        tf::Transform past_to_current_flipped;
+        // Flip z-axis direction
+        //past_to_current_flipped = tf::Transform(past_to_current_sensor.getRotation(), tf::Vector3(past_to_current_sensor.getOrigin().getX(), past_to_current_sensor.getOrigin().getY(), -past_to_current_sensor.getOrigin().getZ()));
+        // Flip Z-axis direction and rotation
+        tf::Vector3 oldAxis = past_to_current_sensor.getRotation().getAxis();
+        tf::Vector3 newAxis(oldAxis.getX(), oldAxis.getY(), -oldAxis.getZ());
+        past_to_current_flipped = tf::Transform(tf::Quaternion(newAxis, past_to_current_sensor.getRotation().getAngle()), tf::Vector3(past_to_current_sensor.getOrigin().getX(), past_to_current_sensor.getOrigin().getY(), -past_to_current_sensor.getOrigin().getZ()));
+
+
 
         Eigen::Affine3d lastPoseHintTemp;
-        tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
+        tf::transformTFToEigen(past_to_current_flipped, lastPoseHintTemp);
         cv::Mat tempOut(4,4, CV_32F);
         cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
 
+
         lastPoseHint_ = Affine3f(tempOut);
-
-//        Affine3f cvTemp = Affine3f(tempOut);
-//        lastPoseHint_ = cvTemp.rotate(Vec3f(0,0,1.5708));
-
-//        lastPoseHint_ = Affine3f::Identity();
-
-//        ros::Duration timeElapsed = current_world_to_sensor_transform_.stamp_ - previous_world_to_sensor_transform_.stamp_;
-//        ROS_INFO_STREAM("deltaT: " << timeElapsed << " s");
-//        double distanceMoved = sqrt(pow(past_to_current_sensor.getOrigin().getX(),2) + pow(past_to_current_sensor.getOrigin().getY(),2) + pow(past_to_current_sensor.getOrigin().getZ(),2));
-//        ROS_INFO_STREAM("deltaD: " << distanceMoved << " m");
-//        ROS_INFO_STREAM("Pose hint: " << lastPoseHint_.matrix);
 
         bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 
