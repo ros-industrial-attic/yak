@@ -1,4 +1,5 @@
 <launch>
+     <node name="volume_tf_broadcaster" pkg="yak" type="volume_tf_broadcaster" output="screen"/>
     <!-- Remap the depth and color image topics to the ones output by the
          sensor of your choice -->
      <remap from="/camera/depth/image_raw" to="/camera/depth/image_raw"/>
@@ -71,6 +72,9 @@
             volume_pos_x: 1.5
             volume_pos_y: 1.5
             volume_pos_z: -1.0
+
+            use_icp: True
+            use_pose_hints: False
         </rosparam>
     </node>
 

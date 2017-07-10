@@ -217,6 +217,8 @@ namespace kfusion
         params.volume_pose.translate(-params.volume_pose.translation());
         params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
 
+        LoadParam(params.use_icp, "use_icp");
+        LoadParam(params.use_pose_hints, "use_pose_hints");
 
         kinfu_ = KinFu::Ptr(new kfusion::KinFu(params));
         return true;
