@@ -81,7 +81,7 @@
             volume_pos_z: -1.0
 
             use_icp: False
-            use_pose_hints : True
+            use_pose_hints: True
         </rosparam>
     </node>
 
