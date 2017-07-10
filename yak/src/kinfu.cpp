@@ -149,13 +149,16 @@ void kfusion::KinFu::reset()
     cout << "Reset" << endl;
 
     frame_counter_ = 0;
+    poses_.clear();
+    poses_.reserve(30000);
 
-    if (!params_.use_pose_hints){
-      poses_.clear();
-      poses_.reserve(30000);
-      poses_.push_back(params_.volume_pose.matrix);
-      cout << params_.volume_pose.matrix << endl;
-    }
+//    Affine3f thing = Affine3f::Identity();
+//    poses_.push_back(thing);
+//    cout << thing.matrix << endl;
+
+    poses_.push_back(params_.volume_pose.matrix);
+    cout << params_.volume_pose.matrix << endl;
+
     volume_->clear();
 }
 
@@ -209,13 +212,13 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
     // If it finds a transform with error below the threshold, the previous pose is multiplied by the affine transform to produce the new pose.
     // If no transform is found (for one reason or another) a reset is triggered.
 
-    // DONE: Make TF listener. Calculate affine transform between last pose and the new pose from TF. Pass this into estimateTransform and don't overwrite it with an identity matrix.
+
+    // TODO: Make TF listener. Calculate affine transform between last pose and the new pose from TF. Pass this into estimateTransform and don't overwrite it with an identity matrix.
 
     Affine3f affine = Affine3f::Identity(); // cuur -> prev
     if (params_.use_pose_hints) {
       affine = poseHint;
     }
-    Affine3f affineCorrected;
 
     {
         //ScopeTime time("icp");
@@ -224,8 +227,7 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
 #else
     bool ok = true;
     if (params_.use_icp) {
-        ok = icp_->estimateTransform(affine, affineCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
-        affine = affineCorrected;
+        ok = icp_->estimateTransform(affine, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
     }
 
 #endif
@@ -233,14 +235,7 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
             return reset(), false;
     }
 
-    // Update pose estimate using measured or estimated camera motion transform.
-    // TODO: Calculate transform from volume frame to sensor frame and set this as the new sensor pose, instead of updating an estimate using the measured camera motion.
-    if (!params_.use_pose_hints){
-        poses_.push_back(poses_.back() * affine); // curr -> global
-    }
-    else {
-
-    }
+    poses_.push_back(poses_.back() * affine); // curr -> global
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
@@ -251,7 +246,7 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
     bool integrate = (rnorm + tnorm) / 2 >= p.tsdf_min_camera_movement;
     if (integrate)
     {
-        // Integrate depth image from new camera position using estimated camera pose
+        //ScopeTime time("tsdf");
         volume_->integrate(dists_, poses_.back(), p.intr);
     }
 
@@ -330,4 +325,56 @@ void kfusion::KinFu::renderImage(cuda::Image& image, const Affine3f& pose, int f
     }
 #undef PASS1
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//namespace pcl
+//{
+//    Eigen::Vector3f rodrigues2(const Eigen::Matrix3f& matrix)
+//    {
+//        Eigen::JacobiSVD<Eigen::Matrix3f> svd(matrix, Eigen::ComputeFullV | Eigen::ComputeFullU);
+//        Eigen::Matrix3f R = svd.matrixU() * svd.matrixV().transpose();
+
+//        double rx = R(2, 1) - R(1, 2);
+//        double ry = R(0, 2) - R(2, 0);
+//        double rz = R(1, 0) - R(0, 1);
+
+//        double s = sqrt((rx*rx + ry*ry + rz*rz)*0.25);
+//        double c = (R.trace() - 1) * 0.5;
+//        c = c > 1. ? 1. : c < -1. ? -1. : c;
+
+//        double theta = acos(c);
+
+//        if( s < 1e-5 )
+//        {
+//            double t;
+
+//            if( c > 0 )
+//                rx = ry = rz = 0;
+//            else
+//            {
+//                t = (R(0, 0) + 1)*0.5;
+//                rx = sqrt( std::max(t, 0.0) );
+//                t = (R(1, 1) + 1)*0.5;
+//                ry = sqrt( std::max(t, 0.0) ) * (R(0, 1) < 0 ? -1.0 : 1.0);
+//                t = (R(2, 2) + 1)*0.5;
+//                rz = sqrt( std::max(t, 0.0) ) * (R(0, 2) < 0 ? -1.0 : 1.0);
+
+//                if( fabs(rx) < fabs(ry) && fabs(rx) < fabs(rz) && (R(1, 2) > 0) != (ry*rz > 0) )
+//                    rz = -rz;
+//                theta /= sqrt(rx*rx + ry*ry + rz*rz);
+//                rx *= theta;
+//                ry *= theta;
+//                rz *= theta;
+//            }
+//        }
+//        else
+//        {
+//            double vth = 1/(2*s);
+//            vth *= theta;
+//            rx *= vth; ry *= vth; rz *= vth;
+//        }
+//        return Eigen::Vector3d(rx, ry, rz).cast<float>();
+//    }
+//}
 
