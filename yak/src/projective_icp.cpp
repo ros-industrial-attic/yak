@@ -190,12 +190,14 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Int
     return true;
 }
 
-bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Intr& intr, const PointsPyr& vcurr, const NormalsPyr ncurr, const PointsPyr vprev, const NormalsPyr nprev)
+bool kfusion::cuda::ProjectiveICP::estimateTransform(const Affine3f& affine, Affine3f& correctedAffine, const Intr& intr, const PointsPyr& vcurr, const NormalsPyr ncurr, const PointsPyr vprev, const NormalsPyr nprev)
 {
     const int LEVELS = getUsedLevelsNum();
     StreamHelper& sh = *shelp_;
 
     device::ComputeIcpHelper helper(dist_thres_, angle_thres_);
+
+    correctedAffine = affine;
 
     // This is equivalent to assuming that the transform between the previous and current pose is identity, i.e. the poses are identical.
     // Changing this to the actual transform between the prev and TF-derived current pose should help the calculation of the new pose.
@@ -214,7 +216,7 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Int
 
         for (int iter = 0; iter < iters_[level_index]; ++iter)
         {
-            helper.aff = device_cast<device::Aff3f>(affine);
+            helper.aff = device_cast<device::Aff3f>(correctedAffine);
             helper(v, n, buffer_, sh, sh);
 
             StreamHelper::Vec6f b;
@@ -234,7 +236,7 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Int
             cv::solve(A, b, r, cv::DECOMP_SVD);
 
             Affine3f Tinc(Vec3f(r.val), Vec3f(r.val + 3));
-            affine = Tinc * affine;
+            correctedAffine = Tinc * correctedAffine;
         }
     }
     return true;
