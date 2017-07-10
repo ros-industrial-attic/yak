@@ -190,8 +190,9 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Int
     return true;
 }
 
-bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Intr& intr, const PointsPyr& vcurr, const NormalsPyr ncurr, const PointsPyr vprev, const NormalsPyr nprev)
+bool kfusion::cuda::ProjectiveICP::estimateTransform(const Affine3f& affine, Affine3f& correctedAffine, const Intr& intr, const PointsPyr& vcurr, const NormalsPyr ncurr, const PointsPyr vprev, const NormalsPyr nprev)
 {
+    correctedAffine = affine;
     const int LEVELS = getUsedLevelsNum();
     StreamHelper& sh = *shelp_;
 
@@ -214,7 +215,7 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Int
 
         for (int iter = 0; iter < iters_[level_index]; ++iter)
         {
-            helper.aff = device_cast<device::Aff3f>(affine);
+            helper.aff = device_cast<device::Aff3f>(correctedAffine);
             helper(v, n, buffer_, sh, sh);
 
             StreamHelper::Vec6f b;
@@ -234,7 +235,7 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Int
             cv::solve(A, b, r, cv::DECOMP_SVD);
 
             Affine3f Tinc(Vec3f(r.val), Vec3f(r.val + 3));
-            affine = Tinc * affine;
+            correctedAffine = Tinc * correctedAffine;
         }
     }
     return true;

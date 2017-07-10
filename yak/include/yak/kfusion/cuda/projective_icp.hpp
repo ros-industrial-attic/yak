@@ -36,7 +36,7 @@ namespace kfusion
                 /** The function takes masked depth, i.e. it assumes for performance reasons that
                  * "if depth(y,x) is not zero, then normals(y,x) surely is not qnan" */
                 virtual bool estimateTransform(Affine3f& affine, const Intr& intr, const DepthPyr& dcurr, const NormalsPyr ncurr, const DepthPyr dprev, const NormalsPyr nprev);
-                virtual bool estimateTransform(Affine3f& affine, const Intr& intr, const PointsPyr& vcurr, const NormalsPyr ncurr, const PointsPyr vprev, const NormalsPyr nprev);
+                virtual bool estimateTransform(const Affine3f& affine, Affine3f& correctedAffine, const Intr& intr, const PointsPyr& vcurr, const NormalsPyr ncurr, const PointsPyr vprev, const NormalsPyr nprev);
 
                 //static Vec3f rodrigues2(const Mat3f& matrix);
             private:
