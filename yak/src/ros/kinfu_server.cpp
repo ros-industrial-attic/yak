@@ -20,7 +20,7 @@ namespace kfusion
         tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
         tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), previous_world_to_sensor_transform_);
 
-        camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
+//        camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
 //        tfListener_.waitForTransform("volume_frame", "tool0", ros::Time::now(), ros::Duration(0.5));
 //        tfListener_.lookupTransform("volume_frame", "tool0", ros::Time(0), previous_world_to_sensor_transform_);
 //        tfListener_.waitForTransform("tool0", "base_link", ros::Time::now(), ros::Duration(0.5));
@@ -58,57 +58,35 @@ namespace kfusion
         tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
         tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
 
-
-
-//        tfListener_.waitForTransform("volume_frame", "tool0", ros::Time::now(), ros::Duration(0.5));
-//        tfListener_.lookupTransform("volume_frame", "tool0", ros::Time(0), current_world_to_sensor_transform_);
-//        tfListener_.waitForTransform("tool0", "base_link", ros::Time::now(), ros::Duration(0.5));
-//        tfListener_.lookupTransform("tool0", "base_link", ros::Time(0), current_world_to_sensor_transform_);
-
         ROS_INFO_STREAM("Sensor pose: " << current_world_to_sensor_transform_.getOrigin().getX() << ", " << current_world_to_sensor_transform_.getOrigin().getY() << ", " << current_world_to_sensor_transform_.getOrigin().getZ());
 
-//        Eigen::Affine3d tformTemp;
-//        tf::transformTFToEigen(current_world_to_sensor_transform_, tformTemp);
-//        cv::Mat tempOut2(4,4, CV_32F);
-//        cv::eigen2cv(tformTemp.cast<float>().matrix(), tempOut2);
-//        Affine3f tformAffineTemp = Affine3f(tempOut2);
-//        ROS_INFO_STREAM("World to Sensor: " << tformAffineTemp.matrix);
-//        tf::StampedTransform current_world_to_sensor;
-//        tf::StampedTransform past_world_to_sensor;
-
-//        tfListener_.waitForTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
-//        ros::Time present = ros::Time::now();
-//        ros::Time past = present - ros::Duration(1.0);
-//        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor);
-//        tfListener_.lookupTransform("world_frame", "ensenso_sensor_optical_frame", past, past_world_to_sensor);
-
-        // Seems to log more quickly than sensor returns new positions.
-
+        // Calculate the difference between the previous camera pose and the current camera pose
         tf::Transform past_to_current_sensor = current_world_to_sensor_transform_.inverse() * previous_world_to_sensor_transform_;
-        //tf::Transform past_to_current_sensor = previous_world_to_sensor_transform_.inverse() * current_world_to_sensor_transform_;
-        // * camera_to_tool0_
 
-        //tf::Transform past_to_current_sensor = current_world_to_sensor_transform_ * previous_world_to_sensor_transform_.inverse();
+        // Existing method that works OK except for the Z-axis
+//        Eigen::Affine3d lastPoseHintTemp;
+//        tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
+//        cv::Mat tempOut(4,4, CV_32F);
+//        cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
 
-        //ROS_INFO_STREAM("Sensor transform (X): " << past_to_current_sensor.getOrigin().getX());
+        // New kludgey way to put affine tform into same frame as voxel volume
+        tf::Transform past_to_current_flipped;
+        // Flip z-axis direction
+        //past_to_current_flipped = tf::Transform(past_to_current_sensor.getRotation(), tf::Vector3(past_to_current_sensor.getOrigin().getX(), past_to_current_sensor.getOrigin().getY(), -past_to_current_sensor.getOrigin().getZ()));
+        // Flip Z-axis direction and rotation
+        tf::Vector3 oldAxis = past_to_current_sensor.getRotation().getAxis();
+        tf::Vector3 newAxis(oldAxis.getX(), oldAxis.getY(), -oldAxis.getZ());
+        past_to_current_flipped = tf::Transform(tf::Quaternion(newAxis, past_to_current_sensor.getRotation().getAngle()), tf::Vector3(past_to_current_sensor.getOrigin().getX(), past_to_current_sensor.getOrigin().getY(), -past_to_current_sensor.getOrigin().getZ()));
+
+
 
         Eigen::Affine3d lastPoseHintTemp;
-        tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
+        tf::transformTFToEigen(past_to_current_flipped, lastPoseHintTemp);
         cv::Mat tempOut(4,4, CV_32F);
         cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
 
+
         lastPoseHint_ = Affine3f(tempOut);
-
-//        Affine3f cvTemp = Affine3f(tempOut);
-//        lastPoseHint_ = cvTemp.rotate(Vec3f(0,0,1.5708));
-
-//        lastPoseHint_ = Affine3f::Identity();
-
-//        ros::Duration timeElapsed = current_world_to_sensor_transform_.stamp_ - previous_world_to_sensor_transform_.stamp_;
-//        ROS_INFO_STREAM("deltaT: " << timeElapsed << " s");
-//        double distanceMoved = sqrt(pow(past_to_current_sensor.getOrigin().getX(),2) + pow(past_to_current_sensor.getOrigin().getY(),2) + pow(past_to_current_sensor.getOrigin().getZ(),2));
-//        ROS_INFO_STREAM("deltaD: " << distanceMoved << " m");
-//        ROS_INFO_STREAM("Pose hint: " << lastPoseHint_.matrix);
 
         bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 
@@ -211,8 +189,6 @@ namespace kfusion
 
         ROS_INFO_STREAM("volPos (loaded): " << volPosX << ", " << volPosY << ", " << volPosZ);
         ROS_INFO_STREAM("translation: " << cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
-// problem's here somewhere????
-//        params.volume_pose = Affine3f().translate(Vec3f(volPosX, volPosY,volPosZ));
 
         params.volume_pose.translate(-params.volume_pose.translation());
         params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
@@ -265,14 +241,8 @@ namespace kfusion
         res.tsdf.pose.orientation.w = tfQuat.w();
         res.tsdf.data.resize(res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z, 0);
         ROS_INFO("About to download TSDF data...");
-        //uint32_t dataTemp[res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z];
-        //volume.data().download(dataTemp);
-
-        // res.tsdf.data is a vector<uint32>. Need to figure out how to assign a vector to it en masse.
-        //res.tsdf.data.assign(dataTemp);
         volume.data().download(res.tsdf.data.data());
         ROS_INFO("Just downloaded TSDF data");
-        // Problem is after this point. Looks like data downloads OK, but when message is sent during callback ROS stops it.
         return true;
     }
 
@@ -301,34 +271,14 @@ namespace kfusion
         res.tsdf.pose.orientation.z = tfQuat.z();
         res.tsdf.pose.orientation.w = tfQuat.w();
 
-        //res.tsdf.data.resize(res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z, 0);
-
 
         ROS_INFO("Making array to hold data...");
-        //uint32_t dataTemp[res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z];
-        //std::vector<uint32_t> dataTemp[res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z];
         std::vector<uint32_t> dataTemp;
         dataTemp.resize(res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z);
         ROS_INFO("About to download sparse TSDF data...");
-        //uint32_t dataOut[res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z];
         volume.data().download(dataTemp.data());
-//        std::fill(dataTemp, dataTemp + res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z, 0);
-//        dataTemp[0]=4209160;
-//        dataTemp[1]=4209160;
-//        dataTemp[32]=4209160;
-//        dataTemp[res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z - 32] = 4209160;
-        //volume.data().download(res.tsdf.data.data());
+
         ROS_INFO("Just downloaded TSDF data");
-
-
-        //Eigen::SparseMatrix<uint32_t> mat
-
-
-        //4209160
-
-        // Use 3D compressed row notation to convert the dense TSDF serialization to a sparse one.
-        //bool dataInCol = false;
-        //bool dataInSheet = false;
 
         std::vector<uint32_t> dataOut;
         std::vector<uint16_t> rows;
@@ -352,25 +302,9 @@ namespace kfusion
                 rows.push_back(i);
                 cols.push_back(j);
                 sheets.push_back(k);
-
-//                if (dataInCol == false){
-//                  // first data in column
-//                  // Add index of the row of the first element in this column
-//                  cols.push_back(rows.size()-1);
-//                }
-//                if (dataInCol == false) {
-//                  // first data in sheet
-//                  // Add index of the row of the first element in this sheet
-//                  sheets.push_back(rows.size()-1);
-//                }
-
-                //dataInCol = true;
-                //dataInSheet = true;
               }
             }
-            //dataInCol = false;
           }
-          //dataInSheet = false;
         }
 
         // Resize the arrays in the message to match the actual lengths of the vectors.
@@ -395,11 +329,6 @@ namespace kfusion
         res.tsdf.sheets.assign(itB, sheets.end());
         ROS_INFO("Created sparse TSDF structure");
 
-        //KinFuServer::TruncateTSDF(dataTemp, res.tsdf.num_voxels_x, res.tsdf.num_voxels_y, res.tsdf.num_voxels_z);
-
-        // res.tsdf.data is a vector<uint32>. Need to figure out how to assign a vector to it en masse.
-        //res.tsdf.data.assign(dataTemp);
-        //volume.data().download(res.tsdf.data.data());
         return true;
     }
 
@@ -408,106 +337,6 @@ namespace kfusion
       std::memcpy(&voxelWeight, ((char*)(&input)) + 2, 2);
       return true;
     }
-
-//    bool KinFuServer::TruncateTSDF(std::vector<uint32_t> &data, std::vector<uint32_t> &dataOut, std::vector<uint16_t> &rows, std::vector<uint16_t> &cols, std::vector<uint16_t> &sheets, int numVoxelsX, int numVoxelsY, int numVoxelsZ)
-//    {
-//      std::vector<uint32_t> dataOut;
-//      std::vector<uint16_t> rows;
-//      std::vector<uint16_t> cols;
-//      std::vector<uint16_t> sheets;
-
-//      bool dataInCol = false;
-//      bool dataInSheet = false;
-
-//      for (uint16_t k = 0; k < numVoxelsZ; k++) {
-//        for (uint16_t j = 0; j < numVoxelsY; j++) {
-//          for (uint16_t i = 0; i < numVoxelsX; i++) {
-//            uint32_t currentData = data[numVoxelsY*numVoxelsZ*k + numVoxelsY*j + i];
-//            half_float::half currentValue;
-//            //float currentValue;
-
-//            uint16_t currentWeight;
-
-//            GetTSDFData(currentData, currentValue, currentWeight);
-//  //          ROS_INFO_STREAM("Current weight: " << currentWeight);
-//            if (currentWeight > 0) {
-//              dataOut.push_back(currentData);
-//              rows.push_back(i);
-//              dataInCol = true;
-//              dataInSheet = true;
-//            }
-//          }
-//          if (dataInCol) {
-//            cols.push_back(j);
-//            dataInCol = false;
-//          }
-//        }
-//        if (dataInSheet) {
-//          sheets.push_back(k);
-//          dataInSheet = false;
-//        }
-//      }
-
-//      return true;
-//    }
-
-
-
-//    bool MakeTSDFData(uint32_t& output,  half_float::half voxelValue, uint16_t voxelWeight) {
-//      std::memcpy(((char*)(&output)), voxelValue, 2);
-//      std::memcpy(((char*)(&output)) + 2, voxelWeight, 2);
-//      return true;
-//    }
-
-    /*
-    bool KinFuServer::GetMesh(yak::GetMeshRequest& req, yak::GetMeshResponse& res)
-    {
-      ROS_INFO("Hit service callback");
-      //const kfusion::cuda::TsdfVolume& volume = kinfu_->tsdf();
-
-      // pcl::cuda is deprecated. Not sure if casting to pcl::gpu will work but it's worth a shot!
-      //const pcl::gpu::TsdfVolume& volume = (pcl::gpu::TsdfVolume&)(kinfu_->tsdf());
-      const kfusion::cuda::TsdfVolume& volume = kinfu_->tsdf();
-      ROS_INFO("Loaded TSDF volume");
-
-      int dim_x = volume.getDims().val[0];
-      int dim_y = volume.getDims().val[1];
-      int dim_z = volume.getDims().val[2];
-      ROS_INFO("Got existing volume dimensions");
-
-      const Eigen::Vector3i resolution(dim_x, dim_y, dim_z);
-      ROS_INFO("Created resolution vector");
-
-      const pcl::gpu::TsdfVolume volume_temp(resolution);
-      const pcl::gpu::TsdfVolume& pcl_volume = volume_temp;
-      ROS_INFO("Made a pcl tsdf volume");
-
-      // Want to intiialize triangles_buffer to be empty so MarchingCubes uses its default buffer.
-      pcl::gpu::DeviceArray<pcl::PointXYZ> triangles_buffer;
-      ROS_INFO("Initialized triangles buffer");
-      pcl::gpu::DeviceArray<pcl::PointXYZ>& buffer = triangles_buffer;
-      ROS_INFO("Setup buffer reference");
-
-      // Run marching cubes on the provided TSDF volume, with results output to the buffer.
-      // Throws some errors right now.
-      //run(const TsdfVolume& tsdf, DeviceArray<PointType>& triangles_buffer);
-
-      pcl::gpu::MarchingCubes cubes;
-      ROS_INFO("Initialized marching cubes");
-
-      //cubes.run(pcl_volume, buffer);
-      //ROS_INFO("Ran marching cubes on pcl tsdf volume");
-
-      cubes.run((pcl::gpu::TsdfVolume&)volume, buffer);
-      ROS_INFO("Ran marching cubes on kinfu tsdf volume");
-
-      res.value = true;
-      ROS_INFO("Done with service!");
-      return true;
-    }
-    */
-
-
 } /* namespace kfusion */
 
 

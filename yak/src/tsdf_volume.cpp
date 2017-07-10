@@ -129,9 +129,10 @@ void kfusion::cuda::TsdfVolume::clear()
     device::clear_volume(volume);
 }
 
-void kfusion::cuda::TsdfVolume::integrate(const Dists& dists, const Affine3f& camera_pose, const Intr& intr)
+void kfusion::cuda::TsdfVolume::integrate(const Dists& dists, const Affine3f& camera_motion_tform, const Intr& intr)
 {
-    Affine3f vol2cam = camera_pose.inv() * pose_;
+  // TODO: change this so instead of updating the pose estimate from measured sensor motion, vol2cam is set using the actual transform from the camera to the center of the volume
+    Affine3f vol2cam = camera_motion_tform.inv() * pose_;
     device::Projector proj(intr.fx, intr.fy, intr.cx, intr.cy);
 
     device::Vec3i dims = device_cast<device::Vec3i>(dims_);

@@ -44,7 +44,7 @@ namespace kfusion
 
                 virtual void clear();
                 virtual void applyAffine(const Affine3f& affine);
-                virtual void integrate(const Dists& dists, const Affine3f& camera_pose, const Intr& intr);
+                virtual void integrate(const Dists& dists, const Affine3f& camera_motion_tform, const Intr& intr);
                 virtual void raycast(const Affine3f& camera_pose, const Intr& intr, Depth& depth, Normals& normals);
                 virtual void raycast(const Affine3f& camera_pose, const Intr& intr, Cloud& points, Normals& normals);
 

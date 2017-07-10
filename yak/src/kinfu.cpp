@@ -214,14 +214,16 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
 
 //    Affine3f affine = Affine3f::Identity(); // cuur -> prev
     Affine3f affine = poseHint;
+    Affine3f affineCorrected;
     {
         //ScopeTime time("icp");
 #if defined USE_DEPTH
         bool ok = icp_->estimateTransform(affine, p.intr, curr_.depth_pyr, curr_.normals_pyr, prev_.depth_pyr, prev_.normals_pyr);
 #else
-
-//        bool ok = icp_->estimateTransform(affine, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
-        bool ok = true;
+    icp_->estimateTransform(affine, affineCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
+    affine = affineCorrected;
+//        bool ok = icp_->estimateTransform(affine, affineCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
+    bool ok = true;
 #endif
         if (!ok)
             return reset(), false;
