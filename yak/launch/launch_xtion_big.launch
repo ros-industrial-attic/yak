@@ -10,6 +10,10 @@
         <!-- The rosparams can be saved to a .yaml file. They're inlined here
              for convenience -->
         <rosparam>
+
+            use_icp: True
+            use_pose_hints: False
+
             # The node reports the transform between the fixed frame and
             # a given camera frame.
             fixed_frame: "/map"

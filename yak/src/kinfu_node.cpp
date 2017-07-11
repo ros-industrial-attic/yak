@@ -27,8 +27,9 @@ int main(int argc, char* argv[])
     camera.SubscribeRGB("/camera/rgb/image_rect_color");
     std::string fixedFrame = "/map";
     std::string cameraFrame = "/camera_depth_optical_frame";
-    node.param<std::string>("fixed_Frame", fixedFrame, "/map");
-    node.param<std::string>("camera_frame", cameraFrame, "/camera_depth_optical_frame");
+    //TODO: Setting the fixed and camera frames from here doesn't seem to do anything right now. Probably would be robust to pass in the names of the actual volume nad sensor frames...
+//    node.param<std::string>("fixed_Frame", fixedFrame, "/map");
+//    node.param<std::string>("camera_frame", cameraFrame, "/camera_depth_optical_frame");
     KinFuServer app(&camera, fixedFrame, cameraFrame);
     app.ExecuteBlocking();
 

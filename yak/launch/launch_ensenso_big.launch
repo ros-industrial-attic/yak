@@ -10,10 +10,13 @@
         <!-- The rosparams can be saved to a .yaml file. They're inlined here
              for convenience -->
         <rosparam>
+            use_icp: False
+            use_pose_hints: True
+
             # The node reports the transform between the fixed frame and
             # a given camera frame.
-            fixed_frame: "/map"
-            camera_frame: "/camera_depth_optical_frame"
+            fixed_frame: "/base_link"
+            camera_frame: "/ensenso_sensor_optical_frame"
 
             # The bilateral kernel smooths the depth image and 
             # filters out noise around the edges
@@ -80,8 +83,7 @@
             volume_pos_y: 0.5
             volume_pos_z: -1.0
 
-            use_icp: False
-            use_pose_hints: True
+
         </rosparam>
     </node>
 
