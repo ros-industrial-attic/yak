@@ -10,7 +10,6 @@
         <!-- The rosparams can be saved to a .yaml file. They're inlined here
              for convenience -->
         <rosparam>
-
             use_icp: True
             use_pose_hints: False
 

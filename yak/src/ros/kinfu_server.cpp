@@ -17,17 +17,14 @@ namespace kfusion
         get_tsdf_server_ = camera->nodeHandle.advertiseService("get_tsdf", &KinFuServer::GetTSDF,  this);
         get_sparse_tsdf_server_ = camera->nodeHandle.advertiseService("get_sparse_tsdf", &KinFuServer::GetSparseTSDF,  this);
 
+        // TODO: This gets called before the parameters are loaded, which is bad!
+        ROS_INFO_STREAM("Use pose hints set to " << use_pose_hints_);
         if (use_pose_hints_) {
-          tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
-          tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), previous_world_to_sensor_transform_);
+          tfListener_.waitForTransform(fixedFrame, camFrame, ros::Time::now(), ros::Duration(0.5));
+          tfListener_.lookupTransform(fixedFrame, camFrame, ros::Time(0), previous_world_to_sensor_transform_);
         }
 
         camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
-//        tfListener_.waitForTransform("volume_frame", "tool0", ros::Time::now(), ros::Duration(0.5));
-//        tfListener_.lookupTransform("volume_frame", "tool0", ros::Time(0), previous_world_to_sensor_transform_);
-//        tfListener_.waitForTransform("tool0", "base_link", ros::Time::now(), ros::Duration(0.5));
-//        tfListener_.lookupTransform("tool0", "base_link", ros::Time(0), previous_world_to_sensor_transform_);
-        //get_mesh_server_ = camera->nodeHandle.advertiseService("get_mesh", &KinFuServer::GetMesh, this);
     }
 
     void KinFuServer::PublishRaycastImage()
