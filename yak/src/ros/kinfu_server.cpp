@@ -17,6 +17,7 @@ namespace kfusion
         get_tsdf_server_ = camera->nodeHandle.advertiseService("get_tsdf", &KinFuServer::GetTSDF,  this);
         get_sparse_tsdf_server_ = camera->nodeHandle.advertiseService("get_sparse_tsdf", &KinFuServer::GetSparseTSDF,  this);
 
+        camera->nodeHandle.getParam("use_pose_hints", use_pose_hints_);
         // TODO: This gets called before the parameters are loaded, which is bad!
         ROS_INFO_STREAM("Use pose hints set to " << use_pose_hints_);
         if (use_pose_hints_) {
@@ -176,7 +177,6 @@ namespace kfusion
         params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
 
         LoadParam(params.use_icp, "use_icp");
-        LoadParam(use_pose_hints_, "use_pose_hints");
         params.use_pose_hints = use_pose_hints_;
 
         kinfu_ = KinFu::Ptr(new kfusion::KinFu(params));
