@@ -17,7 +17,9 @@ namespace kfusion
         get_tsdf_server_ = camera->nodeHandle.advertiseService("get_tsdf", &KinFuServer::GetTSDF,  this);
         get_sparse_tsdf_server_ = camera->nodeHandle.advertiseService("get_sparse_tsdf", &KinFuServer::GetSparseTSDF,  this);
 
-        camera->nodeHandle.getParam("use_pose_hints", use_pose_hints_);
+        if (!camera->nodeHandle.getParam("use_pose_hints", use_pose_hints_)) {
+          ROS_INFO("Failed to get use_pose_hints flag!");
+        }
         // TODO: This gets called before the parameters are loaded, which is bad!
         ROS_INFO_STREAM("Use pose hints set to " << use_pose_hints_);
         if (use_pose_hints_) {
