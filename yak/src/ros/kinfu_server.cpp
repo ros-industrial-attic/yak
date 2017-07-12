@@ -27,7 +27,7 @@ namespace kfusion
           tfListener_.lookupTransform(fixedFrame, camFrame, ros::Time(0), previous_world_to_sensor_transform_);
         }
 
-        camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
+//        camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
 
     }
 

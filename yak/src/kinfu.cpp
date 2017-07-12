@@ -216,6 +216,7 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
     // TODO: Make TF listener. Calculate affine transform between last pose and the new pose from TF. Pass this into estimateTransform and don't overwrite it with an identity matrix.
 
     Affine3f affine = Affine3f::Identity(); // cuur -> prev
+    Affine3f affineCorrected;
     if (params_.use_pose_hints) {
       affine = poseHint;
     }
@@ -227,7 +228,8 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
 #else
     bool ok = true;
     if (params_.use_icp) {
-        ok = icp_->estimateTransform(affine, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
+        ok =  icp_->estimateTransform(affine, affineCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
+        affine = affineCorrected;
     }
 
 #endif
