@@ -134,8 +134,7 @@ namespace kfusion
             tf::TransformBroadcaster tfBroadcaster_;
             tf::TransformListener tfListener_;
 
-            tf::Transform camera_to_tool0_;
-
+            //tf::Transform camera_to_tool0_;
 
             tf::StampedTransform current_world_to_sensor_transform_;
             tf::StampedTransform previous_world_to_sensor_transform_;
@@ -148,7 +147,6 @@ namespace kfusion
             ros::ServiceServer get_sparse_tsdf_server_;
 
             bool use_pose_hints_;
-            //ros::ServiceServer get_mesh_server_;
     };
 
 } /* namespace kfusion */

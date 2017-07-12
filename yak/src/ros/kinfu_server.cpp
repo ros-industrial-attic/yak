@@ -28,6 +28,7 @@ namespace kfusion
         }
 
         camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
+
     }
 
     void KinFuServer::PublishRaycastImage()
@@ -71,7 +72,6 @@ namespace kfusion
         } else {
           lastPoseHint_ = Affine3f::Identity();
         }
-
 
         bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 
@@ -263,6 +263,7 @@ namespace kfusion
         dataTemp.resize(res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z);
         ROS_INFO("About to download sparse TSDF data...");
         volume.data().download(dataTemp.data());
+
         ROS_INFO("Just downloaded TSDF data");
 
         std::vector<uint32_t> dataOut;
@@ -312,6 +313,7 @@ namespace kfusion
         itB = sheets.begin();
         res.tsdf.sheets.assign(itB, sheets.end());
         ROS_INFO("Created sparse TSDF structure");
+
         return true;
     }
 
