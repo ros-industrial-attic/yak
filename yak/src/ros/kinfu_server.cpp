@@ -17,15 +17,18 @@ namespace kfusion
         get_tsdf_server_ = camera->nodeHandle.advertiseService("get_tsdf", &KinFuServer::GetTSDF,  this);
         get_sparse_tsdf_server_ = camera->nodeHandle.advertiseService("get_sparse_tsdf", &KinFuServer::GetSparseTSDF,  this);
 
-        tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
-        tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), previous_world_to_sensor_transform_);
+        if (!camera->nodeHandle.getParam("use_pose_hints", use_pose_hints_)) {
+          ROS_INFO("Failed to get use_pose_hints flag!");
+        }
+        // TODO: This gets called before the parameters are loaded, which is bad!
+        ROS_INFO_STREAM("Use pose hints set to " << use_pose_hints_);
+        if (use_pose_hints_) {
+          tfListener_.waitForTransform(fixedFrame, camFrame, ros::Time::now(), ros::Duration(0.5));
+          tfListener_.lookupTransform(fixedFrame, camFrame, ros::Time(0), previous_world_to_sensor_transform_);
+        }
 
-//        camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
-//        tfListener_.waitForTransform("volume_frame", "tool0", ros::Time::now(), ros::Duration(0.5));
-//        tfListener_.lookupTransform("volume_frame", "tool0", ros::Time(0), previous_world_to_sensor_transform_);
-//        tfListener_.waitForTransform("tool0", "base_link", ros::Time::now(), ros::Duration(0.5));
-//        tfListener_.lookupTransform("tool0", "base_link", ros::Time(0), previous_world_to_sensor_transform_);
-        //get_mesh_server_ = camera->nodeHandle.advertiseService("get_mesh", &KinFuServer::GetMesh, this);
+        camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
+
     }
 
     void KinFuServer::PublishRaycastImage()
@@ -55,38 +58,20 @@ namespace kfusion
 
         //ensenso_sensor_optical_frame
         // Once we have a new image, find the transform between the poses where the current image and the previous image were captured.
-        tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
-        tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
+        if (use_pose_hints_) {
+          tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+          tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
+          ROS_INFO_STREAM("Sensor pose: " << current_world_to_sensor_transform_.getOrigin().getX() << ", " << current_world_to_sensor_transform_.getOrigin().getY() << ", " << current_world_to_sensor_transform_.getOrigin().getZ());
+          tf::Transform past_to_current_sensor = current_world_to_sensor_transform_.inverse() * previous_world_to_sensor_transform_;
+          Eigen::Affine3d lastPoseHintTemp;
+          tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
+          cv::Mat tempOut(4,4, CV_32F);
+          cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
 
-        ROS_INFO_STREAM("Sensor pose: " << current_world_to_sensor_transform_.getOrigin().getX() << ", " << current_world_to_sensor_transform_.getOrigin().getY() << ", " << current_world_to_sensor_transform_.getOrigin().getZ());
-
-        // Calculate the difference between the previous camera pose and the current camera pose
-        tf::Transform past_to_current_sensor = current_world_to_sensor_transform_.inverse() * previous_world_to_sensor_transform_;
-
-        // Existing method that works OK except for the Z-axis
-//        Eigen::Affine3d lastPoseHintTemp;
-//        tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
-//        cv::Mat tempOut(4,4, CV_32F);
-//        cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
-
-        // New kludgey way to put affine tform into same frame as voxel volume
-        tf::Transform past_to_current_flipped;
-        // Flip z-axis direction
-        //past_to_current_flipped = tf::Transform(past_to_current_sensor.getRotation(), tf::Vector3(past_to_current_sensor.getOrigin().getX(), past_to_current_sensor.getOrigin().getY(), -past_to_current_sensor.getOrigin().getZ()));
-        // Flip Z-axis direction and rotation
-        tf::Vector3 oldAxis = past_to_current_sensor.getRotation().getAxis();
-        tf::Vector3 newAxis(oldAxis.getX(), oldAxis.getY(), -oldAxis.getZ());
-        past_to_current_flipped = tf::Transform(tf::Quaternion(newAxis, past_to_current_sensor.getRotation().getAngle()), tf::Vector3(past_to_current_sensor.getOrigin().getX(), past_to_current_sensor.getOrigin().getY(), -past_to_current_sensor.getOrigin().getZ()));
-
-
-
-        Eigen::Affine3d lastPoseHintTemp;
-        tf::transformTFToEigen(past_to_current_flipped, lastPoseHintTemp);
-        cv::Mat tempOut(4,4, CV_32F);
-        cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
-
-
-        lastPoseHint_ = Affine3f(tempOut);
+          lastPoseHint_ = Affine3f(tempOut);
+        } else {
+          lastPoseHint_ = Affine3f::Identity();
+        }
 
         bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
 
@@ -193,6 +178,8 @@ namespace kfusion
         params.volume_pose.translate(-params.volume_pose.translation());
         params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
 
+        LoadParam(params.use_icp, "use_icp");
+        params.use_pose_hints = use_pose_hints_;
 
         kinfu_ = KinFu::Ptr(new kfusion::KinFu(params));
         return true;
@@ -271,7 +258,6 @@ namespace kfusion
         res.tsdf.pose.orientation.z = tfQuat.z();
         res.tsdf.pose.orientation.w = tfQuat.w();
 
-
         ROS_INFO("Making array to hold data...");
         std::vector<uint32_t> dataTemp;
         dataTemp.resize(res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z);
@@ -290,13 +276,12 @@ namespace kfusion
           for (uint16_t j = 0; j < res.tsdf.num_voxels_y; j++) {
             for (uint16_t k = 0; k < res.tsdf.num_voxels_z; k++) {
               // Get the contents of every element of the serialized TSDF volume.
-
               uint32_t currentData = dataTemp[res.tsdf.num_voxels_y*res.tsdf.num_voxels_z*k + res.tsdf.num_voxels_y*j + i];
               half_float::half currentValue;
               uint16_t currentWeight;
               KinFuServer::GetTSDFData(currentData, currentValue, currentWeight);
 
-              // If the weight is nonzero, save the data and row (X) coordinate and flag that the column (Y) and sheet (Z) also contain at least one value.
+              // If the weight is nonzero and voxel is within the TSDF distance, save its data and its coordinates.
               if (currentWeight > 0 && currentValue < 1) {
                 dataOut.push_back(currentData);
                 rows.push_back(i);

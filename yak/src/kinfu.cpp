@@ -45,6 +45,9 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     //p.light_pose = p.volume_pose.translation()/4; //meters
     p.light_pose = Vec3f::all(0.f); //meters
 
+    p.use_pose_hints = false;
+    p.use_icp = true;
+
     return p;
 }
 
@@ -212,18 +215,21 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
 
     // TODO: Make TF listener. Calculate affine transform between last pose and the new pose from TF. Pass this into estimateTransform and don't overwrite it with an identity matrix.
 
-//    Affine3f affine = Affine3f::Identity(); // cuur -> prev
-    Affine3f affine = poseHint;
-    Affine3f affineCorrected;
+    Affine3f affine = Affine3f::Identity(); // cuur -> prev
+    if (params_.use_pose_hints) {
+      affine = poseHint;
+    }
+
     {
         //ScopeTime time("icp");
 #if defined USE_DEPTH
         bool ok = icp_->estimateTransform(affine, p.intr, curr_.depth_pyr, curr_.normals_pyr, prev_.depth_pyr, prev_.normals_pyr);
 #else
-    icp_->estimateTransform(affine, affineCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
-    affine = affineCorrected;
-//        bool ok = icp_->estimateTransform(affine, affineCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
     bool ok = true;
+    if (params_.use_icp) {
+        ok = icp_->estimateTransform(affine, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
+    }
+
 #endif
         if (!ok)
             return reset(), false;

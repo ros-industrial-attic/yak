@@ -73,6 +73,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   visualization_msgs
   tf_conversions
+  interactive_markers
 )
 
 add_message_files(

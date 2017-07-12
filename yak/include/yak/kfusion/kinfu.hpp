@@ -50,6 +50,9 @@ namespace kfusion
 
             Vec3f light_pose; //meters
 
+            bool use_pose_hints;
+            bool use_icp;
+
     };
 
     class KF_EXPORTS KinFu

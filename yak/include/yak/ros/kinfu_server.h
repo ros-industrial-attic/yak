@@ -145,6 +145,8 @@ namespace kfusion
 
             ros::ServiceServer get_tsdf_server_;
             ros::ServiceServer get_sparse_tsdf_server_;
+
+            bool use_pose_hints_;
     };
 
 } /* namespace kfusion */

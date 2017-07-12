@@ -20,7 +20,7 @@
   <depend>visualization_msgs</depend>
   <depend>Eigen3</depend>
   <depend>tf_conversions</depend>
-
+  <depend>interactive_markers</depend>
 
 
 

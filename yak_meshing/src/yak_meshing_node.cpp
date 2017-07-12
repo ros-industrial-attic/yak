@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string.h>
 
 #include <half.hpp>
 
@@ -15,10 +16,6 @@
 #include <yak/GetTSDF.h>
 
 #include <yak/GetSparseTSDF.h>
-
-//#include <OpenEXR/half.h>
-
-
 #include <openvdb/openvdb.h>
 
 #include <openvdb/tools/VolumeToMesh.h>
@@ -26,11 +23,6 @@
 #include <openvdb/tools/MeshToVolume.h>
 #include <openvdb/tools/LevelSetSphere.h>
 #include <openvdb/util/Util.h>
-
-
-
-
-
 
 class GenerateMesh
 {
@@ -40,63 +32,13 @@ public:
     tsdf_client_ = nh.serviceClient<yak::GetTSDF>("/kinfu/get_tsdf");
     tsdf_sparse_client_ = nh.serviceClient<yak::GetSparseTSDF>("/kinfu/get_sparse_tsdf");
     mesh_server_ = nh.advertiseService("get_mesh", &GenerateMesh::GetMesh, this);
-   // mesh_server_ = nh.advertiseService("get_mesh", &GenerateMesh::GetMeshFromSparse, this);
-
-    grid = openvdb::FloatGrid::create(/*background value=*/1.0);
+    //grid_ = openvdb::FloatGrid::create(/*background value=*/1.0);
+    if (!nh.param<std::string>("/meshing/output_path", mesh_output_path_, "/home/jschornak/meshes")) {
+        ROS_INFO("Couldn't load output path parameter. Using default path.");
+    }
 
   }
 
-//  bool GetMesh(yak_meshing::GetMeshRequest& req, yak_meshing::GetMeshResponse& res) {
-//    ROS_INFO("Attempting to get TSDF");
-//    yak::GetTSDF srv;
-//    if (!tsdf_client_.call(srv))
-//    {
-//      ROS_ERROR("Couldn't get TSDF");
-//      return false;
-//    }
-
-//    int sizeX = srv.response.tsdf.size_x;
-
-//    ROS_INFO("Got TSDF");
-//    res.value = true;
-
-//    //TODO: Add mesh to service response.
-
-//    int size_x = srv.response.tsdf.size_x;
-//    int size_y = srv.response.tsdf.size_y;
-//    int size_z = srv.response.tsdf.size_z;
-
-//    int num_voxels_x = srv.response.tsdf.num_voxels_x;
-//    int num_voxels_y = srv.response.tsdf.num_voxels_y;
-//    int num_voxels_z = srv.response.tsdf.num_voxels_z;
-
-//    int length = num_voxels_x*num_voxels_y*num_voxels_y;
-
-//    std::vector<uint32_t> tsdf_data = srv.response.tsdf.data;
-
-//    ROS_INFO("Got volume info from TSDF");
-//    ROS_INFO_STREAM("Max weight: " << srv.response.tsdf.max_weight);
-
-//    //GenerateMesh::MakePointCloud(cloud, tsdf_data, size_x, size_y, size_z, num_voxels_x, num_voxels_y, num_voxels_z);
-//    ROS_INFO("Building voxel volume from serialized data...");
-//    GenerateMesh::MakeVoxelGrid(grid, tsdf_data, size_x, size_y, size_z, num_voxels_x, num_voxels_y, num_voxels_z);
-
-////    ROS_INFO("Making an example sphere...");
-////    GenerateMesh::MakeSphereVoxelGrid(grid);
-//    ROS_INFO("Done building volume");
-
-//    ROS_INFO("Meshing voxel volume...");
-//    openvdb::tools::VolumeToMesh mesher;
-//    mesher.operator()<openvdb::FloatGrid>( grid.operator*() );
-//    ROS_INFO("Done meshing volume");
-//    WriteMesh("/home/jschornak/clouds/mesh.obj", mesher);
-//    //WriteMesh("/home/jschornak/ros/tsdf_ws/src/kinfu_ros/meshes/mesh.obj", mesher);
-//    ROS_INFO("Saved .obj to file");
-
-//    return true;
-//  }
-
-  //GetMeshFromSparse
   bool GetMesh(yak_meshing::GetMeshRequest& req, yak_meshing::GetMeshResponse& res) {
     ROS_INFO("Attempting to get sparse TSDF");
     yak::GetSparseTSDF srv;
@@ -134,7 +76,7 @@ public:
     //GenerateMesh::MakePointCloud(cloud, tsdf_data, size_x, size_y, size_z, num_voxels_x, num_voxels_y, num_voxels_z);
     ROS_INFO("Building voxel volume from serialized sparse data...");
     //GenerateMesh::MakeVoxelGrid(grid, tsdf_data, size_x, size_y, size_z, num_voxels_x, num_voxels_y, num_voxels_z);
-    GenerateMesh::MakeVoxelGridFromSparse(grid, tsdf_data, row_data, col_data, sheet_data, size_x, size_y, size_z, num_voxels_x, num_voxels_y, num_voxels_z);
+    GenerateMesh::MakeVoxelGridFromSparse(grid_, tsdf_data, row_data, col_data, sheet_data, size_x, size_y, size_z, num_voxels_x, num_voxels_y, num_voxels_z);
 
 //    ROS_INFO("Making an example sphere...");
 //    GenerateMesh::MakeSphereVoxelGrid(grid);
@@ -142,11 +84,13 @@ public:
 
     ROS_INFO("Meshing voxel volume...");
     openvdb::tools::VolumeToMesh mesher;
-    mesher.operator()<openvdb::FloatGrid>( grid.operator*() );
+    mesher.operator()<openvdb::FloatGrid>( grid_.operator*() );
     ROS_INFO("Done meshing volume");
-    WriteMesh("/home/joe/meshes/new_mesh.obj", mesher);
-    //WriteMesh("/home/jschornak/ros/tsdf_ws/src/kinfu_ros/meshes/mesh.obj", mesher);
-    ROS_INFO("Saved .obj to file");
+    std::string path = mesh_output_path_ + "/new_mesh.obj";
+    ROS_INFO_STREAM("Saving .obj to file at " << path << " ...");
+    WriteMesh(path.c_str(), mesher);
+    //WriteMesh("/home/jschornak/meshes/new_mesh.obj", mesher);
+    ROS_INFO("Done saving!");
 
     return true;
   }
@@ -199,6 +143,9 @@ public:
     bool MakeVoxelGridFromSparse(openvdb::FloatGrid::Ptr& grid, std::vector<unsigned int>& data, std::vector<uint16_t>& rowIndex, std::vector<uint16_t>& colIndex, std::vector<uint16_t>& sheetIndex, float size_x, float size_y, float size_z, int res_x, int res_y, int res_z) {
       typedef typename openvdb::FloatGrid::ValueType ValueT;
 
+      // Initialize grid with background value corresponding to "outside" estimated surface to clear existing data
+      grid_ = openvdb::FloatGrid::create(/*background value=*/1.0);
+
       openvdb::FloatGrid::Accessor accessor = grid->getAccessor();
 
       float voxel_dim_x = (float)size_x/(float)res_x;
@@ -220,14 +167,10 @@ public:
         k = sheetIndex[a];
 
         uint32_t currentData = data[a];
-        //uint32_t currentData = data[res_y*res_z*k + res_y*j + i];
         half_float::half currentValue;
         uint16_t currentWeight;
-        //ROS_INFO("Getting TSDF data");
         GetTSDFData(currentData, currentValue, currentWeight);
         ValueT val = ValueT(currentValue);
-        //ROS_INFO("Setting OpenVBD voxel");
-        //ROS_INFO_STREAM((float)currentValue <<", " << currentWeight << ", " << "["<<i<<","<<j<<","<<k<<"]");
         accessor.setValue(ijk, val);
       }
       ROS_INFO("Scaling voxel volume");
@@ -239,7 +182,7 @@ public:
     bool MakeSphereVoxelGrid(openvdb::FloatGrid::Ptr& grid) {
       grid = openvdb::tools::createLevelSetSphere<openvdb::FloatGrid>(1.0, openvdb::Vec3f(0,0,0), /*voxel size=*/0.5, /*width=*/4.0);
     }
-    openvdb::FloatGrid::Ptr grid;
+    openvdb::FloatGrid::Ptr grid_;
 
 private:
   void WriteMesh(const char* filename,
@@ -276,13 +219,15 @@ private:
   ros::ServiceClient tsdf_sparse_client_;
   ros::ServiceServer mesh_server_;
 
+  std::string mesh_output_path_;
+
 };
 
 
 int main(int argc, char* argv[])
 {
     openvdb::initialize();
-    ros::init(argc, argv, "meshing_node");
+    ros::init(argc, argv, "yak_meshing_node");
     ros::NodeHandle nh;
 
     GenerateMesh app(nh);
