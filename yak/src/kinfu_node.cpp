@@ -6,8 +6,28 @@
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 #include <ros/kinfu_server.h>
+#include <interactive_markers/interactive_marker_server.h>
 
 using namespace kfusion;
+
+void volumeTFCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
+{
+  // Need to be able to access volume pose feedback from within KinfuServer
+  // publish as TF frame?
+    tf::TransformBroadcaster br;
+
+    tf::Quaternion orientation;
+    tf::quaternionMsgToTF(feedback->pose.orientation, orientation);
+    tf::Vector3 position;
+    tf::pointMsgToTF(feedback->pose.position, position);
+
+    tf::Transform transform(orientation, position);
+    tf::StampedTransform transformStamped(transform, ros::Time::now(), "base_link", "volume_pose");
+
+    br.sendTransform(transformStamped);
+
+    ROS_INFO_STREAM( feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z );
+}
 
 int main(int argc, char* argv[])
 {
@@ -30,8 +50,13 @@ int main(int argc, char* argv[])
     //TODO: Setting the fixed and camera frames from here doesn't seem to do anything right now. Probably would be robust to pass in the names of the actual volume nad sensor frames...
     node.param<std::string>("fixed_Frame", fixedFrame, "/map");
     node.param<std::string>("camera_frame", cameraFrame, "/camera_depth_optical_frame");
+
+    ros::Subscriber sub = node.subscribe("/volume_tf_broadcaster/feedback", 1000, volumeTFCallback);
+
     KinFuServer app(&camera, fixedFrame, cameraFrame);
     app.ExecuteBlocking();
+
+//    ros::spin();
 
     return 0;
 }

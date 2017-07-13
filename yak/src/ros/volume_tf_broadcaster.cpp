@@ -1,11 +1,12 @@
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <interactive_markers/interactive_marker_server.h>
+#include <interactive_markers/menu_handler.h>
 
 void processFeedback(
     const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
-  ROS_INFO_STREAM( feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z );
+//  ROS_INFO_STREAM( feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z );
 }
 
 int main(int argc, char** argv) {
@@ -16,14 +17,14 @@ int main(int argc, char** argv) {
   tf::Transform transform;
 
   // create an interactive marker server on the topic namespace simple_marker
-  interactive_markers::InteractiveMarkerServer server("joe_simple_marker");
+  interactive_markers::InteractiveMarkerServer server("volume_tf_broadcaster");
 
   // create an interactive marker for our server
   visualization_msgs::InteractiveMarker int_marker;
-  int_marker.header.frame_id = "volume_link";
+  int_marker.header.frame_id = "base_link";
   int_marker.header.stamp=ros::Time::now();
-  int_marker.name = "my_marker";
-  int_marker.description = "Simple 1-DOF Control";
+  int_marker.name = "volume_marker";
+  int_marker.description = "Voxel Volume Pose";
 
   // create a grey box marker
   visualization_msgs::Marker box_marker;
@@ -50,6 +51,40 @@ int main(int argc, char** argv) {
   visualization_msgs::InteractiveMarkerControl rotate_control;
   rotate_control.name = "move_x";
   rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  rotate_control.orientation_mode = visualization_msgs::InteractiveMarkerControl::FIXED;
+
+  rotate_control.orientation.w = 1;
+  rotate_control.orientation.x = 1;
+  rotate_control.orientation.y = 0;
+  rotate_control.orientation.z = 0;
+//  rotate_control.name = "rotate_x";
+//  rotate_control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+//  int_marker.controls.push_back(control);
+  rotate_control.name = "move_x";
+  rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(rotate_control);
+
+  rotate_control.orientation.w = 1;
+  rotate_control.orientation.x = 0;
+  rotate_control.orientation.y = 1;
+  rotate_control.orientation.z = 0;
+//  rotate_control.name = "rotate_z";
+//  rotate_control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+//  int_marker.controls.push_back(control);
+  rotate_control.name = "move_z";
+  rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(rotate_control);
+
+  rotate_control.orientation.w = 1;
+  rotate_control.orientation.x = 0;
+  rotate_control.orientation.y = 0;
+  rotate_control.orientation.z = 1;
+//  rotate_control.name = "rotate_y";
+//  rotate_control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+//  int_marker.controls.push_back(control);
+  rotate_control.name = "move_y";
+  rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(rotate_control);
 
   // add the control to the interactive marker
   int_marker.controls.push_back(rotate_control);
