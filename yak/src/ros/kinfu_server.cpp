@@ -44,6 +44,8 @@ namespace kfusion
         cv_bridge::CvImage image(header, std::string("rgba8"), viewHost_);
         raycastImgPublisher_.publish(image.toImageMsg());
     }
+
+
     
     void KinFuServer::Update()
     {
@@ -62,18 +64,27 @@ namespace kfusion
           tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
           tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
           ROS_INFO_STREAM("Sensor pose: " << current_world_to_sensor_transform_.getOrigin().getX() << ", " << current_world_to_sensor_transform_.getOrigin().getY() << ", " << current_world_to_sensor_transform_.getOrigin().getZ());
-          tf::Transform past_to_current_sensor = current_world_to_sensor_transform_.inverse() * previous_world_to_sensor_transform_;
-          Eigen::Affine3d lastPoseHintTemp;
-          tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
-          cv::Mat tempOut(4,4, CV_32F);
-          cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
 
-          lastPoseHint_ = Affine3f(tempOut);
+          tf::Transform past_to_current_sensor = current_world_to_sensor_transform_.inverse() * previous_world_to_sensor_transform_;
+          Eigen::Affine3d lastCameraMotionHintTemp;
+          tf::transformTFToEigen(past_to_current_sensor, lastCameraMotionHintTemp);
+          cv::Mat tempOut(4,4, CV_32F);
+          cv::eigen2cv(lastCameraMotionHintTemp.cast<float>().matrix(), tempOut);
+          lastCameraMotionHint_ = Affine3f(tempOut);
+
+          Eigen::Affine3d lastCameraPoseHintTemp;
+          tf::transformTFToEigen(current_world_to_sensor_transform_, lastCameraPoseHintTemp);
+          cv::Mat tempPoseOut(4,4, CV_32F);
+          cv::eigen2cv(lastCameraPoseHintTemp.cast<float>().matrix(), tempPoseOut);
+          lastCameraPoseHint_ = Affine3f(tempPoseOut);
+
+
+
         } else {
-          lastPoseHint_ = Affine3f::Identity();
+          lastCameraMotionHint_ = Affine3f::Identity();
         }
 
-        bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
+        bool has_image = KinFu(lastCameraMotionHint_, lastCameraPoseHint_, lastDepth_, lastColor_);
 
         if (has_image)
         {
@@ -106,10 +117,10 @@ namespace kfusion
         return true;
     }
 
-    bool KinFuServer::KinFu(const Affine3f& poseHint, const cv::Mat& depth, const cv::Mat& color)
+    bool KinFuServer::KinFu(const Affine3f& cameraMotionHint, const Affine3f& cameraPoseHint, const cv::Mat& depth, const cv::Mat& color)
     {
         depthDevice_.upload(depth.data, depth.step, depth.rows, depth.cols);
-        return(* kinfu_)(lastPoseHint_, depthDevice_);
+        return(* kinfu_)(cameraMotionHint, cameraPoseHint, depthDevice_);
     }
 
     bool KinFuServer::ConnectCamera()

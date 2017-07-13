@@ -169,7 +169,7 @@ kfusion::Affine3f kfusion::KinFu::getCameraPose(int time) const
     return poses_[time];
 }
 
-bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::Depth& depth, const kfusion::cuda::Image& /*image*/)
+bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3f& cameraPose, const kfusion::cuda::Depth& depth, const kfusion::cuda::Image& /*image*/)
 {
     const KinFuParams& p = params_;
     const int LEVELS = icp_->getUsedLevelsNum();
@@ -213,12 +213,13 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
     // If no transform is found (for one reason or another) a reset is triggered.
 
 
-    // TODO: Make TF listener. Calculate affine transform between last pose and the new pose from TF. Pass this into estimateTransform and don't overwrite it with an identity matrix.
+    // DONE: Make TF listener. Calculate affine transform between last pose and the new pose from TF. Pass this into estimateTransform and don't overwrite it with an identity matrix.
 
-    Affine3f affine = Affine3f::Identity(); // cuur -> prev
-    Affine3f affineCorrected;
+    Affine3f cameraMotion = Affine3f::Identity(); // cuur -> prev
+    Affine3f cameraMotionCorrected;
+    Affine3f cameraPoseCorrected = cameraPose;
     if (params_.use_pose_hints) {
-      affine = poseHint;
+      cameraMotion = inputCameraMotion;
     }
 
     {
@@ -228,8 +229,9 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
 #else
     bool ok = true;
     if (params_.use_icp) {
-        ok =  icp_->estimateTransform(affine, affineCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
-        affine = affineCorrected;
+        ok =  icp_->estimateTransform(cameraMotion, cameraMotionCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
+        cameraPoseCorrected = cameraPose * cameraMotion.inv() * cameraMotionCorrected;
+        cameraMotion = cameraMotionCorrected;
     }
 
 #endif
@@ -237,14 +239,21 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
             return reset(), false;
     }
 
-    poses_.push_back(poses_.back() * affine); // curr -> global
+
+    if (params_.use_pose_hints){
+        // Update pose with latest measured pose
+        poses_.push_back(cameraPoseCorrected);
+    } else {
+        // Update pose estimate using latest camera motion transform
+        poses_.push_back(poses_.back() * cameraMotion);
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
 
     // We do not integrate volume if camera does not move.
-    float rnorm = (float) cv::norm(affine.rvec());
-    float tnorm = (float) cv::norm(affine.translation());
+    float rnorm = (float) cv::norm(cameraMotion.rvec());
+    float tnorm = (float) cv::norm(cameraMotion.translation());
     bool integrate = (rnorm + tnorm) / 2 >= p.tsdf_min_camera_movement;
     if (integrate)
     {

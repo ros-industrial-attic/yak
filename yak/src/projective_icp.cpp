@@ -151,7 +151,7 @@ bool kfusion::cuda::ProjectiveICP::estimateTransform(Affine3f& affine, const Int
     StreamHelper& sh = *shelp_;
 
     device::ComputeIcpHelper helper(dist_thres_, angle_thres_);
-    affine = Affine3f::Identity();
+//    affine = Affine3f::Identity();
 
     for (int level_index = LEVELS - 1; level_index >= 0; --level_index)
     {
