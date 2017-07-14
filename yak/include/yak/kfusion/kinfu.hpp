@@ -73,7 +73,8 @@ namespace kfusion
             const cuda::ProjectiveICP& icp() const;
             cuda::ProjectiveICP& icp();
 
-            void reset();
+            void resetPose();
+            void resetVolume();
 
             bool operator()(const Affine3f& inputCameraMotion, const Affine3f& cameraPose, const cuda::Depth& depth, const cuda::Image& image = cuda::Image());
 

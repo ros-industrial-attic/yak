@@ -75,9 +75,9 @@
             volume_resolution: 0.001
 
             # The position of the topmost corner of the TSDF volume in meters
-            volume_pos_x: 1.5
-            volume_pos_y: 1.5
-            volume_pos_z: -1.0
+            volume_pos_x: 0.25
+            volume_pos_y: 0.25
+            volume_pos_z: -0.5
 
 <!--            output_path: "/home/jschornak/meshes"-->
 

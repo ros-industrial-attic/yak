@@ -69,8 +69,9 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
 
     // Set the metric dimensions of the volume using the voxel dimensions and the metric voxel resolution
     volume_->setSize(params_.volume_dims*params_.volume_resolution);
-    volume_->setPose(params_.volume_pose);
-    //ROS_INFO_STREAM("Volume pose: " << params_.volume_pose.matrix);
+//    volume_->setPose(params_.volume_pose);
+    volume_->setPose(Affine3f::Identity());
+    ROS_INFO_STREAM("Volume pose set to: " << volume_->getPose().matrix);
     volume_->setRaycastStepFactor(params_.raycast_step_factor);
     volume_->setGradientDeltaFactor(params_.gradient_delta_factor);
 
@@ -81,7 +82,10 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
     icp_->setIterationsNum(params_.icp_iter_num);
 
     allocate_buffers();
-    reset();
+    resetVolume();
+    // Need to reserve poses on start, else it crashes.
+    poses_.reserve(30000);
+    poses_.push_back(params_.volume_pose.matrix);
 }
 
 const kfusion::KinFuParams& kfusion::KinFu::params() const
@@ -151,22 +155,26 @@ void kfusion::KinFu::allocate_buffers()
     points_.create(params_.rows, params_.cols);
 }
 
-void kfusion::KinFu::reset()
+void kfusion::KinFu::resetPose()
 {
 
-    cout << "Reset" << endl;
+    cout << "Reset Pose" << endl;
 
-    frame_counter_ = 0;
+//    frame_counter_ = 0;
+
+    // TODO: Don't reset to initially-specified camera-relative pose if using a volume pose defined in a global context
     poses_.clear();
     poses_.reserve(30000);
-
-//    Affine3f thing = Affine3f::Identity();
-//    poses_.push_back(thing);
-//    cout << thing.matrix << endl;
-
     poses_.push_back(params_.volume_pose.matrix);
-    cout << params_.volume_pose.matrix << endl;
+    cout << "Resetting to: " << params_.volume_pose.matrix << endl;
 
+//    volume_->clear();
+}
+
+void kfusion::KinFu::resetVolume()
+{
+    frame_counter_ = 0;
+    cout << "Reset Volume" << endl;
     volume_->clear();
 }
 
@@ -244,7 +252,7 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
 
 #endif
         if (!ok)
-            return reset(), false;
+            return resetVolume(), resetPose(), false;
     }
 
 
@@ -259,9 +267,14 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
 
+    // This is the transform from the origin of the volume to the camera.
+    cout << "Newest pose is  " << poses_.back().matrix << endl;
+
     // We do not integrate volume if camera does not move.
+    // TODO: I don't really care about this that much
     float rnorm = (float) cv::norm(cameraMotion.rvec());
     float tnorm = (float) cv::norm(cameraMotion.translation());
+
     bool integrate = (rnorm + tnorm) / 2 >= p.tsdf_min_camera_movement;
     if (integrate)
     {
