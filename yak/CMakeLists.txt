@@ -86,6 +86,7 @@ add_service_files(
  FILES
  GetTSDF.srv
  GetSparseTSDF.srv
+ ResetVolume.srv
  #GetMesh.srv
 )
 
@@ -155,6 +156,9 @@ add_executable(kinfu_node
 add_executable(volume_tf_broadcaster
   src/ros/volume_tf_broadcaster.cpp)
 
+add_executable(volume_marker
+  src/ros/volume_marker.cpp)
+
 add_definitions(${PCL_DEFINITIONS})
 
 target_link_libraries(kinfu_node
@@ -168,8 +172,12 @@ target_link_libraries(kinfu_node
 target_link_libraries(volume_tf_broadcaster
  yak
  ${catkin_LIBRARIES}
- ${CUDA_LIBRARIES}
- ${CUDA_CUDA_LIBRARY}
+ ${OpenCV_LIBS}
+)
+
+target_link_libraries(volume_marker
+ yak
+ ${catkin_LIBRARIES}
  ${OpenCV_LIBS}
 )
 

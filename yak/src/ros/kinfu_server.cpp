@@ -17,6 +17,8 @@ namespace kfusion
         get_tsdf_server_ = camera->nodeHandle.advertiseService("get_tsdf", &KinFuServer::GetTSDF,  this);
         get_sparse_tsdf_server_ = camera->nodeHandle.advertiseService("get_sparse_tsdf", &KinFuServer::GetSparseTSDF,  this);
 
+//        reset_volume_server_ = camera->nodeHandle.advertiseService("get_mesh", &kinfu_.reset(), this);
+
         if (!camera->nodeHandle.getParam("use_pose_hints", use_pose_hints_)) {
           ROS_INFO("Failed to get use_pose_hints flag!");
         }

@@ -6,28 +6,73 @@
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 #include <ros/kinfu_server.h>
+
 #include <interactive_markers/interactive_marker_server.h>
+
+//#include <kinfu_node.hpp>
+
 
 using namespace kfusion;
 
-void volumeTFCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
-{
-  // Need to be able to access volume pose feedback from within KinfuServer
-  // publish as TF frame?
-    tf::TransformBroadcaster br;
+//class VolumePosePublisher {
+//  public:
+//    VolumePosePublisher(ros::NodeHandle& nh) {
+//        lastPose_ = tf::Transform(tf::Quaternion(0,0,0,1), tf::Vector3(0,0,0));
+//        subscriber_ = nh.subscribe("/volume_tf_broadcaster/feedback", 1000, &VolumePosePublisher::volumeTFCallback, this);
+//    }
 
-    tf::Quaternion orientation;
-    tf::quaternionMsgToTF(feedback->pose.orientation, orientation);
-    tf::Vector3 position;
-    tf::pointMsgToTF(feedback->pose.position, position);
+//    void volumeTFCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback)
+//    {
+//        // Update TF transform with new volume pose
+//        tf::Quaternion orientation;
+//        tf::quaternionMsgToTF(feedback->pose.orientation, orientation);
+//        tf::Vector3 position;
+//        tf::pointMsgToTF(feedback->pose.position, position);
+//        lastPose_ = tf::Transform(orientation, position);
 
-    tf::Transform transform(orientation, position);
-    tf::StampedTransform transformStamped(transform, ros::Time::now(), "base_link", "volume_pose");
+////        VolumePosePublisher::Update();
 
-    br.sendTransform(transformStamped);
+////        ROS_INFO_STREAM( feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z );
+//    }
 
-    ROS_INFO_STREAM( feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z );
-}
+//    void Update() {
+//      // Publish the most recent pose
+//      tf::StampedTransform transformStamped(lastPose_, ros::Time::now(), "base_link", "volume_pose");
+
+//      broadcaster_.sendTransform(transformStamped);
+//    }
+
+//    ros::Subscriber subscriber_;
+//    tf::TransformBroadcaster broadcaster_;
+//    tf::Transform lastPose_;
+//};
+
+
+//    VolumePosePublisher::VolumePosePublisher(ros::NodeHandle& nh) {
+//        lastPose_ = tf::Transform(tf::Quaternion(0,0,0,1), tf::Vector3(0,0,0));
+//        subscriber_ = nh.subscribe<visualization_msgs::InteractiveMarkerFeedbackConstPtr>("/volume_tf_broadcaster/feedback", 1000, &VolumePosePublisher::volumeTFCallback);
+//    }
+
+//    void  VolumePosePublisher::volumeTFCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
+//    {
+//        // Update TF transform with new volume pose
+//        tf::Quaternion orientation;
+//        tf::quaternionMsgToTF(feedback->pose.orientation, orientation);
+//        tf::Vector3 position;
+//        tf::pointMsgToTF(feedback->pose.position, position);
+//        lastPose_ = tf::Transform(orientation, position);
+
+//        ROS_INFO_STREAM( feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z );
+//    }
+
+//    void  VolumePosePublisher::Update() {
+//      // Publish the most recent pose
+//      tf::StampedTransform transformStamped(lastPose_, ros::Time::now(), "base_link", "volume_pose");
+
+//      broadcaster_.sendTransform(transformStamped);
+//    }
+
+
 
 int main(int argc, char* argv[])
 {
@@ -51,12 +96,21 @@ int main(int argc, char* argv[])
     node.param<std::string>("fixed_Frame", fixedFrame, "/map");
     node.param<std::string>("camera_frame", cameraFrame, "/camera_depth_optical_frame");
 
-    ros::Subscriber sub = node.subscribe("/volume_tf_broadcaster/feedback", 1000, volumeTFCallback);
+//    VolumePosePublisher vol(node);
+//    vol.subscriber_ = node.subscribe<visualization_msgs::InteractiveMarkerFeedbackConstPtr>("/volume_tf_broadcaster/feedback", 1000, &VolumePosePublisher::volumeTFCallback);
+
+
+//    ros::Subscriber subscriber = node.subscribe<visualization_msgs::InteractiveMarkerFeedbackConstPtr>("/volume_tf_broadcaster/feedback", 1000, &vol.volumeTFCallback);
 
     KinFuServer app(&camera, fixedFrame, cameraFrame);
     app.ExecuteBlocking();
 
-//    ros::spin();
+//    ros::Rate rate(10.);
+//    while(ros::ok())
+//    {
+//        vol.Update();
+//        rate.sleep();
+//    }
 
     return 0;
 }

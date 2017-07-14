@@ -29,6 +29,10 @@
 #include <yak/GetSparseTSDFRequest.h>
 #include <yak/GetSparseTSDFResponse.h>
 
+#include <yak/ResetVolume.h>
+#include <yak/ResetVolumeRequest.h>
+#include <yak/ResetVolumeResponse.h>
+
 /*
 #include <yak/GetMesh.h>
 #include <yak/GetMeshRequest.h>
@@ -146,6 +150,7 @@ namespace kfusion
 
             ros::ServiceServer get_tsdf_server_;
             ros::ServiceServer get_sparse_tsdf_server_;
+            ros::ServiceServer reset_volume_server_;
 
             bool use_pose_hints_;
     };

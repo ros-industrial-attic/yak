@@ -1,4 +1,5 @@
 <launch>
+     <node name="volume_marker" pkg="yak" type="volume_marker" output="screen"/>
      <node name="volume_tf_broadcaster" pkg="yak" type="volume_tf_broadcaster" output="screen"/>
     <!-- Remap the depth and color image topics to the ones output by the
          sensor of your choice -->
