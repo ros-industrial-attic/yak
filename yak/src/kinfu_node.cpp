@@ -9,70 +9,7 @@
 
 #include <interactive_markers/interactive_marker_server.h>
 
-//#include <kinfu_node.hpp>
-
-
 using namespace kfusion;
-
-//class VolumePosePublisher {
-//  public:
-//    VolumePosePublisher(ros::NodeHandle& nh) {
-//        lastPose_ = tf::Transform(tf::Quaternion(0,0,0,1), tf::Vector3(0,0,0));
-//        subscriber_ = nh.subscribe("/volume_tf_broadcaster/feedback", 1000, &VolumePosePublisher::volumeTFCallback, this);
-//    }
-
-//    void volumeTFCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback)
-//    {
-//        // Update TF transform with new volume pose
-//        tf::Quaternion orientation;
-//        tf::quaternionMsgToTF(feedback->pose.orientation, orientation);
-//        tf::Vector3 position;
-//        tf::pointMsgToTF(feedback->pose.position, position);
-//        lastPose_ = tf::Transform(orientation, position);
-
-////        VolumePosePublisher::Update();
-
-////        ROS_INFO_STREAM( feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z );
-//    }
-
-//    void Update() {
-//      // Publish the most recent pose
-//      tf::StampedTransform transformStamped(lastPose_, ros::Time::now(), "base_link", "volume_pose");
-
-//      broadcaster_.sendTransform(transformStamped);
-//    }
-
-//    ros::Subscriber subscriber_;
-//    tf::TransformBroadcaster broadcaster_;
-//    tf::Transform lastPose_;
-//};
-
-
-//    VolumePosePublisher::VolumePosePublisher(ros::NodeHandle& nh) {
-//        lastPose_ = tf::Transform(tf::Quaternion(0,0,0,1), tf::Vector3(0,0,0));
-//        subscriber_ = nh.subscribe<visualization_msgs::InteractiveMarkerFeedbackConstPtr>("/volume_tf_broadcaster/feedback", 1000, &VolumePosePublisher::volumeTFCallback);
-//    }
-
-//    void  VolumePosePublisher::volumeTFCallback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
-//    {
-//        // Update TF transform with new volume pose
-//        tf::Quaternion orientation;
-//        tf::quaternionMsgToTF(feedback->pose.orientation, orientation);
-//        tf::Vector3 position;
-//        tf::pointMsgToTF(feedback->pose.position, position);
-//        lastPose_ = tf::Transform(orientation, position);
-
-//        ROS_INFO_STREAM( feedback->marker_name << " is now at " << feedback->pose.position.x << ", " << feedback->pose.position.y << ", " << feedback->pose.position.z );
-//    }
-
-//    void  VolumePosePublisher::Update() {
-//      // Publish the most recent pose
-//      tf::StampedTransform transformStamped(lastPose_, ros::Time::now(), "base_link", "volume_pose");
-
-//      broadcaster_.sendTransform(transformStamped);
-//    }
-
-
 
 int main(int argc, char* argv[])
 {
@@ -104,13 +41,6 @@ int main(int argc, char* argv[])
 
     KinFuServer app(&camera, fixedFrame, cameraFrame);
     app.ExecuteBlocking();
-
-//    ros::Rate rate(10.);
-//    while(ros::ok())
-//    {
-//        vol.Update();
-//        rate.sleep();
-//    }
 
     return 0;
 }

@@ -167,12 +167,16 @@ namespace kfusion
         LoadParam(params.tsdf_max_weight, "tsdf_max_weight");
         LoadParam(params.tsdf_min_camera_movement, "tsdf_min_camera_movement");
         LoadParam(params.tsdf_trunc_dist, "tsdf_trunc_dist");
+
         LoadParam(params.volume_dims.val[0], "volume_dims_x");
         LoadParam(params.volume_dims.val[1], "volume_dims_y");
         LoadParam(params.volume_dims.val[2], "volume_dims_z");
-        LoadParam(params.volume_size.val[0], "volume_size_x");
-        LoadParam(params.volume_size.val[1], "volume_size_y");
-        LoadParam(params.volume_size.val[2], "volume_size_z");
+
+//        LoadParam(params.volume_size.val[0], "volume_size_x");
+//        LoadParam(params.volume_size.val[1], "volume_size_y");
+//        LoadParam(params.volume_size.val[2], "volume_size_z");
+        LoadParam(params.volume_resolution, "volume_resolution");
+
 
         float volPosX, volPosY, volPosZ;
         volPosX = params.volume_pose.translation().val[0];
@@ -185,7 +189,9 @@ namespace kfusion
         LoadParam(volPosY, "volume_pos_y");
         LoadParam(volPosZ, "volume_pos_z");
 
-        ROS_INFO_STREAM("volPos (loaded): " << volPosX << ", " << volPosY << ", " << volPosZ);
+        params.volume_pose.translation(Vec3f(volPosX, volPosY, volPosZ));
+
+        ROS_INFO_STREAM("volPos (loaded): " << params.volume_pose.translation().val[0] << ", " << params.volume_pose.translation().val[1] << ", " << params.volume_pose.translation().val[2]);
         ROS_INFO_STREAM("translation: " << cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
 
         params.volume_pose.translate(-params.volume_pose.translation());

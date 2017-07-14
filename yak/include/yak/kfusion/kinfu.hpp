@@ -29,7 +29,9 @@ namespace kfusion
             Intr intr;  //Camera intrinsic parameters
 
             Vec3i volume_dims; //number of voxels
-            Vec3f volume_size; //meters
+//            Vec3f volume_size; //meters
+            float volume_resolution; // meters per voxel
+
             Affine3f volume_pose; //meters, inital pose
 
             float bilateral_sigma_depth;   //meters

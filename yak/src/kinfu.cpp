@@ -23,8 +23,14 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     p.intr = Intr(525.f, 525.f, p.cols / 2 - 0.5f, p.rows / 2 - 0.5f);
 
     p.volume_dims = Vec3i::all(512);  //number of voxels
-    p.volume_size = Vec3f::all(3.f);  //meters
-    p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0] / 2, -p.volume_size[1] / 2, 0.5f));
+//    p.volume_size = Vec3f::all(3.f);  //meters
+    p.volume_resolution = 0.005859375;
+
+
+
+//    p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0] / 2, -p.volume_size[1] / 2, 0.5f));
+
+    p.volume_pose = Affine3f::Identity();
 
     p.bilateral_sigma_depth = 0.04f;  //meter
     p.bilateral_sigma_spatial = 4.5; //pixels
@@ -60,7 +66,9 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
 
     volume_->setTruncDist(params_.tsdf_trunc_dist);
     volume_->setMaxWeight(params_.tsdf_max_weight);
-    volume_->setSize(params_.volume_size);
+
+    // Set the metric dimensions of the volume using the voxel dimensions and the metric voxel resolution
+    volume_->setSize(params_.volume_dims*params_.volume_resolution);
     volume_->setPose(params_.volume_pose);
     //ROS_INFO_STREAM("Volume pose: " << params_.volume_pose.matrix);
     volume_->setRaycastStepFactor(params_.raycast_step_factor);
