@@ -11,7 +11,7 @@ class VolumePosePublisher {
     VolumePosePublisher(ros::NodeHandle& nh) {
 //        ROS_INFO("Started constructor");
         lastPose_ = tf::Transform(tf::Quaternion(0,0,0,1), tf::Vector3(0,0,0));
-        subscriber_ = nh.subscribe("/volume_marker/feedback", 1000, &VolumePosePublisher::volumeTFCallback, this);
+        subscriber_ = nh.subscribe("/volume_marker/feedback", 1, &VolumePosePublisher::volumeTFCallback, this);
 //        ROS_INFO("Finished constructor");
         VolumePosePublisher::Update();
     }
@@ -62,6 +62,7 @@ int main(int argc, char** argv) {
   while (ros::ok()) {
     vol.Update();
     rate.sleep();
+    ros::spinOnce();
   }
 
 //  ros::spin();

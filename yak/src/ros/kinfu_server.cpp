@@ -25,8 +25,8 @@ namespace kfusion
         // TODO: This gets called before the parameters are loaded, which is bad!
         ROS_INFO_STREAM("Use pose hints set to " << use_pose_hints_);
         if (use_pose_hints_) {
-          tfListener_.waitForTransform(fixedFrame, camFrame, ros::Time::now(), ros::Duration(0.5));
-          tfListener_.lookupTransform(fixedFrame, camFrame, ros::Time(0), previous_world_to_sensor_transform_);
+          tfListener_.waitForTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+          tfListener_.lookupTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time(0), previous_world_to_sensor_transform_);
         }
 
 //        camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
@@ -63,8 +63,8 @@ namespace kfusion
         //ensenso_sensor_optical_frame
         // Once we have a new image, find the transform between the poses where the current image and the previous image were captured.
         if (use_pose_hints_) {
-          tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
-          tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
+          tfListener_.waitForTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+          tfListener_.lookupTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
           ROS_INFO_STREAM("Sensor pose: " << current_world_to_sensor_transform_.getOrigin().getX() << ", " << current_world_to_sensor_transform_.getOrigin().getY() << ", " << current_world_to_sensor_transform_.getOrigin().getZ());
 
           tf::Transform past_to_current_sensor = current_world_to_sensor_transform_.inverse() * previous_world_to_sensor_transform_;
@@ -81,7 +81,7 @@ namespace kfusion
           lastCameraPoseHint_ = Affine3f(tempPoseOut);
 
 
-
+          ROS_INFO_STREAM("Last camera pose hint: " << lastCameraPoseHint_.matrix);
         } else {
           lastCameraMotionHint_ = Affine3f::Identity();
         }

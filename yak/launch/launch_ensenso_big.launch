@@ -1,4 +1,5 @@
 <launch>
+    <node name="volume_marker" pkg="yak" type="volume_marker" output="screen"/>
     <node name="volume_tf_broadcaster" pkg="yak" type="volume_tf_broadcaster" output="screen"/>
     <!-- Remap the depth and color image topics to the ones output by the
          sensor of your choice -->
@@ -15,8 +16,8 @@
 
             # The node reports the transform between the fixed frame and
             # a given camera frame.
-            fixed_frame: "/base_link"
-            camera_frame: "/ensenso_sensor_optical_frame"
+            fixed_frame: "/map"
+            camera_frame: "/camera_depth_optical_frame"
 
             # The bilateral kernel smooths the depth image and 
             # filters out noise around the edges
@@ -71,17 +72,19 @@
             volume_dims_y: 1024
             volume_dims_z: 1024
 
+            volume_resolution: 0.0005
+
 
             # The size of the TSDF volume in meters. The size of a voxel is 
             # volume_size / volume_dims
-            volume_size_x: 1.5
+<!--            volume_size_x: 1.5
             volume_size_y: 1.5
-            volume_size_z: 1.5
+            volume_size_z: 1.5-->
 
             # The position of the topmost corner of the TSDF volume in meters
-            volume_pos_x: 0.5
-            volume_pos_y: 0.5
-            volume_pos_z: -1.0
+            volume_pos_x: 0.25
+            volume_pos_y: 0.25
+            volume_pos_z: 0.0
 
 
         </rosparam>
