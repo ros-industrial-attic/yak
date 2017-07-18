@@ -59,11 +59,11 @@
             # Higher values result in smoother reconstructions, but less sharp
             # corners and edges. Lower values result in more accurate 
             # reconstructions, but too low and noise becomes a major issue.
-            tsdf_trunc_dist: 0.04
+            tsdf_trunc_dist: 0.01
 
             # The size of the TSDF volume in voxels
-            volume_dims_x: 512
-            volume_dims_y: 512
+            volume_dims_x: 128
+            volume_dims_y: 256
             volume_dims_z: 512
 
             # The size of the TSDF volume in meters. The size of a voxel is 
@@ -86,7 +86,7 @@
 
     <node name="meshing" pkg="yak_meshing" type="yak_meshing_node" output="screen">
         <rosparam>
-            output_path: "/home/jschornak/meshes"
+            output_path: "/home/joe/meshes"
         </rosparam>
     </node>
 </launch>

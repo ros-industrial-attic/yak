@@ -99,6 +99,19 @@ int main(int argc, char** argv) {
   // 'commit' changes and send to all clients
   server.applyChanges();
 
+  geometry_msgs::Pose defaultPose;
+  defaultPose.position.x = 0.75;
+  defaultPose.position.y = -0.3;
+  defaultPose.position.z = -0.25;
+  defaultPose.orientation.x = 0;
+  defaultPose.orientation.y = 0;
+  defaultPose.orientation.z = 0;
+  defaultPose.orientation.w = 1;
+
+//  ROS_INFO_STREAM("Pose: " << defaultPose);
+
+  server.setPose("my_marker", defaultPose);
+
 //  VolumePosePublisher vol(nh);
 
 //  ros::Rate rate(10.0);

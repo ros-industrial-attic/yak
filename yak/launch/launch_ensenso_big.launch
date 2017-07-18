@@ -1,6 +1,6 @@
 <launch>
-    <node name="volume_marker" pkg="yak" type="volume_marker" output="screen"/>
-    <node name="volume_tf_broadcaster" pkg="yak" type="volume_tf_broadcaster" output="screen"/>
+<!--    <node name="volume_marker" pkg="yak" type="volume_marker" output="screen"/>
+    <node name="volume_tf_broadcaster" pkg="yak" type="volume_tf_broadcaster" output="screen"/>-->
     <!-- Remap the depth and color image topics to the ones output by the
          sensor of your choice -->
     <remap from="/camera/depth/image_raw" to="/depth/image"/>
@@ -11,8 +11,10 @@
         <!-- The rosparams can be saved to a .yaml file. They're inlined here
              for convenience -->
         <rosparam>
-            use_icp: False
-            use_pose_hints: True
+<!--            use_icp: False
+            use_pose_hints: True-->
+            use_icp: True
+            use_pose_hints: False
 
             # The node reports the transform between the fixed frame and
             # a given camera frame.
@@ -28,12 +30,12 @@
             # These are parameters for the point-to-plane ICP. The
             # thresholds prevent ICP from converging to far away/inconsistent
             # data.
-<!--            icp_angle_thresh: 0.25
+            icp_angle_thresh: 0.25
             icp_dist_thresh: 0.05
-            icp_truncate_depth_dist: 0-->
-            icp_angle_thresh: 0.05
-            icp_dist_thresh: 0.005
             icp_truncate_depth_dist: 0
+<!--            icp_angle_thresh: 0.05
+            icp_dist_thresh: 0.005
+            icp_truncate_depth_dist: 0-->
 
             # ICP gets performed over an image pyramid of depth. These are the
             # number of iterations performed at each pyramid size.
@@ -62,13 +64,14 @@
             # Higher values result in smoother reconstructions, but less sharp
             # corners and edges. Lower values result in more accurate 
             # reconstructions, but too low and noise becomes a major issue.
-            tsdf_trunc_dist: 0.005
+<!--            tsdf_trunc_dist: 0.005-->
+            tsdf_trunc_dist: 0.015
 
             # The size of the TSDF volume in voxels
             #volume_dims_x: 704
             #volume_dims_y: 704
             #volume_dims_z: 704
-            volume_dims_x: 1024
+            volume_dims_x: 704
             volume_dims_y: 1024
             volume_dims_z: 1024
 
@@ -84,7 +87,7 @@
             # The position of the topmost corner of the TSDF volume in meters
             volume_pos_x: 0.25
             volume_pos_y: 0.25
-            volume_pos_z: 0.0
+            volume_pos_z: 0.1
 
 
         </rosparam>
