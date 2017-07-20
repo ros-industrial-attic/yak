@@ -305,6 +305,7 @@ namespace kfusion
         volume.data().download(dataTemp.data());
 
         ROS_INFO("Just downloaded TSDF data");
+        ROS_INFO_STREAM("Volume data is of length " << dataTemp.size());
         ROS_INFO_STREAM("Volume claims to have dimensions X=" << res.tsdf.num_voxels_x <<" ,Y=" << res.tsdf.num_voxels_y << " ,Z=" << res.tsdf.num_voxels_z);
 
         std::vector<uint32_t> dataOut;
@@ -318,7 +319,9 @@ namespace kfusion
             for (uint16_t k = 0; k < res.tsdf.num_voxels_z; k++) {
               // Get the contents of every element of the serialized TSDF volume.
               // TODO: Incorrectly indexes data when num_x != num_y != num_z
-              int dataIndex = res.tsdf.num_voxels_y*res.tsdf.num_voxels_z*i + res.tsdf.num_voxels_y*j + k;
+              int dataIndex = /*sheet index =*/res.tsdf.num_voxels_x*res.tsdf.num_voxels_y*k + /*column index within sheet =*/res.tsdf.num_voxels_x*j + /*row index within column =*/i;
+
+              //int dataIndex = /*sheet index =*/res.tsdf.num_voxels_y*res.tsdf.num_voxels_z*i + /*column index within sheet =*/res.tsdf.num_voxels_y*j + /*row index within column =*/k;
               uint32_t currentData = dataTemp[dataIndex];
               half_float::half currentValue;
               uint16_t currentWeight;
@@ -359,6 +362,7 @@ namespace kfusion
         itB = sheets.begin();
         res.tsdf.sheets.assign(itB, sheets.end());
         ROS_INFO("Created sparse TSDF structure");
+        ROS_INFO_STREAM("# Voxels: " << dataOut.size() << "  # Indices: " << rows.size() << " File size: " << (4*dataOut.size() + 2 * 3 * rows.size())/1000 << "kB");
 
         return true;
     }
