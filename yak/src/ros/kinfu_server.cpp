@@ -249,20 +249,44 @@ namespace kfusion
 
     bool KinFuServer::PublishTransform()
     {
-      // TODO: Relate baseFrame to actual frame of volume. It's not currently related to global-relative coordinates.
-        tf::StampedTransform currTf;
-        currTf.child_frame_id_ = cameraFrame_;
-        currTf.frame_id_ = baseFrame_;
-        currTf.stamp_ = ros::Time::now();
-        cv::Affine3f currPose = kinfu_->getCameraPose();
-        currTf.setOrigin(tf::Vector3(currPose.translation().val[0], currPose.translation().val[1], currPose.translation().val[2]));
-        cv::Affine3f::Mat3 rot = currPose.rotation();
-        tf::Matrix3x3 tfRot(rot.val[0], rot.val[1], rot.val[2], rot.val[3], rot.val[4], rot.val[5], rot.val[6], rot.val[7], rot.val[8]);
-        tf::Quaternion tfQuat;
-        tfRot.getRotation(tfQuat);
-        currTf.setRotation(tfQuat);
-        tfBroadcaster_.sendTransform(currTf);
-        return true;
+      // DONE-ISH: Relate baseFrame to actual frame of volume. It's not currently related to global-relative coordinates.
+//        tf::StampedTransform currTf;
+
+//        currTf.child_frame_id_ = cameraFrame_;
+//        currTf.frame_id_ = baseFrame_;
+//        currTf.stamp_ = ros::Time::now();
+//        cv::Affine3f currPose = kinfu_->getCameraPose();
+//        currTf.setOrigin(tf::Vector3(currPose.translation().val[0], currPose.translation().val[1], currPose.translation().val[2]));
+//        cv::Affine3f::Mat3 rot = currPose.rotation();
+//        tf::Matrix3x3 tfRot(rot.val[0], rot.val[1], rot.val[2], rot.val[3], rot.val[4], rot.val[5], rot.val[6], rot.val[7], rot.val[8]);
+//        tf::Quaternion tfQuat;
+
+//        tfRot.getRotation(tfQuat);
+//        currTf.setRotation(tfQuat);
+//        tfBroadcaster_.sendTransform(currTf);
+//        return true;
+
+      tf::Transform currTf;
+
+      cv::Affine3f currPose = kinfu_->getCameraPose();
+      currTf.setOrigin(tf::Vector3(currPose.translation().val[0], currPose.translation().val[1], currPose.translation().val[2]));
+      cv::Affine3f::Mat3 rot = currPose.rotation();
+      tf::Matrix3x3 tfRot(rot.val[0], rot.val[1], rot.val[2], rot.val[3], rot.val[4], rot.val[5], rot.val[6], rot.val[7], rot.val[8]);
+      tf::Quaternion tfQuat;
+
+      tfRot.getRotation(tfQuat);
+      currTf.setRotation(tfQuat);
+
+      tf::Transform temp(KinFuServer::SwitchToVolumeFrame(currTf));
+      tf::StampedTransform output;
+      output.setRotation(temp.getRotation());
+      output.setOrigin(temp.getOrigin());
+      output.child_frame_id_ = cameraFrame_;
+      output.frame_id_ = baseFrame_;
+      output.stamp_ = ros::Time::now();
+
+      tfBroadcaster_.sendTransform(output);
+      return true;
     }
 
     bool KinFuServer::GetTSDF(yak::GetTSDFRequest& req, yak::GetTSDFResponse& res)
