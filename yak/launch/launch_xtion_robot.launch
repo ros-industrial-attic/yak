@@ -1,6 +1,13 @@
 <launch>
+
+    <node name="map_to_volume_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 volume_pose map 100" output="screen"/>
+    <node name="world_to_base_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world_frame base_link 100" output="screen"/>
+
      <node name="volume_marker" pkg="yak" type="volume_marker" output="screen"/>
      <node name="volume_tf_broadcaster" pkg="yak" type="volume_tf_broadcaster" output="screen"/>
+
+
+
     <!-- Remap the depth and color image topics to the ones output by the
          sensor of your choice -->
      <remap from="/camera/depth/image_raw" to="/camera/depth/image_raw"/>
@@ -12,7 +19,7 @@
              for convenience -->
         <rosparam>
             use_icp: True
-            use_pose_hints: False
+            use_pose_hints: True
 
             # The node reports the transform between the fixed frame and
             # a given camera frame.

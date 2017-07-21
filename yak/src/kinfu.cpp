@@ -30,7 +30,7 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 
 //    p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0] / 2, -p.volume_size[1] / 2, 0.5f));
 
-    p.volume_pose = Affine3f::Identity();
+    p.volume_pose = Affine3f::Identity().translate(Vec3f(1,0,0));
 
     p.bilateral_sigma_depth = 0.04f;  //meter
     p.bilateral_sigma_spatial = 4.5; //pixels
@@ -249,7 +249,12 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     if (params_.use_icp) {
         ok =  icp_->estimateTransform(cameraMotion, cameraMotionCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
 //        cameraPoseCorrected = cameraPose * cameraMotion.inv() * cameraMotionCorrected;
-        cameraMotion = cameraMotionCorrected;
+        cameraPoseCorrected = cameraPose;
+//        cameraMotion = cameraMotionCorrected;
+    }
+    else {
+      cameraPoseCorrected = cameraPose;
+      cameraMotionCorrected = cameraMotion;
     }
 
 #endif
@@ -257,21 +262,21 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
             return resetVolume(), resetPose(), false;
     }
 
-    poses_.push_back(poses_.back() * cameraMotion);
-//    if (params_.use_pose_hints){
-//        // Update pose with latest measured pose
-//        cout << "Updating via pose" << endl;
-//        poses_.push_back(cameraPoseCorrected);
-//    } else {
-//        // Update pose estimate using latest camera motion transform
-//        poses_.push_back(poses_.back() * cameraMotion);
-//    }
+//    poses_.push_back(poses_.back() * cameraMotion);
+    if (params_.use_pose_hints){
+        // Update pose with latest measured pose
+        cout << "Updating via pose" << endl;
+        poses_.push_back(cameraPoseCorrected);
+    } else {
+        // Update pose estimate using latest camera motion transform
+        poses_.push_back(poses_.back() * cameraMotionCorrected);
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
 
     // This is the transform from the origin of the volume to the camera.
-//    cout << "Newest pose is  " << poses_.back().matrix << endl;
+    cout << "Newest pose is  " << poses_.back().matrix << endl;
 
     // We do not integrate volume if camera does not move.
     // TODO: I don't really care about this that much

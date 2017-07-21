@@ -125,6 +125,10 @@ namespace kfusion
 
              bool GetTSDFData(uint32_t input,  half_float::half& voxelValue, uint16_t& voxelWeight);
 
+             Affine3f TransformToAffine(tf::Transform input);
+
+             tf::Transform SwitchToVolumeFrame(tf::Transform input);
+
         protected:
             bool should_exit_;
             KinFu::Ptr kinfu_;
@@ -140,8 +144,8 @@ namespace kfusion
 
             //tf::Transform camera_to_tool0_;
 
-            tf::StampedTransform current_world_to_sensor_transform_;
-            tf::StampedTransform previous_world_to_sensor_transform_;
+            tf::StampedTransform current_volume_to_sensor_transform_;
+            tf::StampedTransform previous_volume_to_sensor_transform_;
 
             cv::Mat lastDepth_;
             cv::Mat lastColor_;
