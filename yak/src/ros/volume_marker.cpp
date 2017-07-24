@@ -57,9 +57,9 @@ int main(int argc, char** argv) {
   rotate_control.orientation.x = 1;
   rotate_control.orientation.y = 0;
   rotate_control.orientation.z = 0;
-  rotate_control.name = "rotate_x";
-  rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  int_marker.controls.push_back(rotate_control);
+//  rotate_control.name = "rotate_x";
+//  rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+//  int_marker.controls.push_back(rotate_control);
 
   rotate_control.name = "move_x";
   rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
@@ -70,9 +70,9 @@ int main(int argc, char** argv) {
   rotate_control.orientation.x = 0;
   rotate_control.orientation.y = 1;
   rotate_control.orientation.z = 0;
-  rotate_control.name = "rotate_z";
-  rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  int_marker.controls.push_back(rotate_control);
+//  rotate_control.name = "rotate_z";
+//  rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+//  int_marker.controls.push_back(rotate_control);
 
   rotate_control.name = "move_z";
   rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
@@ -83,9 +83,9 @@ int main(int argc, char** argv) {
   rotate_control.orientation.x = 0;
   rotate_control.orientation.y = 0;
   rotate_control.orientation.z = 1;
-  rotate_control.name = "rotate_y";
-  rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  int_marker.controls.push_back(rotate_control);
+//  rotate_control.name = "rotate_y";
+//  rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+//  int_marker.controls.push_back(rotate_control);
 
   rotate_control.name = "move_y";
   rotate_control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
