@@ -232,7 +232,8 @@ namespace kfusion
       currTf.setRotation(tfQuat);
 
 //      tf::Transform temp(KinFuServer::SwitchToVolumeFrame(currTf));
-      tf::Transform temp(currTf);
+//      tf::Transform temp(currTf);
+      tf::Transform temp = tf::Transform(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(3.14159)), tf::Vector3(0,0,0)) * currTf;
       tf::StampedTransform output;
       output.setRotation(temp.getRotation());
       output.setOrigin(temp.getOrigin());
