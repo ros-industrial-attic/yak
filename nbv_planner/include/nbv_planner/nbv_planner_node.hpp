@@ -10,6 +10,8 @@
 #include <octomap_msgs/conversions.h>
 
 #include <octomap/octomap.h>
+
+#include <octomap/math/Vector3.h>
 //#include <octomap/ColorOcTree.h>
 
 class NBVSolver {

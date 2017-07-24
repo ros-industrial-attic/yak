@@ -16,19 +16,31 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 
   ROS_INFO("Got octomap!");
 
+  octomap::AbstractOcTree* abstract_tree = octomap_msgs::fullMsgToMap(srv.response.map);
 
+  octomap::OcTree* my_map = (octomap::OcTree*)abstract_tree;
+  octomap::OcTree tree = *my_map;
 
-octomap::AbstractOcTree* abstract_tree = octomap_msgs::fullMsgToMap(srv.response.map);
+  int numLeaves = tree.calcNumNodes();
+  ROS_INFO_STREAM("Number of nodes: " << numLeaves);
 
-octomap::OcTree* my_map = (octomap::OcTree*)abstract_tree;
-octomap::OcTree tree = *my_map;
-
-//tree.
-
-//  for (octomap::OcTree::iterator it = tree->begin(16), end = tree->end(); it != end; ++it)
+//  for (octomap::OcTree::iterator it = tree.begin(), end = tree.end(); it != end; ++it)
 //  {
-//      ROS_INFO("Hit a leaf");
+//      ROS_INFO_STREAM("Hit a leaf: " << it.getCoordinate());
+
 //  }
+  octomath::Vector3 point;
+
+  octomath::Vector3 direction(-0.25,0.0,1.0);
+  if (tree.castRay(octomath::Vector3(0,0,0), direction, point)){
+    ROS_INFO_STREAM("Raycast hit something at " << point.x() << " , " << point.y() << " , " << point.z());
+  }
+
+
+
+  res.value = true;
+
+  abstract_tree->clear();
 
   return true;
 }
