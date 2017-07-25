@@ -53,6 +53,7 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 
     p.use_pose_hints = false;
     p.use_icp = true;
+    p.update_via_sensor_motion = true;
 
     return p;
 }
@@ -263,13 +264,15 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     }
 
 //    poses_.push_back(poses_.back() * cameraMotion);
-    if (params_.use_pose_hints){
+    if (params_.update_via_sensor_motion){
         // Update pose with latest measured pose
-        cout << "Updating via pose" << endl;
-        poses_.push_back(cameraPoseCorrected);
+        // TODO: Make this not put the estimated sensor pose in the wrong position relative to the global frame.
+        cout << "Updating via motion" << endl;
+        poses_.push_back(poses_.back() * cameraMotionCorrected);
     } else {
         // Update pose estimate using latest camera motion transform
-        poses_.push_back(poses_.back() * cameraMotionCorrected);
+        cout << "Updating via pose" << endl;
+        poses_.push_back(cameraPoseCorrected);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////

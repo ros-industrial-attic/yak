@@ -196,6 +196,7 @@ namespace kfusion
 
         LoadParam(params.use_icp, "use_icp");
         params.use_pose_hints = use_pose_hints_;
+        LoadParam(params.update_via_sensor_motion, "update_via_sensor_motion");
 
         kinfu_ = KinFu::Ptr(new kfusion::KinFu(params));
         return true;
