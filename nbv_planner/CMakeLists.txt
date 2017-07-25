@@ -14,10 +14,12 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  octomap_ros
+  pcl_ros
 )
 
 find_package(octomap REQUIRED)
-
+find_package(PCL 1.8 REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 

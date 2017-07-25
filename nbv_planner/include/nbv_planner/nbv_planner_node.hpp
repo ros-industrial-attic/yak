@@ -11,8 +11,20 @@
 
 #include <octomap/octomap.h>
 
+#include <octomap_ros/conversions.h>
+
 #include <octomap/math/Vector3.h>
 //#include <octomap/ColorOcTree.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/point_cloud2_iterator.h>
+
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl/pcl_base.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl_ros/transforms.h>
+#include <pcl_conversions/pcl_conversions.h>
+
 
 class NBVSolver {
   public:
@@ -29,6 +41,9 @@ class NBVSolver {
     ros::ServiceServer nbv_server_;
 
     ros::ServiceClient octomap_client_;
+
+    sensor_msgs::PointCloud2 unknown_leaf_cloud_;
+    ros::Publisher unknown_cloud_publisher_;
 
 //    octomap::OcTree octree_;
 
