@@ -20,15 +20,11 @@ namespace kfusion
         if (!camera->nodeHandle.getParam("use_pose_hints", use_pose_hints_)) {
           ROS_INFO("Failed to get use_pose_hints flag!");
         }
-        // TODO: This gets called before the parameters are loaded, which is bad!
         ROS_INFO_STREAM("Use pose hints set to " << use_pose_hints_);
         if (use_pose_hints_) {
-          tfListener_.waitForTransform(fixedFrame, camFrame, ros::Time::now(), ros::Duration(0.5));
-          tfListener_.lookupTransform(fixedFrame, camFrame, ros::Time(0), previous_world_to_sensor_transform_);
+          tfListener_.waitForTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+          tfListener_.lookupTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time(0), previous_volume_to_sensor_transform_);
         }
-
-//        camera_to_tool0_ = tf::Transform(tf::Quaternion(tf::Vector3(-0.000692506, 0.0018434, 0.999998), tfScalar(1.56401)), tf::Vector3(0.0496313, 0.0841327, -0.124254));
-
     }
 
     void KinFuServer::PublishRaycastImage()
@@ -44,6 +40,21 @@ namespace kfusion
         cv_bridge::CvImage image(header, std::string("rgba8"), viewHost_);
         raycastImgPublisher_.publish(image.toImageMsg());
     }
+
+    Affine3f KinFuServer::TransformToAffine(tf::Transform input) {
+      Eigen::Affine3d inputAsEigen;
+      tf::transformTFToEigen(input, inputAsEigen);
+      cv::Mat inputAsCV(4,4, CV_32F);
+      cv::eigen2cv(inputAsEigen.cast<float>().matrix(), inputAsCV);
+      return Affine3f(inputAsCV);
+    }
+
+    tf::Transform KinFuServer::SwitchToVolumeFrame(tf::Transform input) {
+      tf::Quaternion rotation = input.getRotation();
+      tf::Vector3 translation = input.getOrigin();
+      return tf::Transform(tf::Quaternion(-rotation.getX(), -rotation.getY(), rotation.getZ(), rotation.getW()), tf::Vector3(-translation.x(), -translation.y(), translation.z()));
+    }
+
     
     void KinFuServer::Update()
     {
@@ -59,26 +70,25 @@ namespace kfusion
         //ensenso_sensor_optical_frame
         // Once we have a new image, find the transform between the poses where the current image and the previous image were captured.
         if (use_pose_hints_) {
-          tfListener_.waitForTransform("base_link", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
-          tfListener_.lookupTransform("base_link", "ensenso_sensor_optical_frame", ros::Time(0), current_world_to_sensor_transform_);
-          ROS_INFO_STREAM("Sensor pose: " << current_world_to_sensor_transform_.getOrigin().getX() << ", " << current_world_to_sensor_transform_.getOrigin().getY() << ", " << current_world_to_sensor_transform_.getOrigin().getZ());
-          tf::Transform past_to_current_sensor = current_world_to_sensor_transform_.inverse() * previous_world_to_sensor_transform_;
-          Eigen::Affine3d lastPoseHintTemp;
-          tf::transformTFToEigen(past_to_current_sensor, lastPoseHintTemp);
-          cv::Mat tempOut(4,4, CV_32F);
-          cv::eigen2cv(lastPoseHintTemp.cast<float>().matrix(), tempOut);
+          tfListener_.waitForTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
+          tfListener_.lookupTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time(0), current_volume_to_sensor_transform_);
 
-          lastPoseHint_ = Affine3f(tempOut);
+          tf::Transform past_to_current_sensor = current_volume_to_sensor_transform_.inverse() * previous_volume_to_sensor_transform_;
+
+          lastCameraMotionHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(past_to_current_sensor));
+
+          lastCameraPoseHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(current_volume_to_sensor_transform_));
+
         } else {
-          lastPoseHint_ = Affine3f::Identity();
+          lastCameraMotionHint_ = Affine3f::Identity();
         }
 
-        bool has_image = KinFu(lastPoseHint_, lastDepth_, lastColor_);
+        bool has_image = KinFu(lastCameraMotionHint_, lastCameraPoseHint_, lastDepth_, lastColor_);
 
         if (has_image)
         {
             PublishRaycastImage();
-            previous_world_to_sensor_transform_ = current_world_to_sensor_transform_;
+            previous_volume_to_sensor_transform_ = current_volume_to_sensor_transform_;
         }
 
         PublishTransform();
@@ -106,10 +116,10 @@ namespace kfusion
         return true;
     }
 
-    bool KinFuServer::KinFu(const Affine3f& poseHint, const cv::Mat& depth, const cv::Mat& color)
+    bool KinFuServer::KinFu(const Affine3f& cameraMotionHint, const Affine3f& cameraPoseHint, const cv::Mat& depth, const cv::Mat& color)
     {
         depthDevice_.upload(depth.data, depth.step, depth.rows, depth.cols);
-        return(* kinfu_)(lastPoseHint_, depthDevice_);
+        return(* kinfu_)(cameraMotionHint, cameraPoseHint, depthDevice_);
     }
 
     bool KinFuServer::ConnectCamera()
@@ -154,12 +164,16 @@ namespace kfusion
         LoadParam(params.tsdf_max_weight, "tsdf_max_weight");
         LoadParam(params.tsdf_min_camera_movement, "tsdf_min_camera_movement");
         LoadParam(params.tsdf_trunc_dist, "tsdf_trunc_dist");
+
         LoadParam(params.volume_dims.val[0], "volume_dims_x");
         LoadParam(params.volume_dims.val[1], "volume_dims_y");
         LoadParam(params.volume_dims.val[2], "volume_dims_z");
-        LoadParam(params.volume_size.val[0], "volume_size_x");
-        LoadParam(params.volume_size.val[1], "volume_size_y");
-        LoadParam(params.volume_size.val[2], "volume_size_z");
+
+//        LoadParam(params.volume_size.val[0], "volume_size_x");
+//        LoadParam(params.volume_size.val[1], "volume_size_y");
+//        LoadParam(params.volume_size.val[2], "volume_size_z");
+        LoadParam(params.volume_resolution, "volume_resolution");
+
 
         float volPosX, volPosY, volPosZ;
         volPosX = params.volume_pose.translation().val[0];
@@ -172,7 +186,9 @@ namespace kfusion
         LoadParam(volPosY, "volume_pos_y");
         LoadParam(volPosZ, "volume_pos_z");
 
-        ROS_INFO_STREAM("volPos (loaded): " << volPosX << ", " << volPosY << ", " << volPosZ);
+        params.volume_pose.translation(Vec3f(volPosX, volPosY, volPosZ));
+
+        ROS_INFO_STREAM("volPos (loaded): " << params.volume_pose.translation().val[0] << ", " << params.volume_pose.translation().val[1] << ", " << params.volume_pose.translation().val[2]);
         ROS_INFO_STREAM("translation: " << cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
 
         params.volume_pose.translate(-params.volume_pose.translation());
@@ -187,19 +203,46 @@ namespace kfusion
 
     bool KinFuServer::PublishTransform()
     {
-        tf::StampedTransform currTf;
-        currTf.child_frame_id_ = cameraFrame_;
-        currTf.frame_id_ = baseFrame_;
-        currTf.stamp_ = ros::Time::now();
-        cv::Affine3f currPose = kinfu_->getCameraPose();
-        currTf.setOrigin(tf::Vector3(currPose.translation().val[0], currPose.translation().val[1], currPose.translation().val[2]));
-        cv::Affine3f::Mat3 rot = currPose.rotation();
-        tf::Matrix3x3 tfRot(rot.val[0], rot.val[1], rot.val[2], rot.val[3], rot.val[4], rot.val[5], rot.val[6], rot.val[7], rot.val[8]);
-        tf::Quaternion tfQuat;
-        tfRot.getRotation(tfQuat);
-        currTf.setRotation(tfQuat);
-        tfBroadcaster_.sendTransform(currTf);
-        return true;
+      // DONE-ISH: Relate baseFrame to actual frame of volume. It's not currently related to global-relative coordinates.
+//        tf::StampedTransform currTf;
+
+//        currTf.child_frame_id_ = cameraFrame_;
+//        currTf.frame_id_ = baseFrame_;
+//        currTf.stamp_ = ros::Time::now();
+//        cv::Affine3f currPose = kinfu_->getCameraPose();
+//        currTf.setOrigin(tf::Vector3(currPose.translation().val[0], currPose.translation().val[1], currPose.translation().val[2]));
+//        cv::Affine3f::Mat3 rot = currPose.rotation();
+//        tf::Matrix3x3 tfRot(rot.val[0], rot.val[1], rot.val[2], rot.val[3], rot.val[4], rot.val[5], rot.val[6], rot.val[7], rot.val[8]);
+//        tf::Quaternion tfQuat;
+
+//        tfRot.getRotation(tfQuat);
+//        currTf.setRotation(tfQuat);
+//        tfBroadcaster_.sendTransform(currTf);
+//        return true;
+
+      tf::Transform currTf;
+
+      cv::Affine3f currPose = kinfu_->getCameraPose();
+      currTf.setOrigin(tf::Vector3(currPose.translation().val[0], currPose.translation().val[1], currPose.translation().val[2]));
+      cv::Affine3f::Mat3 rot = currPose.rotation();
+      tf::Matrix3x3 tfRot(rot.val[0], rot.val[1], rot.val[2], rot.val[3], rot.val[4], rot.val[5], rot.val[6], rot.val[7], rot.val[8]);
+      tf::Quaternion tfQuat;
+
+      tfRot.getRotation(tfQuat);
+      currTf.setRotation(tfQuat);
+
+//      tf::Transform temp(KinFuServer::SwitchToVolumeFrame(currTf));
+//      tf::Transform temp(currTf);
+      tf::Transform temp = tf::Transform(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(3.14159)), tf::Vector3(0,0,0)) * currTf;
+      tf::StampedTransform output;
+      output.setRotation(temp.getRotation());
+      output.setOrigin(temp.getOrigin());
+      output.child_frame_id_ = cameraFrame_;
+      output.frame_id_ = baseFrame_;
+      output.stamp_ = ros::Time::now();
+
+      tfBroadcaster_.sendTransform(output);
+      return true;
     }
 
     bool KinFuServer::GetTSDF(yak::GetTSDFRequest& req, yak::GetTSDFResponse& res)
@@ -265,6 +308,8 @@ namespace kfusion
         volume.data().download(dataTemp.data());
 
         ROS_INFO("Just downloaded TSDF data");
+        ROS_INFO_STREAM("Volume data is of length " << dataTemp.size());
+        ROS_INFO_STREAM("Volume claims to have dimensions X=" << res.tsdf.num_voxels_x <<" ,Y=" << res.tsdf.num_voxels_y << " ,Z=" << res.tsdf.num_voxels_z);
 
         std::vector<uint32_t> dataOut;
         std::vector<uint16_t> rows;
@@ -276,7 +321,8 @@ namespace kfusion
           for (uint16_t j = 0; j < res.tsdf.num_voxels_y; j++) {
             for (uint16_t k = 0; k < res.tsdf.num_voxels_z; k++) {
               // Get the contents of every element of the serialized TSDF volume.
-              uint32_t currentData = dataTemp[res.tsdf.num_voxels_y*res.tsdf.num_voxels_z*k + res.tsdf.num_voxels_y*j + i];
+              int dataIndex = /*sheet index =*/res.tsdf.num_voxels_x*res.tsdf.num_voxels_y*k + /*column index within sheet =*/res.tsdf.num_voxels_x*j + /*row index within column =*/i;
+              uint32_t currentData = dataTemp[dataIndex];
               half_float::half currentValue;
               uint16_t currentWeight;
               KinFuServer::GetTSDFData(currentData, currentValue, currentWeight);
@@ -313,6 +359,7 @@ namespace kfusion
         itB = sheets.begin();
         res.tsdf.sheets.assign(itB, sheets.end());
         ROS_INFO("Created sparse TSDF structure");
+        ROS_INFO_STREAM("# Voxels: " << dataOut.size() << "  # Indices: " << rows.size() << " Message size: " << (4*dataOut.size() + 2 * 3 * rows.size())/1000 << "ish kB");
 
         return true;
     }

@@ -29,7 +29,9 @@ namespace kfusion
             Intr intr;  //Camera intrinsic parameters
 
             Vec3i volume_dims; //number of voxels
-            Vec3f volume_size; //meters
+//            Vec3f volume_size; //meters
+            float volume_resolution; // meters per voxel
+
             Affine3f volume_pose; //meters, inital pose
 
             float bilateral_sigma_depth;   //meters
@@ -71,9 +73,10 @@ namespace kfusion
             const cuda::ProjectiveICP& icp() const;
             cuda::ProjectiveICP& icp();
 
-            void reset();
+            void resetPose();
+            void resetVolume();
 
-            bool operator()(const Affine3f& poseHint, const cuda::Depth& depth, const cuda::Image& image = cuda::Image());
+            bool operator()(const Affine3f& inputCameraMotion, const Affine3f& cameraPose, const cuda::Depth& depth, const cuda::Image& image = cuda::Image());
 
             void renderImage(cuda::Image& image, int flags = 0);
             void renderImage(cuda::Image& image, const Affine3f& pose, int flags = 0);

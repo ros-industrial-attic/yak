@@ -29,6 +29,10 @@
 #include <yak/GetSparseTSDFRequest.h>
 #include <yak/GetSparseTSDFResponse.h>
 
+#include <yak/ResetVolume.h>
+#include <yak/ResetVolumeRequest.h>
+#include <yak/ResetVolumeResponse.h>
+
 /*
 #include <yak/GetMesh.h>
 #include <yak/GetMeshRequest.h>
@@ -96,7 +100,7 @@ namespace kfusion
             // Publishes the current camera transform.
             bool PublishTransform();
             // Does a single KinFu step given a depth and (optional) color image.
-            bool KinFu(const Affine3f& poseHint, const cv::Mat& depth, const cv::Mat& color);
+            bool KinFu(const Affine3f& motionHint, const Affine3f& poseHint, const cv::Mat& depth, const cv::Mat& color);
 
              inline bool ShouldExit() const { return should_exit_; }
              inline void SetExit(bool value) { should_exit_ = value; }
@@ -121,6 +125,10 @@ namespace kfusion
 
              bool GetTSDFData(uint32_t input,  half_float::half& voxelValue, uint16_t& voxelWeight);
 
+             Affine3f TransformToAffine(tf::Transform input);
+
+             tf::Transform SwitchToVolumeFrame(tf::Transform input);
+
         protected:
             bool should_exit_;
             KinFu::Ptr kinfu_;
@@ -136,15 +144,17 @@ namespace kfusion
 
             //tf::Transform camera_to_tool0_;
 
-            tf::StampedTransform current_world_to_sensor_transform_;
-            tf::StampedTransform previous_world_to_sensor_transform_;
+            tf::StampedTransform current_volume_to_sensor_transform_;
+            tf::StampedTransform previous_volume_to_sensor_transform_;
 
             cv::Mat lastDepth_;
             cv::Mat lastColor_;
-            Affine3f lastPoseHint_;
+            Affine3f lastCameraMotionHint_;
+            Affine3f lastCameraPoseHint_;
 
             ros::ServiceServer get_tsdf_server_;
             ros::ServiceServer get_sparse_tsdf_server_;
+            ros::ServiceServer reset_volume_server_;
 
             bool use_pose_hints_;
     };

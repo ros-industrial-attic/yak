@@ -7,6 +7,8 @@
 #include <tf/transform_broadcaster.h>
 #include <ros/kinfu_server.h>
 
+#include <interactive_markers/interactive_marker_server.h>
+
 using namespace kfusion;
 
 int main(int argc, char* argv[])
@@ -25,11 +27,13 @@ int main(int argc, char* argv[])
     RosRGBDCamera camera(node);
     camera.SubscribeDepth("/camera/depth/image_raw");
     camera.SubscribeRGB("/camera/rgb/image_rect_color");
-    std::string fixedFrame = "/map";
-    std::string cameraFrame = "/camera_depth_optical_frame";
-    //TODO: Setting the fixed and camera frames from here doesn't seem to do anything right now. Probably would be robust to pass in the names of the actual volume nad sensor frames...
-    node.param<std::string>("fixed_Frame", fixedFrame, "/map");
+    std::string fixedFrame;
+    std::string cameraFrame;
+
+    node.param<std::string>("fixed_frame", fixedFrame, "/map");
     node.param<std::string>("camera_frame", cameraFrame, "/camera_depth_optical_frame");
+    ROS_INFO_STREAM("Fixed frame: " + fixedFrame + " Camera frame: " + cameraFrame);
+
     KinFuServer app(&camera, fixedFrame, cameraFrame);
     app.ExecuteBlocking();
 

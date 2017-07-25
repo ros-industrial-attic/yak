@@ -23,8 +23,14 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     p.intr = Intr(525.f, 525.f, p.cols / 2 - 0.5f, p.rows / 2 - 0.5f);
 
     p.volume_dims = Vec3i::all(512);  //number of voxels
-    p.volume_size = Vec3f::all(3.f);  //meters
-    p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0] / 2, -p.volume_size[1] / 2, 0.5f));
+//    p.volume_size = Vec3f::all(3.f);  //meters
+    p.volume_resolution = 0.005859375;
+
+
+
+//    p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0] / 2, -p.volume_size[1] / 2, 0.5f));
+
+    p.volume_pose = Affine3f::Identity().translate(Vec3f(1,0,0));
 
     p.bilateral_sigma_depth = 0.04f;  //meter
     p.bilateral_sigma_spatial = 4.5; //pixels
@@ -60,9 +66,14 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
 
     volume_->setTruncDist(params_.tsdf_trunc_dist);
     volume_->setMaxWeight(params_.tsdf_max_weight);
-    volume_->setSize(params_.volume_size);
-    volume_->setPose(params_.volume_pose);
-    //ROS_INFO_STREAM("Volume pose: " << params_.volume_pose.matrix);
+
+    // Set the metric dimensions of the volume using the voxel dimensions and the metric voxel resolution
+    Vec3f volumeSize(params_.volume_dims[0]*params_.volume_resolution, params_.volume_dims[1]*params_.volume_resolution, params_.volume_dims[2]*params_.volume_resolution);
+    volume_->setSize(volumeSize);
+    ROS_INFO_STREAM("Volume size set to: " << volume_->getSize());
+//    volume_->setPose(params_.volume_pose);
+    volume_->setPose(Affine3f::Identity());
+    ROS_INFO_STREAM("Volume pose set to: " << volume_->getPose().matrix);
     volume_->setRaycastStepFactor(params_.raycast_step_factor);
     volume_->setGradientDeltaFactor(params_.gradient_delta_factor);
 
@@ -73,7 +84,10 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
     icp_->setIterationsNum(params_.icp_iter_num);
 
     allocate_buffers();
-    reset();
+    resetVolume();
+    // Need to reserve poses on start, else it crashes.
+    poses_.reserve(30000);
+    poses_.push_back(params_.volume_pose.matrix);
 }
 
 const kfusion::KinFuParams& kfusion::KinFu::params() const
@@ -143,22 +157,26 @@ void kfusion::KinFu::allocate_buffers()
     points_.create(params_.rows, params_.cols);
 }
 
-void kfusion::KinFu::reset()
+void kfusion::KinFu::resetPose()
 {
 
-    cout << "Reset" << endl;
+    cout << "Reset Pose" << endl;
 
-    frame_counter_ = 0;
+//    frame_counter_ = 0;
+
+    // TODO: Don't reset to initially-specified camera-relative pose if using a volume pose defined in a global context
     poses_.clear();
     poses_.reserve(30000);
-
-//    Affine3f thing = Affine3f::Identity();
-//    poses_.push_back(thing);
-//    cout << thing.matrix << endl;
-
     poses_.push_back(params_.volume_pose.matrix);
-    cout << params_.volume_pose.matrix << endl;
+    cout << "Resetting to: " << params_.volume_pose.matrix << endl;
 
+//    volume_->clear();
+}
+
+void kfusion::KinFu::resetVolume()
+{
+    frame_counter_ = 0;
+    cout << "Reset Volume" << endl;
     volume_->clear();
 }
 
@@ -169,7 +187,7 @@ kfusion::Affine3f kfusion::KinFu::getCameraPose(int time) const
     return poses_[time];
 }
 
-bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::Depth& depth, const kfusion::cuda::Image& /*image*/)
+bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3f& cameraPose, const kfusion::cuda::Depth& depth, const kfusion::cuda::Image& /*image*/)
 {
     const KinFuParams& p = params_;
     const int LEVELS = icp_->getUsedLevelsNum();
@@ -213,12 +231,13 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
     // If no transform is found (for one reason or another) a reset is triggered.
 
 
-    // TODO: Make TF listener. Calculate affine transform between last pose and the new pose from TF. Pass this into estimateTransform and don't overwrite it with an identity matrix.
+    // DONE: Make TF listener. Calculate affine transform between last pose and the new pose from TF. Pass this into estimateTransform and don't overwrite it with an identity matrix.
 
-    Affine3f affine = Affine3f::Identity(); // cuur -> prev
-    Affine3f affineCorrected;
+    Affine3f cameraMotion = Affine3f::Identity(); // cuur -> prev
+    Affine3f cameraMotionCorrected;
+    Affine3f cameraPoseCorrected = cameraPose;
     if (params_.use_pose_hints) {
-      affine = poseHint;
+      cameraMotion = inputCameraMotion;
     }
 
     {
@@ -228,23 +247,42 @@ bool kfusion::KinFu::operator()(const Affine3f& poseHint, const kfusion::cuda::D
 #else
     bool ok = true;
     if (params_.use_icp) {
-        ok =  icp_->estimateTransform(affine, affineCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
-        affine = affineCorrected;
+        ok =  icp_->estimateTransform(cameraMotion, cameraMotionCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
+//        cameraPoseCorrected = cameraPose * cameraMotion.inv() * cameraMotionCorrected;
+        cameraPoseCorrected = cameraPose;
+//        cameraMotion = cameraMotionCorrected;
+    }
+    else {
+      cameraPoseCorrected = cameraPose;
+      cameraMotionCorrected = cameraMotion;
     }
 
 #endif
         if (!ok)
-            return reset(), false;
+            return resetVolume(), resetPose(), false;
     }
 
-    poses_.push_back(poses_.back() * affine); // curr -> global
+//    poses_.push_back(poses_.back() * cameraMotion);
+    if (params_.use_pose_hints){
+        // Update pose with latest measured pose
+        cout << "Updating via pose" << endl;
+        poses_.push_back(cameraPoseCorrected);
+    } else {
+        // Update pose estimate using latest camera motion transform
+        poses_.push_back(poses_.back() * cameraMotionCorrected);
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
 
+    // This is the transform from the origin of the volume to the camera.
+    cout << "Newest pose is  " << poses_.back().matrix << endl;
+
     // We do not integrate volume if camera does not move.
-    float rnorm = (float) cv::norm(affine.rvec());
-    float tnorm = (float) cv::norm(affine.translation());
+    // TODO: I don't really care about this that much
+    float rnorm = (float) cv::norm(cameraMotion.rvec());
+    float tnorm = (float) cv::norm(cameraMotion.translation());
+
     bool integrate = (rnorm + tnorm) / 2 >= p.tsdf_min_camera_movement;
     if (integrate)
     {

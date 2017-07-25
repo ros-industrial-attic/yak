@@ -132,6 +132,7 @@ void kfusion::cuda::TsdfVolume::clear()
 void kfusion::cuda::TsdfVolume::integrate(const Dists& dists, const Affine3f& camera_motion_tform, const Intr& intr)
 {
   // TODO: change this so instead of updating the pose estimate from measured sensor motion, vol2cam is set using the actual transform from the camera to the center of the volume
+   // What does this even do, exactly? As written it's calculating the new transform from the frame of the volume to the frame of the camera after applying the motion of the most recent measurement.
     Affine3f vol2cam = camera_motion_tform.inv() * pose_;
     device::Projector proj(intr.fx, intr.fy, intr.cx, intr.cy);
 

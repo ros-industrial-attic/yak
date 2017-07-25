@@ -33,7 +33,7 @@ public:
     tsdf_sparse_client_ = nh.serviceClient<yak::GetSparseTSDF>("/kinfu/get_sparse_tsdf");
     mesh_server_ = nh.advertiseService("get_mesh", &GenerateMesh::GetMesh, this);
     //grid_ = openvdb::FloatGrid::create(/*background value=*/1.0);
-    if (!nh.param<std::string>("/meshing/output_path", mesh_output_path_, "/home/jschornak/meshes")) {
+    if (!nh.param<std::string>("/meshing/output_path", mesh_output_path_, "/home/joe/meshes")) {
         ROS_INFO("Couldn't load output path parameter. Using default path.");
     }
 
