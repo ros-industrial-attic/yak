@@ -31,7 +31,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 
   octomath::Vector3 boundMin(-0.3, -0.5, 0.1);
   octomath::Vector3 boundMax(0.2, 0.0, 0.5);
-  tree.getUnknownLeafCenters(unknownLeafs, boundMin, boundMax, 15);
+  tree.getUnknownLeafCenters(unknownLeafs, boundMin, boundMax, 16);
   ROS_INFO_STREAM("Number of unknown leaves: " << unknownLeafs.size());
 
   octomath::Vector3 first = unknownLeafs.front();
@@ -49,37 +49,6 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   sensor_msgs::PointCloud2 unknownLeafCloud;
   pcl::toROSMsg(pclCloud, unknownLeafCloud);
 
-//  sensor_msgs::PointField fieldX, fieldY, fieldZ;
-//  fieldX.name = "x";
-//  unknownLeafCloud.fields.push_back(fieldX);
-//  fieldY.name = "y";
-//  unknownLeafCloud.fields.push_back(fieldY);
-//  fieldZ.name = "z";
-//  unknownLeafCloud.fields.push_back(fieldZ);
-//  unknownLeafCloud.fields[1].name = "y";
-//  unknownLeafCloud.fields[2].name = "z";
-
-  // Fails here
-  // pointcloud2 needs to be initialized with three fields: x, y, z
-  // Thit might be a bad way to do this, since it segfaults if the field names are found but nothing else is set.
-//  octomap::pointsOctomapToPointCloud2(unknownLeafs, unknownLeafCloud);
-
-
-//  sensor_msgs::PointCloud2Modifier pcd_modifier(unknownLeafCloud);
-//  pcd_modifier.resize(unknownLeafs.size());
-
-  // // Can't find field "x" in the point cloud
-//  sensor_msgs::PointCloud2Iterator<float> iter_x(unknownLeafCloud, "x");
-//  sensor_msgs::PointCloud2Iterator<float> iter_y(unknownLeafCloud, "y");
-//  sensor_msgs::PointCloud2Iterator<float> iter_z(unknownLeafCloud, "z");
-
-//  for (std::list<octomath::Vector3>::const_iterator it = unknownLeafs.begin(); it != unknownLeafs.end(); ++it, ++iter_x, ++iter_y, ++iter_z) {
-//    ROS_INFO_STREAM("Unknown point at " << it->x() << " " << it->x() << " " << it->z());
-//    *iter_x = it->x();
-//    *iter_y = it->y();
-//    *iter_z = it->z();
-//}
-
   ROS_INFO("converted leaf list to point cloud");
 
 //  ROS_INFO_STREAM("Cloud width: " << unknownLeafCloud.width);
@@ -90,22 +59,9 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   ROS_INFO("Published updated point cloud");
 
 
-//  for (octomap::ColorOcTree::iterator it = tree.begin(), end = tree.end(); it != end; ++it)
-//  {
-//    // Want to get value stored in node
-//      ROS_INFO_STREAM("Hit a leaf: " << it.getCoordinate());
-
-
-
-//  }
-
-//  octomath::Vector3 point;
-//  octomath::Vector3 direction(-0.25,0.0,1.0);
-//  if (tree.castRay(octomath::Vector3(0,0,0), direction, point)){
-//    ROS_INFO_STREAM("Raycast hit something at " << point.x() << " , " << point.y() << " , " << point.z());
-//  }
-
-
+  // TODO: Generate poses in here. Raycast from poses into tree without ignoring unknown nodes.
+  // Use resulting coordinates to search tree for hit nodes and return which ones or how many were unknown. This should avoid occlusion/shadow problem.
+  // A reasonable metric for view quality could be to maximize the unknown node count in a given view.
 
   res.value = true;
 
@@ -114,11 +70,24 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   return true;
 }
 
-void GenerateViews() {
+void NBVSolver::GenerateViewPoses(float distance, int slices, std::list<tf::Transform> &poseList) {
+  tf::Transform offset(tf::Quaternion(0, 0, 0, 1), tf::Vector3(-distance, 0, 0));
 
+//  std::list<tf::Transform> poses;
+
+  for (float angle = 0; angle < 2*M_PI; angle += 2*M_PI/slices) {
+    ROS_INFO_STREAM("Rotation by " << angle);
+    for (float elevation = 0; elevation < M_PI/2; elevation += (M_PI/2)/(slices/2)) {
+//      tf::Quaternion quat(tf::Vector3(0,0,1), tfScalar(angle));
+      tf::Transform yaw(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(angle)), tf::Vector3(0,0,0));
+      tf::Transform pitch(tf::Quaternion(tf::Vector3(0,1,0), tfScalar(elevation)), tf::Vector3(0,0,0));
+      poseList.push_back(yaw*pitch*offset);
+    }
+
+  }
 }
 
-int EvaluateCandidateView() {
+int NBVSolver::EvaluateCandidateViews(std::list<tf::Transform> &poseList) {
 
   return 0;
 }
@@ -130,8 +99,23 @@ int main(int argc, char* argv[])
 
     NBVSolver solver(nh);
 
+    ROS_INFO("Making candidate poses...");
+    std::list<tf::Transform> poses;
+    solver.GenerateViewPoses(0.75, 4, poses);
+
+    ROS_INFO("Made some poses");
+
+    ros::Rate rate(10.0);
+
     while (ros::ok()){
-        ros::spinOnce();
+      int count = 0;
+      for (std::list<tf::Transform>::const_iterator it = poses.begin(); it != poses.end(); ++it) {
+        tf::StampedTransform currentStampedPose(*it, ros::Time::now(), "volume_pose", "candidate" + std::to_string(count));
+        solver.broadcaster_.sendTransform(currentStampedPose);
+        count++;
+      }
+      rate.sleep();
+      ros::spinOnce();
     }
 
     return 0;

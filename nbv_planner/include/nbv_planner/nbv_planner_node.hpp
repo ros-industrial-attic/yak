@@ -18,12 +18,19 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 
+#include <tf/tf.h>
+#include <tf/transform_broadcaster.h>
+
+#include <math.h>
+
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/pcl_base.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl_ros/transforms.h>
 #include <pcl_conversions/pcl_conversions.h>
+
+#include <moveit/move_group_interface/move_group_interface.h>
 
 
 class NBVSolver {
@@ -32,11 +39,9 @@ class NBVSolver {
 
     bool GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVResponse& res);
 
-    void GenerateViews();
+    void GenerateViewPoses(float distance, int slices, std::list<tf::Transform> &poseList);
 
-    int EvaluateCandidateView() {
-
-    }
+    int EvaluateCandidateViews(std::list<tf::Transform> &poseList);
 
     ros::ServiceServer nbv_server_;
 
@@ -44,6 +49,8 @@ class NBVSolver {
 
     sensor_msgs::PointCloud2 unknown_leaf_cloud_;
     ros::Publisher unknown_cloud_publisher_;
+
+    tf::TransformBroadcaster broadcaster_;
 
 //    octomap::OcTree octree_;
 

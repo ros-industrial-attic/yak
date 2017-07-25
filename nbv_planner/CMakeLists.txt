@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   octomap_ros
   pcl_ros
+  tf
 )
 
 find_package(octomap REQUIRED)
