@@ -59,9 +59,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   ROS_INFO("Published updated point cloud");
 
 
-  // TODO: Generate poses in here. Raycast from poses into tree without ignoring unknown nodes.
-  // Use resulting coordinates to search tree for hit nodes and return which ones or how many were unknown. This should avoid occlusion/shadow problem.
-  // A reasonable metric for view quality could be to maximize the unknown node count in a given view.
+
 
   res.value = true;
 
@@ -87,7 +85,23 @@ void NBVSolver::GenerateViewPoses(float distance, int slices, std::list<tf::Tran
   }
 }
 
-int NBVSolver::EvaluateCandidateViews(std::list<tf::Transform> &poseList) {
+int NBVSolver::EvaluateCandidateView(tf::Transform &pose, octomap::ColorOcTree &tree) {
+  float fov = 45.0;
+  int rayCount = 16;
+  std::list<tf::Transform> rayPoses;
+  for (float angleWidth = -fov/2; angleWidth < fov/2; angleWidth += fov/rayCount) {
+    for (float angleHeight = -fov/2; angleHeight < fov/2; angleHeight += fov/rayCount) {
+      tf::Quaternion rotation(tfScalar(angleWidth), tfScalar(angleHeight), tfScalar(0));
+      rayPoses.push_back(tf::Transform(rotation, tf::Vector3(0,0,0))*pose);
+    }
+  }
+
+  for (std::list<tf::Transform>::const_iterator it = rayPoses.begin(); it != rayPoses.end(); ++it) {
+//    tree.castRay(octomap::po)
+    // TODO: Generate poses in here. Raycast from poses into tree without ignoring unknown nodes.
+    // Use resulting coordinates to search tree for hit nodes and return which ones or how many were unknown. This should avoid occlusion/shadow problem.
+    // A reasonable metric for view quality could be to maximize the unknown node count in a given view.
+  }
 
   return 0;
 }

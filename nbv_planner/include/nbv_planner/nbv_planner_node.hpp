@@ -41,7 +41,7 @@ class NBVSolver {
 
     void GenerateViewPoses(float distance, int slices, std::list<tf::Transform> &poseList);
 
-    int EvaluateCandidateViews(std::list<tf::Transform> &poseList);
+    int EvaluateCandidateView(tf::Transform &pose, octomap::ColorOcTree &tree);
 
     ros::ServiceServer nbv_server_;
 
