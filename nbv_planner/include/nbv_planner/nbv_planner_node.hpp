@@ -39,9 +39,11 @@ class NBVSolver {
 
     bool GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVResponse& res);
 
-    void GenerateViewPoses(float distance, int slices, std::list<tf::Transform> &poseList);
+    void GenerateViewPoses(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList);
 
-    int EvaluateCandidateView(tf::Transform &pose, octomap::ColorOcTree &tree);
+    int EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, std::list<octomath::Vector3> &unknowns);
+
+    void Update();
 
     ros::ServiceServer nbv_server_;
 
@@ -51,6 +53,11 @@ class NBVSolver {
     ros::Publisher unknown_cloud_publisher_;
 
     tf::TransformBroadcaster broadcaster_;
+
+    octomath::Vector3 bound_min_;
+    octomath::Vector3 bound_max_;
+
+    std::list<tf::Transform> candidate_poses_;
 
 //    octomap::OcTree octree_;
 
