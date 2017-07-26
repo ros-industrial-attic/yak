@@ -32,6 +32,8 @@
 
 #include <moveit/move_group_interface/move_group_interface.h>
 
+ #include <visualization_msgs/Marker.h>
+
 
 class NBVSolver {
   public:
@@ -51,6 +53,12 @@ class NBVSolver {
 
     sensor_msgs::PointCloud2 unknown_leaf_cloud_;
     ros::Publisher unknown_cloud_publisher_;
+
+    visualization_msgs::Marker ray_line_list_;
+    visualization_msgs::Marker hit_ray_line_list_;
+
+    ros::Publisher all_ray_pub_;
+    ros::Publisher hit_ray_pub_;
 
     tf::TransformBroadcaster broadcaster_;
 
