@@ -98,6 +98,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   for (std::list<tf::Transform>::const_iterator it = poses.begin(); it != poses.end(); ++it) {
     candidate_poses_.push_back(*it);
     int fitness = EvaluateCandidateView(*it, tree, unknownTree, unknownLeafs);
+    ROS_INFO_STREAM("Casts from this view hit " << fitness << " unseen voxels.");
   }
 
 
@@ -114,7 +115,7 @@ void NBVSolver::GenerateViewPoses(float distance, int slices, tf::Transform &ori
 //  std::list<tf::Transform> poses;
 
   for (float angle = 0; angle < 2*M_PI; angle += 2*M_PI/slices) {
-    ROS_INFO_STREAM("Rotation by " << angle);
+//    ROS_INFO_STREAM("Rotation by " << angle);
     for (float elevation = 0; elevation < M_PI/2; elevation += (M_PI/2)/(slices/2)) {
 //    float elevation = 0;
 //      tf::Quaternion quat(tf::Vector3(0,0,1), tfScalar(angle));
@@ -127,45 +128,34 @@ void NBVSolver::GenerateViewPoses(float distance, int slices, tf::Transform &ori
 
 int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree, std::list<octomath::Vector3> &unknowns) {
   int numLeaves = tree.calcNumNodes();
-  ROS_INFO_STREAM("Number of nodes (eval): " << numLeaves);
+//  ROS_INFO_STREAM("Number of nodes (eval): " << numLeaves);
 
   float fov = M_PI/4.0;
   int rayCount = 7;
 
+  int unknownCount = 0;
 
   std::list<octomath::Vector3> rays;
-  std::list<octomath::Vector3> hitUnknowns;
-  // Rays aren't being generated in the right direction
+//  std::list<octomath::Vector3> hitUnknowns;
   for (float angleWidth = -fov/2.0; angleWidth <= fov/2.0; angleWidth += fov/rayCount) {
     for (float angleHeight = -fov/2.0; angleHeight <= fov/2.0; angleHeight += fov/rayCount) {
-//      ROS_INFO_STREAM("AngleWidth: " << angleWidth << " AngleHeight: " << angleHeight);
-//      tf::Quaternion rotation(tfScalar(angleWidth), tfScalar(angleHeight), tfScalar(0));
       tf::Matrix3x3 rotationMat;
       rotationMat.setRPY(tfScalar(0.0), tfScalar(angleHeight), tfScalar(angleWidth));
-
-//      ROS_INFO_STREAM("New Rotation: " << rotationMat.getRPY());
 
       tf::Quaternion rotation;
       rotationMat.getRotation(rotation);
 
       tf::Transform rayTf(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(0)), tf::Vector3(1,0,0));
       tf::Transform rayRotated = tf::Transform(pose.getRotation(), tf::Vector3(0,0,0)) * tf::Transform(rotation, tf::Vector3(0,0,0)) * rayTf;
-//      ROS_INFO_STREAM("Ray Rotation: " << rayRotated.getRotation().x() << " " << rayRotated.getRotation().y() << " " << rayRotated.getRotation().z() << " " << rayRotated.getRotation().w());
       tf::Vector3 ray = rayRotated.getOrigin();
-//      ROS_INFO_STREAM("Ray: " << ray.getX() << " " <<ray.getY() << " " <<ray.getZ() << " ");
-//      rays.push_back(/*Base pose*/pose * /*Ray orientation*/ tf::Transform(rotation, tf::Vector3(0,0,0)) * /*Unit offset*/ tf::Transform(tf::Quaternion(0,0,0,1), tf::Vector3(1,0,0)));
       rays.push_back(octomap::pointTfToOctomap(ray));
-
-
-
     }
   }
-//  rays.push_back();
 
   for (std::list<octomath::Vector3>::const_iterator it = rays.begin(); it != rays.end(); ++it) {
     octomath::Vector3 origin = octomap::pointTfToOctomap(pose.getOrigin());
-//    octomath::Vector3 direction = *it;
-    octomath::Vector3 hit;
+    octomath::Vector3 hitKnown;
+    octomath::Vector3 hitUnknown;
 
     geometry_msgs::Point p;
     p.x = origin.x();
@@ -180,34 +170,28 @@ int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &t
     ray_line_list_.points.push_back(q);
 
 //    ROS_INFO_STREAM("Origin: " << origin << " direction: " << *it);
-    bool hitKnown = tree.castRay(origin, *it, hit, true, 1.0);
-    bool hitUnknown = unknownTree.castRay(origin, *it, hit, true, 1.0);
-    if (hitUnknown) {
-      // Hit an occupied or unknown voxel
+    bool raycastToKnown = tree.castRay(origin, *it, hitKnown, true, 1.0);
+    bool raycastToUnknown = unknownTree.castRay(origin, *it, hitUnknown, true, 1.0);
+    if (raycastToKnown && raycastToUnknown)
+    {
+      double distanceKnown = octomath::Vector3(hitKnown - origin).norm();
+      double distanceUnknown = octomath::Vector3(hitUnknown - origin).norm();
+      if (distanceUnknown < distanceKnown)
+      {
+        // Unknown voxel is nearer than an occupied voxel behind it
+        unknownCount++;
+        hit_ray_line_list_.points.push_back(p);
+        hit_ray_line_list_.points.push_back(q);
+      }
+    }
+    else if (!raycastToKnown && raycastToUnknown)
+    {
+      // Unknown voxel occludes only free space
+      unknownCount++;
       hit_ray_line_list_.points.push_back(p);
       hit_ray_line_list_.points.push_back(q);
-
-        // Is this voxel within our collection of unknown voxels in the region of interest? Has a different ray from this view already hit this unknown voxel?
-      ROS_INFO_STREAM("Raycast from " << origin << " along unit vector " << *it << " hit unknown at coord: " << hit);
-//        if (std::find(unknowns.begin(), unknowns.end(), hit) != unknowns.end()) {
-//          // If so, add to our list.
-//          ROS_INFO("Unknown voxel hit");
-//          if (std::find(hitUnknowns.begin(), hitUnknowns.end(), hit) == hitUnknowns.end()) {
-//              ROS_INFO("New hit voxel added");
-//          }
-//          hitUnknowns.push_back(hit);
-//        }
     }
-    // TODO: Generate poses in here. Raycast from poses into tree without ignoring unknown nodes.
-    // Use resulting coordinates to search tree for hit nodes and return which ones or how many were unknown. This should avoid occlusion/shadow problem.
-    // A reasonable metric for view quality could be to maximize the unknown node count in a given view.
-
   }
-
-//  ROS_INFO_STREAM("Ray line list contains " << ray_line_list_.points.size() << " points.");
-
-  int unknownCount = hitUnknowns.size();
-  ROS_INFO_STREAM("This view can see " << unknownCount << " unseen voxels.");
   return unknownCount;
 }
 
