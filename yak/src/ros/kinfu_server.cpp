@@ -174,29 +174,52 @@ namespace kfusion
 //        LoadParam(params.volume_size.val[2], "volume_size_z");
         LoadParam(params.volume_resolution, "volume_resolution");
 
-
-        float volPosX, volPosY, volPosZ;
-        volPosX = params.volume_pose.translation().val[0];
-        volPosY = params.volume_pose.translation().val[1];
-        volPosZ = params.volume_pose.translation().val[2];
-
-        ROS_INFO_STREAM("volPos (default): " << volPosX << ", " << volPosY << ", " << volPosZ);
-
-        LoadParam(volPosX, "volume_pos_x");
-        LoadParam(volPosY, "volume_pos_y");
-        LoadParam(volPosZ, "volume_pos_z");
-
-        params.volume_pose.translation(Vec3f(volPosX, volPosY, volPosZ));
-
-        ROS_INFO_STREAM("volPos (loaded): " << params.volume_pose.translation().val[0] << ", " << params.volume_pose.translation().val[1] << ", " << params.volume_pose.translation().val[2]);
-        ROS_INFO_STREAM("translation: " << cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
-
-        params.volume_pose.translate(-params.volume_pose.translation());
-        params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
-
         LoadParam(params.use_icp, "use_icp");
         params.use_pose_hints = use_pose_hints_;
         LoadParam(params.update_via_sensor_motion, "update_via_sensor_motion");
+
+        if (params.use_pose_hints) {
+          params.volume_pose.translation(Vec3f(previous_volume_to_sensor_transform_.getOrigin().x(), previous_volume_to_sensor_transform_.getOrigin().y(), previous_volume_to_sensor_transform_.getOrigin().z()));
+
+
+// TODO: Properly set volume pose rotation from robot end effector orientation
+//          Eigen::Matrix3d rotationEigen;
+//          tf::matrixTFToEigen(previous_volume_to_sensor_transform_.getBasis(), rotationEigen);
+//          Vec3f rotationCv;
+
+//          rotationCv[0] = previous_volume_to_sensor_transform_.getRotation()
+
+//          cv::eigen2cv(rotationEigen, rotationCv);
+//          params.volume_pose.rotation();
+
+//          Affine3f pose;
+//          previous_volume_to_sensor_transform_.getBasis().
+//          pose.rotation();
+        }
+        else
+        {
+          float volPosX, volPosY, volPosZ;
+          volPosX = params.volume_pose.translation().val[0];
+          volPosY = params.volume_pose.translation().val[1];
+          volPosZ = params.volume_pose.translation().val[2];
+
+          ROS_INFO_STREAM("volPos (default): " << volPosX << ", " << volPosY << ", " << volPosZ);
+
+          LoadParam(volPosX, "volume_pos_x");
+          LoadParam(volPosY, "volume_pos_y");
+          LoadParam(volPosZ, "volume_pos_z");
+          params.volume_pose.translation(Vec3f(volPosX, volPosY, volPosZ));
+        }
+
+
+
+        ROS_INFO_STREAM("volPos (loaded): " << params.volume_pose.translation().val[0] << ", " << params.volume_pose.translation().val[1] << ", " << params.volume_pose.translation().val[2]);
+//        ROS_INFO_STREAM("translation: " << cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
+
+//        params.volume_pose.translate(-params.volume_pose.translation());
+//        params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
+
+
 
         kinfu_ = KinFu::Ptr(new kfusion::KinFu(params));
         return true;
