@@ -104,6 +104,7 @@ namespace kfusion
 
         kfusion::KinFu& kinfu = *kinfu_;
 
+
         // TODO: Need to change this to reflect actual sensor refresh rate? (e.g. Ensenso at ~4Hz)
         ROS_INFO("Starting tracking...\n");
         ros::Rate trackHz(30.0f);

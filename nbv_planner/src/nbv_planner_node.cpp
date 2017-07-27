@@ -5,8 +5,59 @@ NBVSolver::NBVSolver(ros::NodeHandle &nh)
   nbv_server_ = nh.advertiseService("get_nbv", &NBVSolver::GetNBV, this);
   octomap_client_ = nh.serviceClient<octomap_msgs::GetOctomap>("/octomap_full");
   unknown_cloud_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("my_unknown_cloud",1);
-  bound_min_ = octomath::Vector3(-0.5, -0.5, 0.0);
-  bound_max_ = octomath::Vector3(0.0, 0.0, 0.5);
+
+  float bound_min_x, bound_min_y, bound_min_z, bound_max_x, bound_max_y, bound_max_z, voxel_res;
+  int dims_x, dims_y, dims_z;
+
+//  double volume_dim_x, volume_dim_y, volume_dim_z;
+
+  voxel_res = 0.001;
+  dims_x = 480;
+  dims_y = 480;
+  dims_z = 256;
+
+  // Can't load parameters from other nodes like this!
+//  nh.getParam("volume_dims_x", dims_x);
+//  nh.getParam("volume_dims_y", dims_y);
+//  nh.getParam("volume_dims_z", dims_z);
+//  nh.getParam("volume_resolution", voxel_res);
+  if (!nh.hasParam("/nbv_planner_node/volume_dim_x"))
+  {
+      ROS_ERROR("Param not found!");
+  }
+
+  // TODO: Fix param loading
+//  nh.param<double>("/nbv_planner_node/volume_dim_x", volume_dim_x);
+//  nh.param<double>("/nbv_planner_node/volume_dim_y", volume_dim_y);
+//  nh.param<double>("/nbv_planner_node/volume_dim_z", volume_dim_z);
+
+//  ROS_INFO_STREAM(volume_dim_x << " " << volume_dim_y << " " << volume_dim_z);
+
+  bound_min_z = bound_max_x = bound_max_y = 0.0;
+
+//  bound_min_x = -(float)volume_dim_x;
+//  bound_min_y = -(float)volume_dim_y;
+//  bound_max_z = (float)volume_dim_z;
+
+
+  bound_min_x = -voxel_res*(float)dims_x;
+  bound_min_y = -voxel_res*(float)dims_y;
+  bound_max_z = voxel_res*(float)dims_z;
+
+  bound_min_ = octomath::Vector3(bound_min_x, bound_min_y, bound_min_z);
+  bound_max_ = octomath::Vector3(bound_max_x, bound_max_y, bound_max_z);
+
+  ROS_INFO_STREAM("Evaluating volume from " << bound_min_ << " to " << bound_max_);
+
+  nh.param<int>("num_pose_slices", num_pose_slices_);
+  nh.param<int>("ray_count", ray_count_);
+  nh.param<float>("raycast_distance", raycast_distance_);
+
+  ROS_INFO_STREAM(num_pose_slices_ << " " << ray_count_ << " " << raycast_distance_);
+
+//  bound_min_ = octomath::Vector3(-0.5, -0.5, 0.0);
+//  bound_max_ = octomath::Vector3(0.0, 0.0, 0.5);
+
   all_ray_pub_ = nh.advertise<visualization_msgs::Marker>("all_rays", 10);
 
   ray_line_list_.header.frame_id = hit_ray_line_list_.header.frame_id = "/volume_pose";
@@ -19,6 +70,8 @@ NBVSolver::NBVSolver(ros::NodeHandle &nh)
   ray_line_list_.color.a = hit_ray_line_list_.color.a = 1.0;
 
   hit_ray_pub_ = nh.advertise<visualization_msgs::Marker>("hit_rays", 10);
+
+
 }
 
 bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVResponse& res)
@@ -81,7 +134,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   candidate_poses_.clear();
   std::list<tf::Transform> poses;
   tf::Transform orbitCenter(tf::Quaternion(0,0,0,1), tf::Vector3((bound_min_.x()-bound_max_.x())/2, (bound_min_.y()-bound_max_.y())/2, (bound_max_.z()-bound_min_.z())/2));
-  GenerateViewPoses(0.5, 8, orbitCenter, poses);
+  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, orbitCenter, poses);
 
   ray_line_list_.points.clear();
   hit_ray_line_list_.points.clear();
@@ -117,7 +170,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   return true;
 }
 
-void NBVSolver::GenerateViewPoses(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList)
+void NBVSolver::GenerateViewPosesSpherical(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList)
 {
   tf::Transform offset(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(0)), tf::Vector3(-distance, 0, 0));
 
@@ -132,18 +185,23 @@ void NBVSolver::GenerateViewPoses(float distance, int slices, tf::Transform &ori
   }
 }
 
+void NBVSolver::GenerateViewPosesRandom(int numPoses, tf::Transform &origin, std::list<tf::Transform> &poseList)
+{
+  //TODO: Not yet implemented
+}
+
 int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree)
 {
   float fov = M_PI/4.0;
-  int rayCount = 15;
+//  int rayCount = 15;
 
   int unknownCount = 0;
 
   std::list<octomath::Vector3> rays;
 //  std::list<octomath::Vector3> hitUnknowns;
-  for (float angleWidth = -fov/2.0; angleWidth <= fov/2.0; angleWidth += fov/rayCount)
+  for (float angleWidth = -fov/2.0; angleWidth <= fov/2.0; angleWidth += fov/ray_count_)
   {
-    for (float angleHeight = -fov/2.0; angleHeight <= fov/2.0; angleHeight += fov/rayCount)
+    for (float angleHeight = -fov/2.0; angleHeight <= fov/2.0; angleHeight += fov/ray_count_)
     {
       tf::Matrix3x3 rotationMat;
       rotationMat.setRPY(tfScalar(0.0), tfScalar(angleHeight), tfScalar(angleWidth));
