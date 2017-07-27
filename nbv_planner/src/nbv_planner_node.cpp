@@ -1,6 +1,7 @@
 #include <nbv_planner_node.hpp>
 
-NBVSolver::NBVSolver(ros::NodeHandle &nh) {
+NBVSolver::NBVSolver(ros::NodeHandle &nh)
+{
   nbv_server_ = nh.advertiseService("get_nbv", &NBVSolver::GetNBV, this);
   octomap_client_ = nh.serviceClient<octomap_msgs::GetOctomap>("/octomap_full");
   unknown_cloud_publisher_ = nh.advertise<sensor_msgs::PointCloud2>("my_unknown_cloud",1);
@@ -20,7 +21,8 @@ NBVSolver::NBVSolver(ros::NodeHandle &nh) {
   hit_ray_pub_ = nh.advertise<visualization_msgs::Marker>("hit_rays", 10);
 }
 
-bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVResponse& res) {
+bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVResponse& res)
+{
   ROS_INFO("Attempting to get octomap");
   octomap_msgs::GetOctomap srv;
   if (!octomap_client_.call(srv))
@@ -38,26 +40,15 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 
   octomap::ColorOcTree unknownTree(tree.getResolution());
 
-
-
-
   int numLeaves = tree.calcNumNodes();
   ROS_INFO_STREAM("Number of nodes: " << numLeaves);
-
-//  for (octomap::OcTreeBaseImpl<octomap::ColorOcTreeNode, octomap::AbstractOccupancyOcTree> it = unknownTree.begin_leafs_bbx(bound_min_, bound_max_, 0); it != unknownTree.end_leafs_bbx(); ++it)
-//  {
-
-//    unknownTree.updateNode(it.getKey(), false);
-
-//  }
-
 
   std::list<octomath::Vector3> unknownLeafs;
 
 
 //  octomath::Vector3 boundMin(-0.5, -0.5, 0.0);
 //  octomath::Vector3 boundMax(0.0, 0.0, 0.5);
-  tree.getUnknownLeafCenters(unknownLeafs, bound_min_, bound_max_, 16);
+  tree.getUnknownLeafCenters(unknownLeafs, bound_min_, bound_max_, 0);
   ROS_INFO_STREAM("Number of unknown leaves: " << unknownLeafs.size());
 
   octomath::Vector3 first = unknownLeafs.front();
@@ -95,11 +86,28 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   ray_line_list_.points.clear();
   hit_ray_line_list_.points.clear();
 
-  for (std::list<tf::Transform>::const_iterator it = poses.begin(); it != poses.end(); ++it) {
+  std::vector<int> viewMetrics;
+
+  for (std::list<tf::Transform>::const_iterator it = poses.begin(); it != poses.end(); ++it)
+  {
     candidate_poses_.push_back(*it);
-    int fitness = EvaluateCandidateView(*it, tree, unknownTree, unknownLeafs);
+    int fitness = EvaluateCandidateView(*it, tree, unknownTree);
     ROS_INFO_STREAM("Casts from this view hit " << fitness << " unseen voxels.");
+    viewMetrics.push_back(fitness);
   }
+
+  std::vector<int>::iterator result;
+
+  result = std::max_element(viewMetrics.begin(), viewMetrics.end());
+  int indexOfMax = std::distance(viewMetrics.begin(), result);
+
+  std::list<tf::Transform>::iterator poseIt = candidate_poses_.begin();
+  std::advance(poseIt, indexOfMax);
+
+  ROS_INFO_STREAM("Best view is # " << indexOfMax);
+
+
+  tf::poseTFToMsg(*poseIt, res.bestViewPose);
 
 
   res.value = true;
@@ -109,16 +117,14 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   return true;
 }
 
-void NBVSolver::GenerateViewPoses(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList) {
+void NBVSolver::GenerateViewPoses(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList)
+{
   tf::Transform offset(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(0)), tf::Vector3(-distance, 0, 0));
 
-//  std::list<tf::Transform> poses;
-
-  for (float angle = 0; angle < 2*M_PI; angle += 2*M_PI/slices) {
-//    ROS_INFO_STREAM("Rotation by " << angle);
-    for (float elevation = 0; elevation < M_PI/2; elevation += (M_PI/2)/(slices/2)) {
-//    float elevation = 0;
-//      tf::Quaternion quat(tf::Vector3(0,0,1), tfScalar(angle));
+  for (float angle = 0; angle < 2*M_PI; angle += 2*M_PI/slices)
+  {
+    for (float elevation = 0; elevation < M_PI/2; elevation += (M_PI/2)/(slices/2))
+    {
       tf::Transform yaw(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(angle)), tf::Vector3(0,0,0));
       tf::Transform pitch(tf::Quaternion(tf::Vector3(0,1,0), tfScalar(elevation)), tf::Vector3(0,0,0));
       poseList.push_back(origin*yaw*pitch*offset);
@@ -126,10 +132,8 @@ void NBVSolver::GenerateViewPoses(float distance, int slices, tf::Transform &ori
   }
 }
 
-int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree, std::list<octomath::Vector3> &unknowns) {
-  int numLeaves = tree.calcNumNodes();
-//  ROS_INFO_STREAM("Number of nodes (eval): " << numLeaves);
-
+int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree)
+{
   float fov = M_PI/4.0;
   int rayCount = 7;
 
@@ -137,8 +141,10 @@ int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &t
 
   std::list<octomath::Vector3> rays;
 //  std::list<octomath::Vector3> hitUnknowns;
-  for (float angleWidth = -fov/2.0; angleWidth <= fov/2.0; angleWidth += fov/rayCount) {
-    for (float angleHeight = -fov/2.0; angleHeight <= fov/2.0; angleHeight += fov/rayCount) {
+  for (float angleWidth = -fov/2.0; angleWidth <= fov/2.0; angleWidth += fov/rayCount)
+  {
+    for (float angleHeight = -fov/2.0; angleHeight <= fov/2.0; angleHeight += fov/rayCount)
+    {
       tf::Matrix3x3 rotationMat;
       rotationMat.setRPY(tfScalar(0.0), tfScalar(angleHeight), tfScalar(angleWidth));
 
@@ -152,7 +158,8 @@ int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &t
     }
   }
 
-  for (std::list<octomath::Vector3>::const_iterator it = rays.begin(); it != rays.end(); ++it) {
+  for (std::list<octomath::Vector3>::const_iterator it = rays.begin(); it != rays.end(); ++it)
+  {
     octomath::Vector3 origin = octomap::pointTfToOctomap(pose.getOrigin());
     octomath::Vector3 hitKnown;
     octomath::Vector3 hitUnknown;
@@ -191,15 +198,17 @@ int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &t
       hit_ray_line_list_.points.push_back(p);
       hit_ray_line_list_.points.push_back(q);
     }
+    // Otherwise, there's either only free space up to a known occupied surface, or there's free space up to the edge of the volume bounds.
+    // In either case, there's nothing new for us to learn along that ray.
   }
   return unknownCount;
 }
 
-void NBVSolver::Update() {
-  // Publish the most recent pose
-//      ROS_INFO("Start update");
+void NBVSolver::Update()
+{
   int count = 0;
-  for (std::list<tf::Transform>::iterator it = candidate_poses_.begin(); it != candidate_poses_.end(); ++it, count++) {
+  for (std::list<tf::Transform>::iterator it = candidate_poses_.begin(); it != candidate_poses_.end(); ++it, count++)
+  {
     tf::StampedTransform transformStamped(*it, ros::Time::now(), "volume_pose", "candidate" + std::to_string(count));
     broadcaster_.sendTransform(transformStamped);
 
@@ -217,20 +226,9 @@ int main(int argc, char* argv[])
 
     NBVSolver solver(nh);
 
-//    ROS_INFO("Making candidate poses...");
-//    std::list<tf::Transform> poses;
-//    solver.GenerateViewPoses(0.75, 4, poses);
-
-//    ROS_INFO("Made some poses");
-
     ros::Rate rate(10.0);
 
     while (ros::ok()){
-//      for (std::list<tf::StampedTransform>::iterator it = solver.candidate_poses_.begin(); it != solver.candidate_poses_.end(); ++it) {
-////        tf::StampedTransform currentStampedPose(*it, ros::Time::now(), "volume_pose", "candidate" + std::to_string(count));
-//        solver.broadcaster_.sendTransform(*it);
-////        count++;
-//      }
       solver.Update();
       rate.sleep();
       ros::spinOnce();

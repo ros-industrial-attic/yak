@@ -32,7 +32,9 @@
 
 #include <moveit/move_group_interface/move_group_interface.h>
 
- #include <visualization_msgs/Marker.h>
+#include <geometry_msgs/Pose.h>
+
+#include <visualization_msgs/Marker.h>
 
 
 class NBVSolver {
@@ -43,7 +45,7 @@ class NBVSolver {
 
     void GenerateViewPoses(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList);
 
-    int EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree, std::list<octomath::Vector3> &unknowns);
+    int EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree);
 
     void Update();
 
