@@ -88,6 +88,8 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
     resetVolume();
     // Need to reserve poses on start, else it crashes.
     poses_.reserve(30000);
+
+    // TODO: Allow loading of robot pose instead of default volume pose
     poses_.push_back(params_.volume_pose.matrix);
 }
 
@@ -168,6 +170,8 @@ void kfusion::KinFu::resetPose()
     // TODO: Don't reset to initially-specified camera-relative pose if using a volume pose defined in a global context
     poses_.clear();
     poses_.reserve(30000);
+
+    // TODO: Allow loading of robot pose instead of default volume pose
     poses_.push_back(params_.volume_pose.matrix);
     cout << "Resetting to: " << params_.volume_pose.matrix << endl;
 
