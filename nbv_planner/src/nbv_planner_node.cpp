@@ -81,7 +81,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   candidate_poses_.clear();
   std::list<tf::Transform> poses;
   tf::Transform orbitCenter(tf::Quaternion(0,0,0,1), tf::Vector3((bound_min_.x()-bound_max_.x())/2, (bound_min_.y()-bound_max_.y())/2, (bound_max_.z()-bound_min_.z())/2));
-  GenerateViewPoses(0.75, 4, orbitCenter, poses);
+  GenerateViewPoses(0.5, 8, orbitCenter, poses);
 
   ray_line_list_.points.clear();
   hit_ray_line_list_.points.clear();
@@ -135,7 +135,7 @@ void NBVSolver::GenerateViewPoses(float distance, int slices, tf::Transform &ori
 int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree)
 {
   float fov = M_PI/4.0;
-  int rayCount = 7;
+  int rayCount = 15;
 
   int unknownCount = 0;
 

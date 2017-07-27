@@ -69,9 +69,9 @@
             tsdf_trunc_dist: 0.01
 
             # The size of the TSDF volume in voxels
-            volume_dims_x: 512
-            volume_dims_y: 512
-            volume_dims_z: 512
+            volume_dims_x: 480
+            volume_dims_y: 480
+            volume_dims_z: 256
 
             # The size of the TSDF volume in meters. The size of a voxel is 
             # volume_size / volume_dims
