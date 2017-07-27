@@ -36,8 +36,20 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   octomap::ColorOcTree* my_map = (octomap::ColorOcTree*)abstract_tree;
   octomap::ColorOcTree tree = *my_map;
 
+  octomap::ColorOcTree unknownTree(tree.getResolution());
+
+
+
+
   int numLeaves = tree.calcNumNodes();
   ROS_INFO_STREAM("Number of nodes: " << numLeaves);
+
+//  for (octomap::OcTreeBaseImpl<octomap::ColorOcTreeNode, octomap::AbstractOccupancyOcTree> it = unknownTree.begin_leafs_bbx(bound_min_, bound_max_, 0); it != unknownTree.end_leafs_bbx(); ++it)
+//  {
+
+//    unknownTree.updateNode(it.getKey(), false);
+
+//  }
 
 
   std::list<octomath::Vector3> unknownLeafs;
@@ -58,6 +70,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 //      ROS_INFO_STREAM("Unknown point at " << it->x() << " " << it->x() << " " << it->z());
       pcl::PointXYZ newPoint(it->x(), it->y(), it->z());
       pclCloud.push_back(newPoint);
+      unknownTree.updateNode(it->x(), it->y(), it->z(), true);
   }
 
 
@@ -84,7 +97,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 
   for (std::list<tf::Transform>::const_iterator it = poses.begin(); it != poses.end(); ++it) {
     candidate_poses_.push_back(*it);
-    int fitness = EvaluateCandidateView(*it, tree, unknownLeafs);
+    int fitness = EvaluateCandidateView(*it, tree, unknownTree, unknownLeafs);
   }
 
 
@@ -112,14 +125,12 @@ void NBVSolver::GenerateViewPoses(float distance, int slices, tf::Transform &ori
   }
 }
 
-int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, std::list<octomath::Vector3> &unknowns) {
+int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree, std::list<octomath::Vector3> &unknowns) {
   int numLeaves = tree.calcNumNodes();
   ROS_INFO_STREAM("Number of nodes (eval): " << numLeaves);
 
   float fov = M_PI/4.0;
   int rayCount = 7;
-
-
 
 
   std::list<octomath::Vector3> rays;
@@ -169,21 +180,23 @@ int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &t
     ray_line_list_.points.push_back(q);
 
 //    ROS_INFO_STREAM("Origin: " << origin << " direction: " << *it);
-    if (tree.castRay(origin, *it, hit, true, 1.0)) {
+    bool hitKnown = tree.castRay(origin, *it, hit, true, 1.0);
+    bool hitUnknown = unknownTree.castRay(origin, *it, hit, true, 1.0);
+    if (hitUnknown) {
       // Hit an occupied or unknown voxel
       hit_ray_line_list_.points.push_back(p);
       hit_ray_line_list_.points.push_back(q);
 
         // Is this voxel within our collection of unknown voxels in the region of interest? Has a different ray from this view already hit this unknown voxel?
-      ROS_INFO_STREAM("Raycast from " << origin << " along unit vector " << *it << " hit coord: " << hit);
-        if (std::find(unknowns.begin(), unknowns.end(), hit) != unknowns.end()) {
-          // If so, add to our list.
-          ROS_INFO("Unknown voxel hit");
-          if (std::find(hitUnknowns.begin(), hitUnknowns.end(), hit) == hitUnknowns.end()) {
-              ROS_INFO("New hit voxel added");
-          }
-          hitUnknowns.push_back(hit);
-        }
+      ROS_INFO_STREAM("Raycast from " << origin << " along unit vector " << *it << " hit unknown at coord: " << hit);
+//        if (std::find(unknowns.begin(), unknowns.end(), hit) != unknowns.end()) {
+//          // If so, add to our list.
+//          ROS_INFO("Unknown voxel hit");
+//          if (std::find(hitUnknowns.begin(), hitUnknowns.end(), hit) == hitUnknowns.end()) {
+//              ROS_INFO("New hit voxel added");
+//          }
+//          hitUnknowns.push_back(hit);
+//        }
     }
     // TODO: Generate poses in here. Raycast from poses into tree without ignoring unknown nodes.
     // Use resulting coordinates to search tree for hit nodes and return which ones or how many were unknown. This should avoid occlusion/shadow problem.
