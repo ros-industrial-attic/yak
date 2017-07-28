@@ -286,9 +286,11 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     cout << "Newest pose is  " << poses_.back().matrix << endl;
 
     // We do not integrate volume if camera does not move.
-    // TODO: I don't really care about this that much
+    // TODO: As it turns out I do care about this! Leaving the camera in one place introduces a lot of noise. Come up with a better metric for determining motion.
     float rnorm = (float) cv::norm(cameraMotion.rvec());
     float tnorm = (float) cv::norm(cameraMotion.translation());
+
+    cout << "Rnorm " << rnorm << "  Tnorm " << tnorm << endl;
 
     bool integrate = (rnorm + tnorm) / 2 >= p.tsdf_min_camera_movement;
     if (integrate)

@@ -179,7 +179,8 @@ namespace kfusion
         LoadParam(params.update_via_sensor_motion, "update_via_sensor_motion");
 
         if (params.use_pose_hints) {
-          params.volume_pose.translation(Vec3f(previous_volume_to_sensor_transform_.getOrigin().x(), previous_volume_to_sensor_transform_.getOrigin().y(), previous_volume_to_sensor_transform_.getOrigin().z()));
+          tf::Transform initialPose = KinFuServer::SwitchToVolumeFrame(previous_volume_to_sensor_transform_);
+          params.volume_pose.translation(Vec3f(initialPose.getOrigin().x(), initialPose.getOrigin().y(), initialPose.getOrigin().z()));
 
 
 // TODO: Properly set volume pose rotation from robot end effector orientation
