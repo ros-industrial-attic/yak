@@ -64,6 +64,8 @@ class NBVSolver {
     ros::Publisher all_ray_pub_;
     ros::Publisher hit_ray_pub_;
 
+//    tf::Transform best_pose_;
+
     tf::TransformBroadcaster broadcaster_;
 
     int ray_count_;

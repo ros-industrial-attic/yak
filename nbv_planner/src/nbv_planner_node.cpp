@@ -49,9 +49,13 @@ NBVSolver::NBVSolver(ros::NodeHandle &nh)
 
   ROS_INFO_STREAM("Evaluating volume from " << bound_min_ << " to " << bound_max_);
 
-  nh.param<int>("num_pose_slices", num_pose_slices_);
-  nh.param<int>("ray_count", ray_count_);
-  nh.param<float>("raycast_distance", raycast_distance_);
+//  nh.param<int>("num_pose_slices", num_pose_slices_);
+//  nh.param<int>("ray_count", ray_count_);
+//  nh.param<float>("raycast_distance", raycast_distance_);
+
+  num_pose_slices_ = 8;
+  ray_count_ = 15;
+  raycast_distance_ = 0.5;
 
   ROS_INFO_STREAM(num_pose_slices_ << " " << ray_count_ << " " << raycast_distance_);
 
@@ -140,6 +144,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   hit_ray_line_list_.points.clear();
 
   std::vector<int> viewMetrics;
+  std::vector<std::tuple<tf::Transform, int>> viewsWithMetrics;
 
   for (std::list<tf::Transform>::const_iterator it = poses.begin(); it != poses.end(); ++it)
   {
@@ -147,6 +152,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
     int fitness = EvaluateCandidateView(*it, tree, unknownTree);
     ROS_INFO_STREAM("Casts from this view hit " << fitness << " unseen voxels.");
     viewMetrics.push_back(fitness);
+    viewsWithMetrics.push_back(std::tuple<tf::Transform, int>(*it, fitness));
   }
 
   std::vector<int>::iterator result;
@@ -159,7 +165,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 
   ROS_INFO_STREAM("Best view is # " << indexOfMax);
 
-
+//  best_pose_ = *poseIt;
   tf::poseTFToMsg(*poseIt, res.bestViewPose);
 
 
@@ -246,7 +252,7 @@ int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &t
         // Unknown voxel is nearer than an occupied voxel behind it
         unknownCount++;
         hit_ray_line_list_.points.push_back(p);
-        hit_ray_line_list_.points.push_back(q);
+        hit_ray_line_list_.points.push_back(octomap::pointOctomapToMsg(hitUnknown));
       }
     }
     else if (!raycastToKnown && raycastToUnknown)
@@ -254,7 +260,7 @@ int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &t
       // Unknown voxel occludes only free space
       unknownCount++;
       hit_ray_line_list_.points.push_back(p);
-      hit_ray_line_list_.points.push_back(q);
+      hit_ray_line_list_.points.push_back(octomap::pointOctomapToMsg(hitUnknown));
     }
     // Otherwise, there's either only free space up to a known occupied surface, or there's free space up to the edge of the volume bounds.
     // In either case, there's nothing new for us to learn along that ray.
