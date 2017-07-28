@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
   int_marker.controls.push_back(rotate_control);
 
   // add the control to the interactive marker
-  int_marker.controls.push_back(rotate_control);
+//  int_marker.controls.push_back(rotate_control);
 
   // add the interactive marker to our collection &
   // tell the server to call processFeedback() when feedback arrives for it

@@ -53,6 +53,7 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 
     p.use_pose_hints = false;
     p.use_icp = true;
+    p.update_via_sensor_motion = true;
 
     return p;
 }
@@ -87,6 +88,8 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
     resetVolume();
     // Need to reserve poses on start, else it crashes.
     poses_.reserve(30000);
+
+    // TODO: Allow loading of robot pose instead of default volume pose
     poses_.push_back(params_.volume_pose.matrix);
 }
 
@@ -167,6 +170,8 @@ void kfusion::KinFu::resetPose()
     // TODO: Don't reset to initially-specified camera-relative pose if using a volume pose defined in a global context
     poses_.clear();
     poses_.reserve(30000);
+
+    // TODO: Allow loading of robot pose instead of default volume pose
     poses_.push_back(params_.volume_pose.matrix);
     cout << "Resetting to: " << params_.volume_pose.matrix << endl;
 
@@ -263,13 +268,15 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     }
 
 //    poses_.push_back(poses_.back() * cameraMotion);
-    if (params_.use_pose_hints){
+    if (params_.update_via_sensor_motion){
         // Update pose with latest measured pose
-        cout << "Updating via pose" << endl;
-        poses_.push_back(cameraPoseCorrected);
+        // TODO: Make this not put the estimated sensor pose in the wrong position relative to the global frame.
+        cout << "Updating via motion" << endl;
+        poses_.push_back(poses_.back() * cameraMotionCorrected);
     } else {
         // Update pose estimate using latest camera motion transform
-        poses_.push_back(poses_.back() * cameraMotionCorrected);
+        cout << "Updating via pose" << endl;
+        poses_.push_back(cameraPoseCorrected);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -279,9 +286,11 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     cout << "Newest pose is  " << poses_.back().matrix << endl;
 
     // We do not integrate volume if camera does not move.
-    // TODO: I don't really care about this that much
+    // TODO: As it turns out I do care about this! Leaving the camera in one place introduces a lot of noise. Come up with a better metric for determining motion.
     float rnorm = (float) cv::norm(cameraMotion.rvec());
     float tnorm = (float) cv::norm(cameraMotion.translation());
+
+    cout << "Rnorm " << rnorm << "  Tnorm " << tnorm << endl;
 
     bool integrate = (rnorm + tnorm) / 2 >= p.tsdf_min_camera_movement;
     if (integrate)
