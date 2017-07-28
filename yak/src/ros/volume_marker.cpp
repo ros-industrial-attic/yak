@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
   // add the control to the interactive marker
 //  int_marker.controls.push_back(rotate_control);
 
+
   int_marker.scale = 0.5;
 
   // add the interactive marker to our collection &
