@@ -143,7 +143,7 @@ class VolumePosePublisher {
 
       broadcaster_.sendTransform(transformStamped);
 
-      box_line_pub_.publish(box_line_list);
+//      box_line_pub_.publish(box_line_list);
 
 
 //      ROS_INFO("update");

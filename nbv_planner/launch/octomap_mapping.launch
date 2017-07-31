@@ -8,7 +8,7 @@
 <launch>
 
     <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
-        <param name="resolution" value="0.0025" />
+        <param name="resolution" value="0.005" />
 
         <!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
         <param name="frame_id" type="string" value="map" />
@@ -29,4 +29,6 @@
         <param name="ray_count" value="16" />
         <param name="raycast_distance" type="double" value="0.5" />
     </node>
+
+    <node pkg="nbv_planner" type="octomap_reset_node" name="octomap_reset_node" output="screen"/>
 </launch>

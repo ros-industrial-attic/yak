@@ -61,8 +61,8 @@
 
             # Kinfu will only fuse data into the TSDF when the camera movement
             # exceeds this distance threshold.
-<!--            tsdf_min_camera_movement: 0.0001-->
-            tsdf_min_camera_movement: 0.0
+            tsdf_min_camera_movement: 0.0001
+<!--            tsdf_min_camera_movement: 0.0-->
 
             # Distance away from surface (in meters) the TSDF will be computed
             # Higher values result in smoother reconstructions, but less sharp
@@ -71,10 +71,12 @@
             tsdf_trunc_dist: 0.005
 
             # The size of the TSDF volume in voxels
-
-            volume_dims_x: 1568
+            volume_dims_x: 512
+            volume_dims_y: 512
+            volume_dims_z: 256
+<!--            volume_dims_x: 1568
             volume_dims_y: 768
-            volume_dims_z: 384
+            volume_dims_z: 384-->
 
 
             # The size of the TSDF volume in meters. The size of a voxel is 

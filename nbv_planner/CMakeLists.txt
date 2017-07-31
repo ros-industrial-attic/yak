@@ -149,6 +149,8 @@ link_libraries(${OCTOMAP_LIBRARIES})
 ## The recommended prefix ensures that target names across packages don't collide
  add_executable(${PROJECT_NAME}_node src/nbv_planner_node.cpp)
 
+ add_executable(octomap_reset_node src/octomap_reset_node.cpp)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -163,6 +165,11 @@ link_libraries(${OCTOMAP_LIBRARIES})
  target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
  )
+
+target_link_libraries(octomap_reset_node
+  ${catkin_LIBRARIES}
+)
+
 
 #############
 ## Install ##
