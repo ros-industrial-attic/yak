@@ -47,6 +47,7 @@ int main(int argc, char* argv[])
 
     ros::AsyncSpinner async_spinner(1);
     async_spinner.start();
+
     explorer.MoveToNBVs(move_group);
 
     return 0;

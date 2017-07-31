@@ -1,3 +1,5 @@
+#include <time.h>
+
 #include <ros/ros.h>
 #include <nbv_planner/GetNBV.h>
 #include <nbv_planner/GetNBVRequest.h>
@@ -43,9 +45,10 @@ class NBVSolver {
 
     bool GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVResponse& res);
 
-    void GenerateViewPosesSpherical(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList);
+//    void GenerateViewPosesSpherical(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList);
+    void GenerateViewPosesSpherical(float distance, int slices, float yawMin, float yawMax, float pitchMin, float pitchMax, tf::Transform &origin, std::list<tf::Transform> &poseList);
 
-    void GenerateViewPosesRandom(int numPoses, tf::Transform &origin, std::list<tf::Transform> &poseList);
+    void GenerateViewPosesRandom(int numPoses, std::list<tf::Transform> &poseList);
 
     int EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree);
 
