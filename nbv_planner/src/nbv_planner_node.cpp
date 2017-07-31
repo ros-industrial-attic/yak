@@ -168,8 +168,17 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 //  best_pose_ = *poseIt;
   tf::poseTFToMsg(*poseIt, res.bestViewPose);
 
+  if (*result <= 5)
+  {
+    // If very few unknown voxels are visible from the best view, then it's probably not worth exploring any more.
+    res.exploration_done = true;
+  }
+  else
+  {
+    res.exploration_done = false;
+  }
 
-  res.value = true;
+
 
   abstract_tree->clear();
 

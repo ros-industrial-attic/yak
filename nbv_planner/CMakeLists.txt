@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   octomap_ros
   pcl_ros
   tf
+  moveit_ros_planning_interface
 )
 
 find_package(octomap REQUIRED)
@@ -151,6 +152,9 @@ link_libraries(${OCTOMAP_LIBRARIES})
 
  add_executable(octomap_reset_node src/octomap_reset_node.cpp)
 
+ add_executable(exploration_controller_node src/exploration_controller_node.cpp)
+
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -167,6 +171,10 @@ link_libraries(${OCTOMAP_LIBRARIES})
  )
 
 target_link_libraries(octomap_reset_node
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(exploration_controller_node
   ${catkin_LIBRARIES}
 )
 

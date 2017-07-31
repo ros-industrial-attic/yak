@@ -1,6 +1,6 @@
 #Request
 ---
-bool value
+bool exploration_done
 geometry_msgs/Pose bestViewPose
 
 #Respose
