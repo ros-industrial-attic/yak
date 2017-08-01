@@ -17,14 +17,31 @@ bool Explorer::MoveToNBVs(moveit::planning_interface::MoveGroupInterface &move_g
 
   nbv_planner::GetNBV srv;
   nbv_client_.call(srv);
-  geometry_msgs::Pose move_target = srv.response.bestViewPose;
+  geometry_msgs::PoseArray move_targets = srv.response.bestViewPose;
 //  move_group.setPlannerId("RRTkConfigDefault");
   ROS_INFO_STREAM("Planner ID is " << move_group.getDefaultPlannerId());
-  move_group.setStartStateToCurrentState();
-  move_group.setPoseTarget(move_target);
-  if (!move_group.move())
+//  move_group.setStartStateToCurrentState();
+//  move_group.setPoseTarget(move_targets.poses[0]);
+//  if (!move_group.move())
+//  {
+//    ROS_ERROR("Can't move to the target");
+//  }
+
+  // Go to the best reachable pose
+  int currentPoseIndex = 0;
+  geometry_msgs::Pose targetPose = move_targets.poses[currentPoseIndex];
+  move_group.setPoseTarget(targetPose);
+  ROS_INFO_STREAM("Moving to pose: " << targetPose);
+  while (!move_group.move())
   {
-    ROS_ERROR("Can't move to the target");
+    currentPoseIndex++;
+    if (move_targets.poses.size() == 0) {
+      ROS_ERROR("Couldn't reach any of the provided poses!");
+      break;
+    }
+    targetPose = move_targets.poses[currentPoseIndex];
+    ROS_INFO_STREAM("Pose not reachable, trying next best pose: " << targetPose);
+    move_group.setPoseTarget(targetPose);
   }
 
 
@@ -62,7 +79,7 @@ int main(int argc, char* argv[])
 
     explorer.MoveToNBVs(move_group);
 
-    ros::waitForShutdown();
+//    ros::waitForShutdown();
 
     return 0;
 }

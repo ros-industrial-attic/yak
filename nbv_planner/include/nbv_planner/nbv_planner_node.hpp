@@ -56,6 +56,8 @@ class NBVSolver {
 
     void Update();
 
+    bool ComparePosesWithMetrics(const std::tuple<tf::Transform, int>& a, const std::tuple<tf::Transform, int>& b);
+
     ros::ServiceServer nbv_server_;
 
     ros::ServiceClient octomap_client_;

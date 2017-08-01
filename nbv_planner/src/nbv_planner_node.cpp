@@ -169,16 +169,32 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 
   ROS_INFO_STREAM("Best view is # " << indexOfMax);
 
-//  best_pose_ = *poseIt;
+
+//  std::sort(viewsWithMetrics.begin(), viewsWithMetrics.end(), NBVSolver::ComparePosesWithMetrics());
+  std::sort( viewsWithMetrics.begin(), viewsWithMetrics.end(), [ ]( const std::tuple<tf::Transform, int>& a, const std::tuple<tf::Transform, int>& b )
+  {
+     return std::get<1>(a) > std::get<1>(b);
+  });
+
   tf::StampedTransform base_to_volume;
   listener_.waitForTransform("base_link", "volume_pose", ros::Time::now(), ros::Duration(0.5));
   listener_.lookupTransform("base_link", "volume_pose", ros::Time(0), base_to_volume);
 
+  for (int i = 0; i < viewsWithMetrics.size(); i++) {
+    ROS_INFO_STREAM(std::get<1>(viewsWithMetrics[i]));
+    geometry_msgs::Pose aPose;
+    tf::poseTFToMsg(tf::Transform(base_to_volume.getRotation(), base_to_volume.getOrigin()) * std::get<0>(viewsWithMetrics[i]), aPose);
+    res.bestViewPose.poses.push_back(aPose);
+  }
+
+//  best_pose_ = *poseIt;
+
+
   // Need to return pose relative to base_link for robot planning. Right now it's relative to volume_pose.
 
-  tf::poseTFToMsg(tf::Transform(base_to_volume.getRotation(), base_to_volume.getOrigin()) * (*poseIt), res.bestViewPose);
+//  tf::poseTFToMsg(tf::Transform(base_to_volume.getRotation(), base_to_volume.getOrigin()) * (*poseIt), res.bestViewPose);
 
-  ROS_INFO_STREAM("Best pose (base-relative): " << res.bestViewPose);
+  ROS_INFO_STREAM("Best pose (base-relative): " << res.bestViewPose.poses.front());
 
   if (*result <= 5)
   {
@@ -195,6 +211,12 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   abstract_tree->clear();
 
   return true;
+}
+
+bool NBVSolver::ComparePosesWithMetrics(const std::tuple<tf::Transform, int>& a, const std::tuple<tf::Transform, int>& b) {
+  int first = std::get<1>(a);
+  int second = std::get<1>(b);
+  return first > second;
 }
 
 void NBVSolver::GenerateViewPosesSpherical(float distance, int slices, float yawMin, float yawMax, float pitchMin, float pitchMax, tf::Transform &origin, std::list<tf::Transform> &poseList)
@@ -342,6 +364,8 @@ void NBVSolver::Update()
   hit_ray_line_list_.header.stamp = ros::Time::now();
   hit_ray_pub_.publish(hit_ray_line_list_);
 }
+
+
 
 int main(int argc, char* argv[])
 {

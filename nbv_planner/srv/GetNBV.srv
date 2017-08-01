@@ -1,6 +1,6 @@
 #Request
 ---
 bool exploration_done
-geometry_msgs/Pose bestViewPose
+geometry_msgs/PoseArray bestViewPose
 
 #Respose
