@@ -139,8 +139,10 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   std::list<tf::Transform> poses;
   tf::Transform orbitCenter(tf::Quaternion(0,0,0,1), tf::Vector3((bound_min_.x()-bound_max_.x())/2, (bound_min_.y()-bound_max_.y())/2, (bound_max_.z()-bound_min_.z())/2));
 //  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, orbitCenter, poses);
-//  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, -M_PI/2, M_PI/2, M_PI/8, M_PI/2, orbitCenter, poses);
+//  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, -M_PI/8, M_PI/8, 3*M_PI/8, M_PI/2, orbitCenter, poses);
+
   GenerateViewPosesRandom(32, 0, 2*M_PI, M_PI/8, M_PI/2, 0.5, 0.75, poses);
+//  GenerateViewPosesRandom(1, M_PI, M_PI, M_PI/2, M_PI/2, 0.6, 0.6, poses);
 
   ray_line_list_.points.clear();
   hit_ray_line_list_.points.clear();
@@ -168,7 +170,15 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   ROS_INFO_STREAM("Best view is # " << indexOfMax);
 
 //  best_pose_ = *poseIt;
-  tf::poseTFToMsg(*poseIt, res.bestViewPose);
+  tf::StampedTransform base_to_volume;
+  listener_.waitForTransform("base_link", "volume_pose", ros::Time::now(), ros::Duration(0.5));
+  listener_.lookupTransform("base_link", "volume_pose", ros::Time(0), base_to_volume);
+
+  // Need to return pose relative to base_link for robot planning. Right now it's relative to volume_pose.
+
+  tf::poseTFToMsg(tf::Transform(base_to_volume.getRotation(), base_to_volume.getOrigin()) * (*poseIt), res.bestViewPose);
+
+  ROS_INFO_STREAM("Best pose (base-relative): " << res.bestViewPose);
 
   if (*result <= 5)
   {
@@ -198,6 +208,12 @@ void NBVSolver::GenerateViewPosesSpherical(float distance, int slices, float yaw
       tf::Transform yaw(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(angle)), tf::Vector3(0,0,0));
       tf::Transform pitch(tf::Quaternion(tf::Vector3(0,1,0), tfScalar(elevation)), tf::Vector3(0,0,0));
       poseList.push_back(origin*yaw*pitch*offset);
+
+//      tf::Transform pitch(tf::Quaternion(tf::Vector3(0,1,0), tfScalar(-elevation + 3*M_PI/2)), tf::Vector3(0,0,0));
+//      tf::Transform yaw(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(angle)), tf::Vector3(0,0,0));
+//      tf::Transform roll(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(-M_PI/2)), tf::Vector3(0,0,0));
+
+//      poseList.push_back(origin*yaw*pitch*roll*offset);
     }
   }
 }

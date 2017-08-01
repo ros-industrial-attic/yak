@@ -72,6 +72,7 @@ class NBVSolver {
 //    tf::Transform best_pose_;
 
     tf::TransformBroadcaster broadcaster_;
+    tf::TransformListener listener_;
 
     int ray_count_;
     int num_pose_slices_;

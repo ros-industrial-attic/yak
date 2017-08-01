@@ -16,22 +16,34 @@ bool Explorer::MoveToNBVs(moveit::planning_interface::MoveGroupInterface &move_g
    */
 
   nbv_planner::GetNBV srv;
-
-  while (true) {
-    nbv_client_.call(srv);
-    if (srv.response.exploration_done) {
-//      res.success = true;
-      ROS_INFO("Exploration done!");
-      break;
-    }
-    geometry_msgs::Pose move_target = srv.response.bestViewPose;
-    ROS_INFO_STREAM("Exploring towards pose " << srv.response.bestViewPose);
-    move_group.setPoseTarget(move_target);
-    ROS_INFO("Moving...");
-    move_group.move();
-    ROS_INFO("Done moving");
+  nbv_client_.call(srv);
+  geometry_msgs::Pose move_target = srv.response.bestViewPose;
+//  move_group.setPlannerId("RRTkConfigDefault");
+  ROS_INFO_STREAM("Planner ID is " << move_group.getDefaultPlannerId());
+  move_group.setStartStateToCurrentState();
+  move_group.setPoseTarget(move_target);
+  if (!move_group.move())
+  {
+    ROS_ERROR("Can't move to the target");
   }
-  return true;
+
+
+
+//  while (true) {
+//    nbv_client_.call(srv);
+//    if (srv.response.exploration_done) {
+////      res.success = true;
+//      ROS_INFO("Exploration done!");
+//      break;
+//    }
+//    geometry_msgs::Pose move_target = srv.response.bestViewPose;
+//    ROS_INFO_STREAM("Exploring towards pose " << srv.response.bestViewPose);
+//    move_group.setPoseTarget(move_target);
+//    ROS_INFO("Moving...");
+//    move_group.move();
+//    ROS_INFO("Done moving");
+//  }
+//  return true;
 }
 
 
@@ -45,11 +57,10 @@ int main(int argc, char* argv[])
 
     Explorer explorer(nh);
 
-
-    explorer.MoveToNBVs(move_group);
-
     ros::AsyncSpinner async_spinner(1);
     async_spinner.start();
+
+    explorer.MoveToNBVs(move_group);
 
     ros::waitForShutdown();
 
