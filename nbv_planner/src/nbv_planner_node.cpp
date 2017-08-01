@@ -140,7 +140,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
   tf::Transform orbitCenter(tf::Quaternion(0,0,0,1), tf::Vector3((bound_min_.x()-bound_max_.x())/2, (bound_min_.y()-bound_max_.y())/2, (bound_max_.z()-bound_min_.z())/2));
 //  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, orbitCenter, poses);
 //  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, -M_PI/2, M_PI/2, M_PI/8, M_PI/2, orbitCenter, poses);
-  GenerateViewPosesRandom(32, poses);
+  GenerateViewPosesRandom(32, 0, 2*M_PI, M_PI/8, M_PI/2, 0.5, 0.75, poses);
 
   ray_line_list_.points.clear();
   hit_ray_line_list_.points.clear();
@@ -202,30 +202,45 @@ void NBVSolver::GenerateViewPosesSpherical(float distance, int slices, float yaw
   }
 }
 
-void NBVSolver::GenerateViewPosesRandom(int numPoses, std::list<tf::Transform> &poseList)
+void NBVSolver::GenerateViewPosesRandom(int numPoses, float yawMin, float yawMax, float pitchMin, float pitchMax, float dMin, float dMax, std::list<tf::Transform> &poseList)
 {
   while (poseList.size() < numPoses)
   {
-    float originX = bound_min_.x() + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(bound_max_.x()- bound_min_.x())));
-    float originY = bound_min_.y() + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(bound_max_.y()- bound_min_.y())));
-    float originZ = bound_min_.z() + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(bound_max_.z()- bound_min_.z())));
+//    float originX = bound_min_.x() + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(bound_max_.x()- bound_min_.x())));
+//    float originY = bound_min_.y() + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(bound_max_.y()- bound_min_.y())));
+//    float originZ = bound_min_.z() + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(bound_max_.z()- bound_min_.z())));
+
+    float originX = this->RandInRange(bound_min_.x(), bound_max_.x());
+    float originY = this->RandInRange(bound_min_.y(), bound_max_.y());
+    float originZ = this->RandInRange(bound_min_.z(), bound_max_.z());
+
     tf::Transform origin(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(0)), tf::Vector3(originX, originY, originZ));
 
-    float distance = 0.5 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(0.75 - 0.5)));
-    tf::Transform offset(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(0)), tf::Vector3(-distance, 0, 0));
+//    float distance = dMin + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(dMax - dMin)));
+    float distance = this->RandInRange(dMin, dMax);
+    tf::Transform offset(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(0)), tf::Vector3(0, 0, -distance));
 
-    float angle = 0 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(2*M_PI - 0)));
-    float elevation = 0 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(M_PI/2 - 0)));
+//    float angle = yawMin + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(yawMax - yawMin)));
+//    float elevation = pitchMin + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(pitchMax - pitchMin)));
+    float angle = this->RandInRange(yawMin, yawMax);
+    float elevation = this->RandInRange(pitchMin, pitchMax);
 
+    tf::Transform pitch(tf::Quaternion(tf::Vector3(0,1,0), tfScalar(-elevation + 3*M_PI/2)), tf::Vector3(0,0,0));
     tf::Transform yaw(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(angle)), tf::Vector3(0,0,0));
-    tf::Transform pitch(tf::Quaternion(tf::Vector3(0,1,0), tfScalar(elevation)), tf::Vector3(0,0,0));
+    tf::Transform roll(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(-M_PI/2)), tf::Vector3(0,0,0));
 
-    poseList.push_back(origin*yaw*pitch*offset);
+//    poseList.push_back(origin*yaw*pitch*offset);
+    poseList.push_back(origin*yaw*pitch*roll*offset);
   }
   //TODO: Not yet implemented
 }
 
+float NBVSolver::RandInRange(float min, float max) {
+  return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max - min)));
+}
+
 int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree)
+// TODO: Raycast in +Z direction
 {
   float fov = M_PI/4.0;
 //  int rayCount = 15;
@@ -239,12 +254,12 @@ int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &t
     for (float angleHeight = -fov/2.0; angleHeight <= fov/2.0; angleHeight += fov/ray_count_)
     {
       tf::Matrix3x3 rotationMat;
-      rotationMat.setRPY(tfScalar(0.0), tfScalar(angleHeight), tfScalar(angleWidth));
+      rotationMat.setRPY(tfScalar(angleHeight), tfScalar(angleWidth), tfScalar(0.0));
 
       tf::Quaternion rotation;
       rotationMat.getRotation(rotation);
 
-      tf::Transform rayTf(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(0)), tf::Vector3(1,0,0));
+      tf::Transform rayTf(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(0)), tf::Vector3(0,0,1));
       tf::Transform rayRotated = tf::Transform(pose.getRotation(), tf::Vector3(0,0,0)) * tf::Transform(rotation, tf::Vector3(0,0,0)) * rayTf;
       tf::Vector3 ray = rayRotated.getOrigin();
       rays.push_back(octomap::pointTfToOctomap(ray));

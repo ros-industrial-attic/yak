@@ -52,6 +52,8 @@ class VolumePosePublisher {
     }
 
     void Update() {
+
+      tf::Transform currentOriginPose = lastOriginPose_;
       // Publish the most recent pose
 //      ROS_INFO("Start update");
 
@@ -139,11 +141,11 @@ class VolumePosePublisher {
       box_line_list.points.push_back(c8);
 
 
-      tf::StampedTransform transformStamped(lastOriginPose_, ros::Time::now(), "base_link", "volume_pose");
+      tf::StampedTransform transformStamped(currentOriginPose, ros::Time::now(), "base_link", "volume_pose");
 
       broadcaster_.sendTransform(transformStamped);
 
-//      box_line_pub_.publish(box_line_list);
+      box_line_pub_.publish(box_line_list);
 
 
 //      ROS_INFO("update");

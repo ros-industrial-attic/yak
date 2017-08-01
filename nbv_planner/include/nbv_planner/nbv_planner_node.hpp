@@ -48,9 +48,11 @@ class NBVSolver {
 //    void GenerateViewPosesSpherical(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList);
     void GenerateViewPosesSpherical(float distance, int slices, float yawMin, float yawMax, float pitchMin, float pitchMax, tf::Transform &origin, std::list<tf::Transform> &poseList);
 
-    void GenerateViewPosesRandom(int numPoses, std::list<tf::Transform> &poseList);
+    void GenerateViewPosesRandom(int numPoses, float yawMin, float yawMax, float pitchMin, float pitchMax, float dMin, float dMax, std::list<tf::Transform> &poseList);
 
     int EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree);
+
+    float RandInRange(float min, float max);
 
     void Update();
 

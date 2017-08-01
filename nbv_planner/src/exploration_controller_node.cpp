@@ -41,14 +41,17 @@ int main(int argc, char* argv[])
     ros::init(argc, argv, "exploration_controller_node");
     ros::NodeHandle nh;
 
-    moveit::planning_interface::MoveGroupInterface move_group("manipulator");
+    moveit::planning_interface::MoveGroupInterface move_group("manipulator_ensenso");
 
     Explorer explorer(nh);
+
+
+    explorer.MoveToNBVs(move_group);
 
     ros::AsyncSpinner async_spinner(1);
     async_spinner.start();
 
-    explorer.MoveToNBVs(move_group);
+    ros::waitForShutdown();
 
     return 0;
 }
