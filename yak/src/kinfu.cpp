@@ -268,7 +268,7 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     }
 
 //    poses_.push_back(poses_.back() * cameraMotion);
-    if (params_.update_via_sensor_motion){
+    if (params_.use_icp){
         // Update pose with latest measured pose
         // TODO: Make this not put the estimated sensor pose in the wrong position relative to the global frame.
         cout << "Updating via motion" << endl;

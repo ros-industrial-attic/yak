@@ -1,3 +1,0 @@
-meshing_plugin_name: "concave_hull_mesher::ConcaveHullMesher"
-blend_tool_planning_plugin_name: "path_planning_plugins::openveronoi::BlendPlanner"
-scan_tool_planning_plugin_name: "path_planning_plugins::openveronoi::ScanPlanner"

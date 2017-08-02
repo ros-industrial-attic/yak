@@ -8,7 +8,8 @@ Explorer::Explorer(ros::NodeHandle &nh) {
 
 }
 
-bool Explorer::MoveToNBVs(moveit::planning_interface::MoveGroupInterface &move_group) {
+bool Explorer::MoveToNBVs(moveit::planning_interface::MoveGroupInterface &move_group)
+{
   /*
    * While "finished" criteria is False:
    * - Get next best view given current information
@@ -40,7 +41,61 @@ bool Explorer::MoveToNBVs(moveit::planning_interface::MoveGroupInterface &move_g
       ROS_INFO_STREAM("Pose not reachable, trying next best pose: " << targetPose);
       move_group.setPoseTarget(targetPose);
     }
+
+
+    //    geometry_msgs::PoseArray posesToTarget;
+    //    geometry_msgs::Pose currentPose = move_group.getCurrentPose().pose;
+    //    ROS_INFO_STREAM("Current pose: " << currentPose);
+    //    InterpolatePoses(currentPose, targetPose, posesToTarget, 5);
+
+    //    ROS_INFO_STREAM("Moving to pose: " << targetPose);
+    //    while (!MoveToPoseSeries(move_group, posesToTarget))
+    //    {
+    //      currentPoseIndex++;
+    //      if (move_targets.poses.size() == 0) {
+    //        ROS_ERROR("Couldn't reach any of the provided poses!");
+    //        break;
+    //      }
+    //      targetPose = move_targets.poses[currentPoseIndex];
+    //      posesToTarget.poses.clear();
+    //      InterpolatePoses(move_group.getCurrentPose().pose, targetPose, posesToTarget, 5);
+    //      ROS_INFO_STREAM("Pose not reachable, trying next best pose: " << targetPose);
+    //    }
+    //  }
   }
+}
+
+bool Explorer::MoveToPoseSeries(moveit::planning_interface::MoveGroupInterface &move_group, geometry_msgs::PoseArray &posesIn)
+{
+  for (int i = 0; i < posesIn.poses.size(); i++){
+    move_group.setPoseTarget(posesIn.poses[i]);
+    ROS_INFO_STREAM("Intermediate pose: " << posesIn.poses[i]);
+    if(!move_group.move())
+    {
+      ROS_INFO("Couldn't move to that pose!");
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Explorer::InterpolatePoses(geometry_msgs::Pose start, geometry_msgs::Pose end, geometry_msgs::PoseArray &posesOut, int numSteps)
+{
+  ROS_INFO("Interpolating poses");
+  tf::Transform startTf, endTf;
+  tf::poseMsgToTF(start, startTf);
+  tf::poseMsgToTF(end, endTf);
+
+  for (float proportion = 0; proportion <= 1.0; proportion+=(1.0/(float)numSteps))
+  {
+    ROS_INFO_STREAM("Proportion: " << proportion);
+    tf::Transform interpolatedTf(startTf.getRotation().slerp(endTf.getRotation(), tfScalar(proportion)), startTf.getOrigin().lerp(endTf.getOrigin(), tfScalar(proportion)));
+    geometry_msgs::Pose interpolated;
+    tf::poseTFToMsg(interpolatedTf, interpolated);
+    posesOut.poses.push_back(interpolated);
+    ROS_INFO_STREAM(interpolated);
+  }
+  return true;
 }
 
 
@@ -51,6 +106,7 @@ int main(int argc, char* argv[])
     ros::NodeHandle nh;
 
     moveit::planning_interface::MoveGroupInterface move_group("manipulator_ensenso");
+    move_group.setPlanningTime(0.5);
 
     Explorer explorer(nh);
 

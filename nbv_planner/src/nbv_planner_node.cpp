@@ -54,7 +54,7 @@ NBVSolver::NBVSolver(ros::NodeHandle &nh)
 //  nh.param<float>("raycast_distance", raycast_distance_);
 
   num_pose_slices_ = 8;
-  ray_count_ = 31;
+  ray_count_ = 15;
   raycast_distance_ = 0.5;
 
   ROS_INFO_STREAM(num_pose_slices_ << " " << ray_count_ << " " << raycast_distance_);
@@ -141,7 +141,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 //  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, orbitCenter, poses);
 //  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, -M_PI/8, M_PI/8, 3*M_PI/8, M_PI/2, orbitCenter, poses);
 
-  GenerateViewPosesRandom(64, 0, 2*M_PI, M_PI/8, M_PI/2, 0.5, 0.75, poses);
+  GenerateViewPosesRandom(64, 0, 2*M_PI, M_PI/16, M_PI/2, 0.5, 0.75, poses);
 //  GenerateViewPosesRandom(1, M_PI, M_PI, M_PI/2, M_PI/2, 0.6, 0.6, poses);
 
   ray_line_list_.points.clear();
@@ -250,7 +250,8 @@ void NBVSolver::GenerateViewPosesRandom(int numPoses, float yawMin, float yawMax
 
     float originX = this->RandInRange(bound_min_.x(), bound_max_.x());
     float originY = this->RandInRange(bound_min_.y(), bound_max_.y());
-    float originZ = this->RandInRange(bound_min_.z(), bound_max_.z());
+//    float originZ = this->RandInRange(bound_min_.z(), bound_max_.z());
+    float originZ = (bound_max_.z() + bound_min_.z())/2.0;
 
     tf::Transform origin(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(0)), tf::Vector3(originX, originY, originZ));
 
@@ -278,10 +279,8 @@ float NBVSolver::RandInRange(float min, float max) {
 }
 
 int NBVSolver::EvaluateCandidateView(tf::Transform pose, octomap::ColorOcTree &tree, octomap::ColorOcTree &unknownTree)
-// TODO: Raycast in +Z direction
 {
-  float fov = M_PI/4.0;
-//  int rayCount = 15;
+  float fov = M_PI/6.0;
 
   int unknownCount = 0;
 
