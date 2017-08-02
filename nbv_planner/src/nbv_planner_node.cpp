@@ -54,7 +54,7 @@ NBVSolver::NBVSolver(ros::NodeHandle &nh)
 //  nh.param<float>("raycast_distance", raycast_distance_);
 
   num_pose_slices_ = 8;
-  ray_count_ = 15;
+  ray_count_ = 31;
   raycast_distance_ = 0.5;
 
   ROS_INFO_STREAM(num_pose_slices_ << " " << ray_count_ << " " << raycast_distance_);
@@ -141,7 +141,7 @@ bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVRespo
 //  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, orbitCenter, poses);
 //  GenerateViewPosesSpherical(raycast_distance_, num_pose_slices_, -M_PI/8, M_PI/8, 3*M_PI/8, M_PI/2, orbitCenter, poses);
 
-  GenerateViewPosesRandom(32, 0, 2*M_PI, M_PI/8, M_PI/2, 0.5, 0.75, poses);
+  GenerateViewPosesRandom(64, 0, 2*M_PI, M_PI/8, M_PI/2, 0.5, 0.75, poses);
 //  GenerateViewPosesRandom(1, M_PI, M_PI, M_PI/2, M_PI/2, 0.6, 0.6, poses);
 
   ray_line_list_.points.clear();
