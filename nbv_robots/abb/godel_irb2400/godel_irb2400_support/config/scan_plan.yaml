@@ -1,0 +1,10 @@
+scan_plan:
+  scan_width: 0.01
+  traverse_speed: 0.2
+  approach_distance: 0.15
+  overlap: 0.001
+  margin: 0
+  quality_metric: "rms"
+  window_width: 0.02
+  min_qa_value: 0.05
+  max_qa_value: 0.05

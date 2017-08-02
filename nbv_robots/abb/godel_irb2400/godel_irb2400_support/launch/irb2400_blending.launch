@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- arguments -->
+  <arg name="sim_robot" default="true"/>
+  <arg name="robot_ip" unless="$(arg sim_robot)" />
+  <arg name="sim_laser" default="true"/>
+  <arg name="laser_ip" unless="$(arg sim_laser)" default="192.168.32.50"/>
+  <arg name="robot_model_plugin" default="abb_irb2400_descartes/AbbIrb2400RobotModel"/>
+  <arg name="sim_sensor" default="true"/>
+  <arg name="real_pcd" default="false"/>
+  <arg name="pcd_location"/> <!-- path to pcd file of part -->
+  <arg name="pcd_frame" default="/base_link"/>
+  <arg name="debug_rviz" default="false"/>
+  <arg name="debug_core" default="false"/> <!--Brings up the surface blending service in debug mode-->
+  <arg name="save_data" default="false" />
+  <arg name="save_location" default="$(env HOME)/.ros/" />
+
+  <!-- Brings up action interface for simple trajectory execution - used by laser scanner process execution -->
+  <node name="path_execution_service" pkg="godel_path_execution" type="path_execution_service_node"/>
+
+  <!-- Launches the blend/scan process planners: requires descartes plugin for the robot model -->
+  <include file="$(find godel_process_planning)/launch/process_planning.launch">
+    <arg name="robot_model_plugin" value="$(arg robot_model_plugin)"/>
+  </include>
+
+  <!-- Process execution nodes: These monitor the state of robot's execution of the planned path. They can be, and in this case are, robot or vendor specific -->
+  <group>
+    <remap from="simulate_path" to="simulation/simulate_trajectory"/>
+
+    <!-- Choose between 'execution' handlers based on whether we're connected to a real robot -->
+    <group if="$(arg sim_robot)">
+      <node name="blend_process_execution" pkg="godel_process_execution" type="blend_process_service_node"/>
+    </group>
+
+    <group unless="$(arg sim_robot)">
+      <!-- This requires connection to the service port of a physical robot controller -->
+      <node name="blend_process_execution" pkg="godel_process_execution" type="abb_blend_process_service_node"/>
+    </group>
+
+    <node name="scan_process_execution" pkg="godel_process_execution" type="keyence_process_service_node"/>
+  </group>
+  <!-- Bring up simulated robot that can be visualized under the tf namespace 'simulation'
+       Allows for previewing paths generated before execution. -->
+  <include file="$(find industrial_robot_simulator_service)/launch/start_simulation_server.launch"/>
+
+  <!-- Brings up the core blending service: this includes the tool path planners
+       for both the blender and the laser scanner. -->
+  <include file="$(find godel_surface_detection)/launch/godel_core.launch">
+    <arg name="config_path" value="$(find godel_irb2400_support)/config"/>
+    <arg name="debug" value="$(arg debug_core)"/>
+    <arg name="save_data" value="$(arg save_data)" />
+    <arg name="save_location" value="$(arg save_location)" />
+  </include>
+
+  <!-- If the user specifies a 'fake' sensor, publish fake data clouds -->
+  <group if="$(arg sim_sensor)">
+    <group if="$(arg real_pcd)">
+      <remap from="cloud_pcd" to="sensor_point_cloud"/>
+      <node pkg="pcl_ros" type="pcd_to_pointcloud" name="point_cloud_generator_node" args="$(arg pcd_location) 0.5">
+        <param name="frame_id" type="string" value="$(arg pcd_frame)"/>
+      </node>
+    </group>
+    <group unless="$(arg real_pcd)">
+      <remap from="generated_cloud" to="sensor_point_cloud"/>
+      <node pkg="godel_surface_detection" type="point_cloud_generator_node" name="point_cloud_generator_node">
+        <rosparam command="load" file="$(find godel_irb2400_support)/config/point_cloud_descriptions.yaml"/>
+      </node>
+    </group>
+  </group>
+
+  <!-- If the user uses the real sensor, launch the ensenso publisher node -->
+  <group unless="$(arg sim_sensor)">
+    <remap from="/depth/points" to="/sensor_point_cloud"/>
+    <param name="camera_frame_id" type="string" value="tool0" />
+    <node name="ensenso_publisher_node" pkg="ensenso_publisher" type="ensenso_publisher_node" output="screen" required="true">
+        <param name="FlexView" type="bool" value="true" />
+        <param name="FlexViewImages" type="int" value="4" />
+    </node>
+  </group>
+
+  <group unless="$(arg sim_laser)">
+    <!--Bring up scan analysis code-->
+    <include file="$(find godel_scan_analysis)/launch/scan_analysis.launch">
+      <arg name="world_frame" value="world_frame"/>
+      <arg name="scan_frame" value="keyence_sensor_optical_frame"/>
+      <arg name="voxel_leaf_size" value="0.0005"/>
+    </include>
+
+    <!--Bring up the driver hardware for the Keyence-->
+    <node name="keyence_driver" pkg="keyence_experimental" type="keyence_driver_node">
+      <param name="controller_ip" value="$(arg laser_ip)"/>
+      <param name="frame_id" value="keyence_sensor_optical_frame"/>
+    </node>
+  </group>
+
+  <!-- rviz w/ specified configuration -->
+  <group if="$(arg debug_rviz)">
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find godel_irb2400_support)/rviz/irb2400_blending.rviz" output="screen" launch-prefix="xterm -e gdb --args" required="true"/>
+  </group>
+  <group unless="$(arg debug_rviz)">
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find godel_irb2400_support)/rviz/irb2400_blending.rviz" output="screen" launch-prefix="nice" required="true"/>
+  </group>
+
+  <!-- Bring up the MoveIt interface to the real or simulated robot -->
+  <include file="$(find godel_irb2400_moveit_config)/launch/moveit_planning_execution.launch">
+    <arg name="rviz" value="false"/>
+    <arg name="sim" value="$(arg sim_robot)"/>
+    <arg name="robot_ip" value="$(arg robot_ip)" unless="$(arg sim_robot)"/>
+  </include>
+
+  <node pkg="tf" type="static_transform_publisher" name="ensenso_static_tf" args="0 0 0 0 1.57 0 kinect2_move_frame camera_optical_frame 100" />
+  <rosparam command="load" file="$(find meshing_plugins)/config/meshing.yaml" />
+  <rosparam command="load" file="$(find path_planning_plugins)/config/path_planning.yaml" />
+  <rosparam command="load" file="$(find godel_process_planning)/config/process_planning.yaml" />
+
+</launch>

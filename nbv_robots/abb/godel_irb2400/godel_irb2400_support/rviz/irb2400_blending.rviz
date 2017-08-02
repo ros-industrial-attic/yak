@@ -1,0 +1,445 @@
+Panels:
+  - Class: godel_simple_gui/BlendingPanel
+    Name: BlendingPanel
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Tool Path Preview1
+      Splitter Ratio: 0.5
+    Tree Height: 337
+  - Class: godel_plugins/RobotBlendingPanel
+    Name: RobotBlendingPanel
+    TextEntry: test_field
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: EligibleSurfaces
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /surface_marker_server/update
+      Value: true
+    - Alpha: 0.400000006
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Macro Scan Cloud
+      Position Transformer: XYZ
+      Queue Size: 1
+      Selectable: false
+      Size (Pixels): 1
+      Size (m): 0.00999999978
+      Style: Points
+      Topic: /sensor_point_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Arrow Length: 0.0500000007
+      Axes Length: 0.100000001
+      Axes Radius: 0.00999999978
+      Class: rviz/PoseArray
+      Color: 0; 255; 255
+      Enabled: true
+      Head Length: 0.0700000003
+      Head Radius: 0.0299999993
+      Name: Camera Image Points
+      Shaft Length: 0.230000004
+      Shaft Radius: 0.00999999978
+      Shape: Arrow (Flat)
+      Topic: robot_scan_path_preview
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        blending_tool:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        chuck_tip_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        eff_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ensenso:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ensenso_sensor_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_body:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        keyence:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        keyence_sensor_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        keyence_tcp_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect2_move_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        link_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        tcp_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        tool0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        world_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Name: ActualRobot
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Alpha: 0.5
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        blending_tool:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        chuck_tip_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        eff_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ensenso:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ensenso_sensor_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        gripper_body:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        keyence:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        keyence_sensor_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        keyence_tcp_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect2_move_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        link_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        link_6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        tcp_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        tool0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        world_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Name: SimulatedRobot
+      Robot Description: robot_description
+      TF Prefix: simulation
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Laser Scan Cloud
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.00999999978
+      Style: Points
+      Topic: /color_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /tool_path_preview
+      Name: Tool Path Preview
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/TF
+      Enabled: false
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: false
+    - Alpha: 1
+      Arrow Length: 0.300000012
+      Axes Length: 0.00499999989
+      Axes Radius: 0.00100000005
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.0700000003
+      Head Radius: 0.0299999993
+      Name: EdgePoseArray
+      Shaft Length: 0.230000004
+      Shaft Radius: 0.00999999978
+      Shape: Axes
+      Topic: /edge_visualization
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Arrow Length: 0.300000012
+      Axes Length: 0.00499999989
+      Axes Radius: 0.00100000005
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: false
+      Head Length: 0.0700000003
+      Head Radius: 0.0299999993
+      Name: BlendPoseArray
+      Shaft Length: 0.230000004
+      Shaft Radius: 0.00999999978
+      Shape: Axes
+      Topic: /blend_visualization
+      Unreliable: false
+      Value: false
+    - Alpha: 1
+      Arrow Length: 0.300000012
+      Axes Length: 0.00499999989
+      Axes Radius: 0.00100000005
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: false
+      Head Length: 0.0700000003
+      Head Radius: 0.0299999993
+      Name: ScanPoseArray
+      Shaft Length: 0.230000004
+      Shaft Radius: 0.00999999978
+      Shape: Axes
+      Topic: /scan_visualization
+      Unreliable: false
+      Value: false
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: world_frame
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/Select
+    - Class: rviz/SetInitialPose
+      Topic: initialpose
+    - Class: rviz/SetGoal
+      Topic: goal
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 4.5955658
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.0599999987
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0.484392911
+        Y: -0.0584972017
+        Z: 0.519352317
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.0500000007
+      Name: Current View
+      Near Clip Distance: 0.00999999978
+      Pitch: 0.609797239
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 5.54469919
+    Saved: ~
+Window Geometry:
+  BlendingPanel:
+    collapsed: false
+  Displays:
+    collapsed: false
+  Height: 804
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd00000001000000000000022b000002defc0200000002fc00000028000002de000000fb0100001dfa000000000100000003fb000000240052006f0062006f00740042006c0065006e00640069006e006700500061006e0065006c0100000000ffffffff000000bf00fffffffb000000100044006900730070006c0061007900730100000000ffffffff0000016a00fffffffb0000001a0042006c0065006e00640069006e006700500061006e0065006c0100000000000001ba0000009500fffffffb0000001a0042006c0065006e00640069006e006700500061006e0065006c00000004480000001600000000000000000000040f000002de00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  RobotBlendingPanel:
+    collapsed: false
+  Width: 1600
+  X: 0
+  Y: 28

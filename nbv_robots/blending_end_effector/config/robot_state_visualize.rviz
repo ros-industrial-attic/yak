@@ -1,0 +1,240 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Status1
+        - /RobotModel1
+        - /TF1
+      Splitter Ratio: 0.5
+    Tree Height: 785
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+    Name: Tool Properties
+    Splitter Ratio: 0.588679016
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: ""
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.0299999993
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        adapter_tube:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        blending_tool:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bracket:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        chuck_tip_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        eff_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ensenso:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ensenso_sensor_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        keyence:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        keyence_sensor_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        keyence_tcp_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        kinect2_move_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        tcp_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        world_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        adapter_tube:
+          Value: true
+        blending_tool:
+          Value: true
+        bracket:
+          Value: true
+        chuck_tip_frame:
+          Value: true
+        eff_frame:
+          Value: true
+        ensenso:
+          Value: true
+        ensenso_sensor_optical_frame:
+          Value: true
+        keyence:
+          Value: true
+        keyence_sensor_optical_frame:
+          Value: true
+        keyence_tcp_frame:
+          Value: true
+        kinect2_move_frame:
+          Value: true
+        tcp_frame:
+          Value: true
+        world_frame:
+          Value: true
+      Marker Scale: 0.5
+      Name: TF
+      Show Arrows: false
+      Show Axes: true
+      Show Names: true
+      Tree:
+        world_frame:
+          eff_frame:
+            adapter_tube:
+              bracket:
+                blending_tool:
+                  {}
+                chuck_tip_frame:
+                  tcp_frame:
+                    {}
+                ensenso:
+                  {}
+                ensenso_sensor_optical_frame:
+                  kinect2_move_frame:
+                    {}
+                keyence:
+                  {}
+                keyence_sensor_optical_frame:
+                  {}
+                keyence_tcp_frame:
+                  {}
+      Update Interval: 0
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: world_frame
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 1.59904063
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.0599999987
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: -0.130604297
+        Y: 0.113096185
+        Z: 0.0202012621
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.0500000007
+      Name: Current View
+      Near Clip Distance: 0.00999999978
+      Pitch: 0.485397756
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 0.795399845
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 998
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a000003a0fc0200000005fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000028000003a0000000dd00ffffff000000010000010f000003a0fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730100000028000003a0000000b000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004a00000003efc0100000002fb0000000800540069006d00650000000000000004a00000030000fffffffb0000000800540069006d006501000000000000045000000000000000000000027b000003a000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1280
+  X: 65
+  Y: 50

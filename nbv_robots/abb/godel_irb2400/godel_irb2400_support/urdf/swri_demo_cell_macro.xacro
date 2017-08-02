@@ -1,0 +1,119 @@
+<?xml version="1.0" ?>
+
+<!-- Exports macro: "xacro:swri_demo_cell" with 1 arg: prefix -->
+<!-- Root link: ${prefix}demo_cell_base_link -->
+<!-- Origin is at the robot (IRB 2400) mounting location -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="demo_cell_width" value="1.8288"/> <!-- 60" table + 12" forward-->
+  <xacro:property name="demo_cell_length" value="1.524"/> <!--36" table + 12" left + 12" right -->
+  <xacro:property name="demo_cell_height" value="2.4384"/> <!--96"  vertical-->
+
+  <xacro:property name="robot_to_corner_x" value="-0.45"/> <!-- 17.7165" from back -->
+  <xacro:property name="robot_to_corner_y" value="-0.762"/> <!-- middle of width -->
+
+  <xacro:property name="demo_cell_wall_thickness" value="0.05"/>
+
+  <!--
+    The demo cell macro
+    * All uses of "left" and "right" are relative to an observer looking into the cage
+    * through the light curtains
+  -->
+  <xacro:macro name="swri_demo_cell" params="prefix">
+
+  <link name="${prefix}demo_cell_base_link" />
+
+  <link name="${prefix}demo_cell_corner"/>
+
+  <link name="${prefix}demo_cell_back_wall">
+    <collision>
+      <geometry>
+        <box size="${demo_cell_wall_thickness} ${demo_cell_length} ${demo_cell_height}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="${prefix}demo_cell_right_wall">
+    <collision>
+      <geometry>
+        <box size="${demo_cell_width} ${demo_cell_wall_thickness} ${demo_cell_height}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="${prefix}demo_cell_left_wall">
+    <collision>
+      <geometry>
+        <box size="${demo_cell_width} ${demo_cell_wall_thickness} ${demo_cell_height}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- light curtains -->
+  <link name="${prefix}demo_cell_front_wall">
+    <collision>
+      <geometry>
+        <box size="${demo_cell_wall_thickness} ${demo_cell_length} ${demo_cell_height}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="${prefix}demo_cell_roof">
+    <collision>
+      <geometry>
+        <box size="${demo_cell_width} ${demo_cell_length} ${demo_cell_wall_thickness}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="${prefix}demo_cell_floor">
+    <collision>
+      <geometry>
+        <box size="${demo_cell_width} ${demo_cell_length} ${demo_cell_wall_thickness}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="${prefix}cell_baselink_to_corner" type="fixed">
+    <parent link="${prefix}demo_cell_base_link"/>
+    <child link="${prefix}demo_cell_corner"/>
+    <origin xyz="${robot_to_corner_x} ${robot_to_corner_y} 0"/>
+  </joint>
+
+  <joint name="${prefix}cell_corner_to_back" type="fixed">
+    <parent link="${prefix}demo_cell_corner"/>
+    <child link="${prefix}demo_cell_back_wall"/>
+    <origin xyz="${-0.5 * demo_cell_wall_thickness} ${demo_cell_length / 2.0} ${demo_cell_height / 2.0}"/>
+  </joint>
+
+  <joint name="${prefix}cell_corner_to_left" type="fixed">
+    <parent link="${prefix}demo_cell_corner"/>
+    <child link="${prefix}demo_cell_left_wall"/>
+    <origin xyz="${demo_cell_width / 2.0} ${-0.5 * demo_cell_wall_thickness} ${demo_cell_height / 2.0}"/>
+  </joint>
+
+  <joint name="${prefix}cell_corner_to_front" type="fixed">
+    <parent link="${prefix}demo_cell_corner"/>
+    <child link="${prefix}demo_cell_front_wall"/>
+    <origin xyz="${demo_cell_width + 0.5 * demo_cell_wall_thickness} ${demo_cell_length / 2.0} ${demo_cell_height / 2.0}"/>
+  </joint>
+
+  <joint name="${prefix}cell_corner_to_right" type="fixed">
+    <parent link="${prefix}demo_cell_corner"/>
+    <child link="${prefix}demo_cell_right_wall"/>
+    <origin xyz="${demo_cell_width / 2.0} ${demo_cell_length + 0.5 * demo_cell_wall_thickness} ${demo_cell_height / 2.0}"/>
+  </joint>
+
+  <joint name="${prefix}cell_corner_to_roof" type="fixed">
+    <parent link="${prefix}demo_cell_corner"/>
+    <child link="${prefix}demo_cell_roof"/>
+    <origin xyz="${demo_cell_width / 2.0} ${demo_cell_length / 2.0} ${demo_cell_height + 0.5 * demo_cell_wall_thickness}"/>
+  </joint>
+
+  <joint name="${prefix}cell_corner_to_floor" type="fixed">
+    <parent link="${prefix}demo_cell_corner"/>
+    <child link="${prefix}demo_cell_floor"/>
+    <origin xyz="${demo_cell_width / 2.0} ${demo_cell_length / 2.0} ${-0.5 * demo_cell_wall_thickness}"/>
+  </joint>
+
+  </xacro:macro>
+</robot>

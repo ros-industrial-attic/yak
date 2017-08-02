@@ -1,0 +1,13 @@
+blending_plan:
+  tool_radius: 0.0125            # (m) actual radius of blending tool
+  margin: 0.001                  # (m) additional distance to leave near surface boundaries
+  overlap: 0.00                  # (m) overlap distance between adjacent paths
+  approach_spd: 0.005            # (m/s) Speed to approach surface of part
+  blending_spd: 0.3              # (m/s) Speed to perform blending
+  retract_spd: 0.02              # (m/s) Speed to move away from surface of part
+  traverse_spd: 0.3              # (m/s) Speed to travel while at traverse height
+  discretization: 0.0025         # (m) How densely to space adjacent Cartesian points
+  safe_traverse_height: 0.05     # (m) height above surface to rise during rapid traversal moves
+  min_boundary_length: .03       # (m) Boundaries below threshold are ignored during process path creation
+  tool_force: 0.0                # (kg)
+  spindle_speed: 0.0             # (rad/s)

@@ -1,0 +1,34 @@
+surface_detection:
+  frame_id: "world_frame"
+  k_search: 20
+  marker_alpha: 1
+
+  meanK: 10
+  stdv_threshold: 4
+
+  rg_min_cluster_size: 100
+  rg_max_cluster_size: 10000
+  rg_neighbors: 20
+  rg_smoothness_threshold: 0.07853981633974483
+  rg_curvature_threshold: 2.0
+
+  stout_mean: 1.0
+  stout_stdev_threshold: 3.0
+
+  voxel_leaf: 0.005
+  tabletop_seg_distance_thresh: 0.005
+  use_tabletop_segmentation:  False
+  ignore_largest_cluster: False
+
+  mls_point_density: 100
+  mls_upsampling_radius: 0.01
+  mls_search_radius: 0.04
+
+  pa_enabled: True
+  pa_seg_max_iterations: 200
+  pa_seg_dist_threshold: 0.01
+  pa_sac_plane_distance: 0.01
+  pa_kdtree_radius: 0.01
+
+  use_octomap: False
+  occupancy_threshold: 0.5

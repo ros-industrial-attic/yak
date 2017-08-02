@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<robot name="blending_eef" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find blending_end_effector)/urdf/blending_eff_macro.xacro"/>
+  
+  <link name="world_frame"/>  
+
+  <xacro:blending_eff_definition prefix=""/>
+
+  <joint name="world_to_eef" type="fixed">
+    <parent link="world_frame"/>
+    <child link="eff_frame"/>
+  </joint>
+
+</robot>

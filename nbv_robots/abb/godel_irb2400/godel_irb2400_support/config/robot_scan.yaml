@@ -1,0 +1,35 @@
+robot_scan:
+  group_name: manipulator_asus
+  home_position: home_asus
+  world_frame: world_frame
+  tcp_frame: kinect2_move_frame
+  tcp_to_cam_pose:
+    trans:
+      x: 0
+      y: 0
+      z: 0
+    quat:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+  world_to_obj_pose:
+    trans:
+      x: 0.5
+      y: 0.0
+      z: 0.5
+    quat:
+      x: 0
+      y: 0
+      z: 0
+      w: 1
+  cam_to_obj_zoffset: 0.6
+  cam_to_obj_xoffset: 0.5
+  cam_tilt_angle: 1.57
+  sweep_angle_start: 0
+  sweep_angle_end: 0.25
+  scan_topic: sensor_point_cloud
+  scan_target_frame: world_frame
+  reachable_scan_points_ratio: 1.0
+  stop_on_planning_error: true
+  num_scan_points: 3

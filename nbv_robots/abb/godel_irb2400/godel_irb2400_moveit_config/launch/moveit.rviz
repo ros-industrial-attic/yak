@@ -1,0 +1,591 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 84
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /MotionPlanning1
+        - /RobotModel1
+        - /PointCloud21
+        - /Image1
+        - /TF1
+        - /TF1/Frames1
+        - /TF1/Tree1
+        - /PointCloud22
+      Splitter Ratio: 0.742560029
+    Tree Height: 334
+  - Class: rviz/Help
+    Name: Help
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.0299999993
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: moveit_rviz_plugin/MotionPlanning
+      Enabled: true
+      Move Group Namespace: ""
+      MoveIt_Goal_Tolerance: 0
+      MoveIt_Planning_Attempts: 10
+      MoveIt_Planning_Time: 10
+      MoveIt_Use_Constraint_Aware_IK: true
+      MoveIt_Warehouse_Host: 127.0.0.1
+      MoveIt_Warehouse_Port: 33829
+      MoveIt_Workspace:
+        Center:
+          X: 0
+          Y: 0
+          Z: 0
+        Size:
+          X: 2
+          Y: 2
+          Z: 2
+      Name: MotionPlanning
+      Planned Path:
+        Color Enabled: false
+        Interrupt Display: false
+        Links:
+          All Links Enabled: true
+          Expand Joint Details: false
+          Expand Link Details: false
+          Expand Tree: false
+          Link Tree Style: Links in Alphabetic Order
+          adapter_tube:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          base:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          base_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          blending_tool:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          bracket:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          chuck_tip_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          eff_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          ensenso:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          ensenso_sensor_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          keyence:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          keyence_sensor_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          keyence_tcp_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect2_move_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          link_1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_3:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_4:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_5:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_6:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          tcp_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          tool0:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          world_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+        Loop Animation: false
+        Robot Alpha: 0.5
+        Robot Color: 150; 50; 150
+        Show Robot Collision: false
+        Show Robot Visual: true
+        Show Trail: false
+        State Display Time: 0.05 s
+        Trail Step Size: 1
+        Trajectory Topic: /move_group/display_planned_path
+      Planning Metrics:
+        Payload: 1
+        Show Joint Torques: false
+        Show Manipulability: false
+        Show Manipulability Index: false
+        Show Weight Limit: false
+        TextHeight: 0.0799999982
+      Planning Request:
+        Colliding Link Color: 255; 0; 0
+        Goal State Alpha: 1
+        Goal State Color: 250; 128; 0
+        Interactive Marker Size: 0
+        Joint Violation Color: 255; 0; 255
+        Planning Group: manipulator
+        Query Goal State: true
+        Query Start State: false
+        Show Workspace: false
+        Start State Alpha: 1
+        Start State Color: 0; 255; 0
+      Planning Scene Topic: move_group/monitored_planning_scene
+      Robot Description: robot_description
+      Scene Geometry:
+        Scene Alpha: 0.899999976
+        Scene Color: 50; 230; 50
+        Scene Display Time: 0.200000003
+        Show Scene Geometry: true
+        Voxel Coloring: Z-Axis
+        Voxel Rendering: Occupied Voxels
+      Scene Robot:
+        Attached Body Color: 150; 50; 150
+        Links:
+          All Links Enabled: true
+          Expand Joint Details: false
+          Expand Link Details: false
+          Expand Tree: false
+          Link Tree Style: Links in Alphabetic Order
+          adapter_tube:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          base:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          base_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          blending_tool:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          bracket:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          chuck_tip_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          eff_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          ensenso:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          ensenso_sensor_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          keyence:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          keyence_sensor_optical_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          keyence_tcp_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          kinect2_move_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          link_1:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_2:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_3:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_4:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_5:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          link_6:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          tcp_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          tool0:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+          world_frame:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+        Robot Alpha: 1
+        Show Robot Collision: false
+        Show Robot Visual: true
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: false
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: false
+      Visual Enabled: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: RGB8
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.00999999978
+      Style: Points
+      Topic: /kinect2/qhd/points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Class: rviz/Image
+      Enabled: false
+      Image Topic: /observer_results_image
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: false
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        adapter_tube:
+          Value: false
+        base:
+          Value: false
+        base_link:
+          Value: false
+        blending_tool:
+          Value: false
+        bracket:
+          Value: false
+        chuck_tip_frame:
+          Value: false
+        eff_frame:
+          Value: false
+        ensenso:
+          Value: false
+        ensenso_sensor_optical_frame:
+          Value: true
+        keyence:
+          Value: false
+        keyence_sensor_optical_frame:
+          Value: false
+        keyence_tcp_frame:
+          Value: false
+        kinect2_move_frame:
+          Value: false
+        link_1:
+          Value: true
+        link_2:
+          Value: true
+        link_3:
+          Value: true
+        link_4:
+          Value: true
+        link_5:
+          Value: true
+        link_6:
+          Value: true
+        tcp_frame:
+          Value: false
+        tool0:
+          Value: true
+        world_frame:
+          Value: false
+      Marker Scale: 0.300000012
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        world_frame:
+          base_link:
+            base:
+              {}
+            link_1:
+              link_2:
+                link_3:
+                  link_4:
+                    link_5:
+                      link_6:
+                        tool0:
+                          eff_frame:
+                            adapter_tube:
+                              bracket:
+                                blending_tool:
+                                  {}
+                                chuck_tip_frame:
+                                  tcp_frame:
+                                    {}
+                                ensenso:
+                                  {}
+                                ensenso_sensor_optical_frame:
+                                  kinect2_move_frame:
+                                    {}
+                                keyence:
+                                  {}
+                                keyence_sensor_optical_frame:
+                                  {}
+                                keyence_tcp_frame:
+                                  {}
+      Update Interval: 0
+      Value: true
+    - Class: rviz/InteractiveMarkers
+      Enable Transparency: true
+      Enabled: true
+      Name: InteractiveMarkers
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+      Update Topic: /volume_marker/update
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /occupied_cells_vis_array
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 0; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.00499999989
+      Style: Boxes
+      Topic: /my_unknown_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /all_rays
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /hit_rays
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /volume_boundary
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: world_frame
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+  Value: true
+  Views:
+    Current:
+      Class: rviz/XYOrbit
+      Distance: 3.19039226
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.0599999987
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0.0436073542
+        Y: -0.803489089
+        Z: 2.38419261e-07
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.0500000007
+      Name: Current View
+      Near Clip Distance: 0.00999999978
+      Pitch: 0.190197706
+      Target Frame: world_frame
+      Value: XYOrbit (rviz)
+      Yaw: 0.993114352
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1030
+  Help:
+    collapsed: false
+  Hide Left Dock: false
+  Hide Right Dock: false
+  Image:
+    collapsed: false
+  MotionPlanning:
+    collapsed: false
+  MotionPlanning - Slider:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd0000000200000000000002b8000003c0fc0200000007fb000000100044006900730070006c0061007900730100000028000001e3000000dd00fffffffb0000000800480065006c00700000000342000000bb0000007600fffffffb0000000a0056006900650077007300000003b0000000b0000000b000fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e006700000003d2000000160000000000000000fb0000002e004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d00200053006c00690064006500720000000000ffffffff0000004a00fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000211000001d7000001cc00ffffff00000002000005bc00000106fc0100000001fb0000000a0049006d006100670065020000048d0000003c000002830000020600000466000003c000000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Views:
+    collapsed: false
+  Width: 1828
+  X: 90
+  Y: 25

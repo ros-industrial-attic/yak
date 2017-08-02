@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>godel_irb2400_support</name>
+  <version>0.1.0</version>
+  <description>
+    Support package for a Godel system using ABB2400. Includes blending and calibration files.
+  </description>
+
+  <maintainer email="jmeyer@swri.org">Jonathan Meyer</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>godel_surface_detection</exec_depend>
+
+</package>
