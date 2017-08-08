@@ -62,32 +62,32 @@ class VolumePosePublisher {
       c1.y = 0;
       c1.z = 0;
 
-      c2.x = -sizeX_;
+      c2.x = sizeX_;
       c2.y = 0;
       c2.z = 0;
 
-      c3.x = -sizeX_;
-      c3.y = -sizeY_;
+      c3.x = sizeX_;
+      c3.y = sizeY_;
       c3.z = 0;
 
       c4.x = 0;
-      c4.y = -sizeY_;
+      c4.y = sizeY_;
       c4.z = 0;
 
       c5.x = 0;
       c5.y = 0;
       c5.z = sizeZ_;
 
-      c6.x = -sizeX_;
+      c6.x = sizeX_;
       c6.y = 0;
       c6.z = sizeZ_;
 
-      c7.x = -sizeX_;
-      c7.y = -sizeY_;
+      c7.x = sizeX_;
+      c7.y = sizeY_;
       c7.z = sizeZ_;
 
       c8.x = 0;
-      c8.y = -sizeY_;
+      c8.y = sizeY_;
       c8.z = sizeZ_;
 
 

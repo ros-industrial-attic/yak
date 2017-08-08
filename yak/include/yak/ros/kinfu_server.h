@@ -127,7 +127,7 @@ namespace kfusion
 
              Affine3f TransformToAffine(tf::Transform input);
 
-             tf::Transform SwitchToVolumeFrame(tf::Transform input);
+//             tf::Transform SwitchToVolumeFrame(tf::Transform input);
 
         protected:
             bool should_exit_;

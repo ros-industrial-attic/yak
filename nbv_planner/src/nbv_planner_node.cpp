@@ -33,15 +33,15 @@ NBVSolver::NBVSolver(ros::NodeHandle &nh)
 
 //  ROS_INFO_STREAM(volume_dim_x << " " << volume_dim_y << " " << volume_dim_z);
 
-  bound_min_z = bound_max_x = bound_max_y = 0.0;
+  bound_min_z = bound_min_x = bound_min_y = 0.0;
 
 //  bound_min_x = -(float)volume_dim_x;
 //  bound_min_y = -(float)volume_dim_y;
 //  bound_max_z = (float)volume_dim_z;
 
 
-  bound_min_x = -voxel_res*(float)dims_x;
-  bound_min_y = -voxel_res*(float)dims_y;
+  bound_max_x = voxel_res*(float)dims_x;
+  bound_max_y = voxel_res*(float)dims_y;
   bound_max_z = voxel_res*(float)dims_z;
 
   bound_min_ = octomath::Vector3(bound_min_x, bound_min_y, bound_min_z);
@@ -65,7 +65,7 @@ NBVSolver::NBVSolver(ros::NodeHandle &nh)
   all_ray_pub_ = nh.advertise<visualization_msgs::Marker>("all_rays", 10);
 
   ray_line_list_.header.frame_id = hit_ray_line_list_.header.frame_id = "/volume_pose";
-  ray_line_list_.scale.x = hit_ray_line_list_.scale.x = 0.001;
+  ray_line_list_.scale.x = hit_ray_line_list_.scale.x = 0.0001;
   ray_line_list_.action = hit_ray_line_list_.action = visualization_msgs::Marker::ADD;
   ray_line_list_.pose.orientation.w = hit_ray_line_list_.pose.orientation.w = 1.0;
   ray_line_list_.type = hit_ray_line_list_.type = visualization_msgs::Marker::LINE_LIST;

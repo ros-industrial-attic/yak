@@ -49,11 +49,11 @@ namespace kfusion
       return Affine3f(inputAsCV);
     }
 
-    tf::Transform KinFuServer::SwitchToVolumeFrame(tf::Transform input) {
-      tf::Quaternion rotation = input.getRotation();
-      tf::Vector3 translation = input.getOrigin();
-      return tf::Transform(tf::Quaternion(-rotation.getX(), -rotation.getY(), rotation.getZ(), rotation.getW()), tf::Vector3(-translation.x(), -translation.y(), translation.z()));
-    }
+//    tf::Transform KinFuServer::SwitchToVolumeFrame(tf::Transform input) {
+//      tf::Quaternion rotation = input.getRotation();
+//      tf::Vector3 translation = input.getOrigin();
+//      return tf::Transform(tf::Quaternion(-rotation.getX(), -rotation.getY(), rotation.getZ(), rotation.getW()), tf::Vector3(-translation.x(), -translation.y(), translation.z()));
+//    }
 
     
     void KinFuServer::Update()
@@ -75,9 +75,11 @@ namespace kfusion
 
           tf::Transform past_to_current_sensor = current_volume_to_sensor_transform_.inverse() * previous_volume_to_sensor_transform_;
 
-          lastCameraMotionHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(past_to_current_sensor));
+//          lastCameraMotionHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(past_to_current_sensor));
+          lastCameraMotionHint_ = KinFuServer::TransformToAffine(past_to_current_sensor);
 
-          lastCameraPoseHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(current_volume_to_sensor_transform_));
+//          lastCameraPoseHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(current_volume_to_sensor_transform_));
+          lastCameraPoseHint_ = KinFuServer::TransformToAffine(current_volume_to_sensor_transform_);
 
         } else {
           lastCameraMotionHint_ = Affine3f::Identity();
@@ -180,7 +182,8 @@ namespace kfusion
         LoadParam(params.update_via_sensor_motion, "update_via_sensor_motion");
 
         if (params.use_pose_hints) {
-          tf::Transform initialPose = KinFuServer::SwitchToVolumeFrame(previous_volume_to_sensor_transform_);
+//          tf::Transform initialPose = KinFuServer::SwitchToVolumeFrame(previous_volume_to_sensor_transform_);
+          tf::Transform initialPose = previous_volume_to_sensor_transform_;
           params.volume_pose.translation(Vec3f(initialPose.getOrigin().x(), initialPose.getOrigin().y(), initialPose.getOrigin().z()));
 
 
@@ -259,7 +262,10 @@ namespace kfusion
 
 //      tf::Transform temp(KinFuServer::SwitchToVolumeFrame(currTf));
 //      tf::Transform temp(currTf);
-      tf::Transform temp = tf::Transform(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(3.14159)), tf::Vector3(0,0,0)) * currTf;
+
+      tf::Transform temp = currTf;
+
+//      tf::Transform temp = tf::Transform(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(3.14159)), tf::Vector3(0,0,0)) * currTf;
       tf::StampedTransform output;
       output.setRotation(temp.getRotation());
       output.setOrigin(temp.getOrigin());

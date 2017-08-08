@@ -174,6 +174,9 @@ public:
         accessor.setValue(ijk, val);
       }
       ROS_INFO("Scaling voxel volume");
+//      accessor.
+//      grid->
+      openvdb::tools::signedFloodFill(grid->tree());
       grid->setTransform(openvdb::math::Transform::createLinearTransform(/*voxel size=*/voxel_dim_x));
     }
 
