@@ -26,6 +26,7 @@ Executing rosrun nbv_planner exploration_controller_node will execute an explora
 1. Start TSDF/KinFu processes: roslaunch yak launch_xtion_default.launch
 2. Launch the drivers for the RGBD camera. For the Asus Xtion, this is roslaunch openni2_launch openni2.launch.
 3. Start mapping! Since yak doesn't have any way to relate the pose of the camera to the global frame, the initial position of the volume will be centered in front of the camera. You might have to force the camera to reset a few times to get the volume positioned where you need it.
+4. When you decide that the reconstruction is good enough: rosservice call /get_mesh
 
 # Operating Instructions for Autonomous Exploration and Reconstruction
 0. If you intend to use an actual robot, make sure that its state and motion servers are running, and that autonomous motion is allowed (deadman switch engaged, or auto mode).
