@@ -45,7 +45,6 @@ class NBVSolver {
 
     bool GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVResponse& res);
 
-//    void GenerateViewPosesSpherical(float distance, int slices, tf::Transform &origin, std::list<tf::Transform> &poseList);
     void GenerateViewPosesSpherical(float distance, int slices, float yawMin, float yawMax, float pitchMin, float pitchMax, tf::Transform &origin, std::list<tf::Transform> &poseList);
 
     void GenerateViewPosesRandom(int numPoses, float yawMin, float yawMax, float pitchMin, float pitchMax, float dMin, float dMax, std::list<tf::Transform> &poseList);
@@ -55,8 +54,6 @@ class NBVSolver {
     float RandInRange(float min, float max);
 
     void Update();
-
-    bool ComparePosesWithMetrics(const std::tuple<tf::Transform, int>& a, const std::tuple<tf::Transform, int>& b);
 
     ros::ServiceServer nbv_server_;
 
@@ -71,8 +68,6 @@ class NBVSolver {
     ros::Publisher all_ray_pub_;
     ros::Publisher hit_ray_pub_;
 
-//    tf::Transform best_pose_;
-
     tf::TransformBroadcaster broadcaster_;
     tf::TransformListener listener_;
 
@@ -84,9 +79,4 @@ class NBVSolver {
     octomath::Vector3 bound_max_;
 
     std::list<tf::Transform> candidate_poses_;
-
-//    octomap::OcTree octree_;
-
- // private:
-
 };
