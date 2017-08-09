@@ -192,7 +192,7 @@ kfusion::Affine3f kfusion::KinFu::getCameraPose(int time) const
     return poses_[time];
 }
 
-bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3f& cameraPose, const kfusion::cuda::Depth& depth, const kfusion::cuda::Image& /*image*/)
+bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3f& currentCameraPose, const Affine3f& previousCameraPose, const kfusion::cuda::Depth& depth, const kfusion::cuda::Image& /*image*/)
 {
     const KinFuParams& p = params_;
     const int LEVELS = icp_->getUsedLevelsNum();
@@ -240,7 +240,7 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
 
     Affine3f cameraMotion = Affine3f::Identity(); // cuur -> prev
     Affine3f cameraMotionCorrected;
-    Affine3f cameraPoseCorrected = cameraPose;
+    Affine3f cameraPoseCorrected = currentCameraPose;
     if (params_.use_pose_hints) {
       cameraMotion = inputCameraMotion;
     }
@@ -253,12 +253,14 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     bool ok = true;
     if (params_.use_icp) {
         ok =  icp_->estimateTransform(cameraMotion, cameraMotionCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
-//        cameraPoseCorrected = cameraPose * cameraMotion.inv() * cameraMotionCorrected;
-        cameraPoseCorrected = cameraPose;
+        cameraPoseCorrected = previousCameraPose * cameraMotionCorrected;
+
+        ROS_INFO_STREAM("\nMotion Input: " << cameraMotion.matrix << "\nMotion Corrected: " << cameraMotionCorrected.matrix << "\nPose Input: " << currentCameraPose.matrix << "\nPose Corrected: " << cameraPoseCorrected.matrix << "\n");
+//        cameraPoseCorrected = cameraPose;
 //        cameraMotion = cameraMotionCorrected;
     }
     else {
-      cameraPoseCorrected = cameraPose;
+      cameraPoseCorrected = currentCameraPose;
       cameraMotionCorrected = cameraMotion;
     }
 
@@ -268,7 +270,7 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     }
 
 //    poses_.push_back(poses_.back() * cameraMotion);
-    if (params_.use_icp){
+    if (params_.update_via_sensor_motion){
         // Update pose with latest measured pose
         // TODO: Make this not put the estimated sensor pose in the wrong position relative to the global frame.
         cout << "Updating via motion" << endl;

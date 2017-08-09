@@ -69,28 +69,34 @@ namespace kfusion
 
         //ensenso_sensor_optical_frame
         // Once we have a new image, find the transform between the poses where the current image and the previous image were captured.
+        Affine3f previousCameraPoseHint = Affine3f::Identity();
+
         if (use_pose_hints_) {
           tfListener_.waitForTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
           tfListener_.lookupTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time(0), current_volume_to_sensor_transform_);
 
-          tf::Transform past_to_current_sensor = current_volume_to_sensor_transform_.inverse() * previous_volume_to_sensor_transform_;
+          tf::Transform past_to_current_sensor = previous_volume_to_sensor_transform_.inverse() * current_volume_to_sensor_transform_;
 
 //          lastCameraMotionHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(past_to_current_sensor));
-          lastCameraMotionHint_ = KinFuServer::TransformToAffine(past_to_current_sensor);
+          currentCameraMotionHint_ = KinFuServer::TransformToAffine(past_to_current_sensor);
 
 //          lastCameraPoseHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(current_volume_to_sensor_transform_));
-          lastCameraPoseHint_ = KinFuServer::TransformToAffine(current_volume_to_sensor_transform_);
+          currentCameraPoseHint_ = KinFuServer::TransformToAffine(current_volume_to_sensor_transform_);
+
+          previousCameraPoseHint = KinFuServer::TransformToAffine(previous_volume_to_sensor_transform_);
+
+          previous_volume_to_sensor_transform_ = current_volume_to_sensor_transform_;
 
         } else {
-          lastCameraMotionHint_ = Affine3f::Identity();
+          currentCameraMotionHint_ = Affine3f::Identity();
         }
 
-        bool has_image = KinFu(lastCameraMotionHint_, lastCameraPoseHint_, lastDepth_, lastColor_);
+        bool has_image = KinFu(currentCameraMotionHint_, currentCameraPoseHint_, previousCameraPoseHint, lastDepth_, lastColor_);
 
         if (has_image)
         {
             PublishRaycastImage();
-            previous_volume_to_sensor_transform_ = current_volume_to_sensor_transform_;
+
         }
 
         PublishTransform();
@@ -119,10 +125,10 @@ namespace kfusion
         return true;
     }
 
-    bool KinFuServer::KinFu(const Affine3f& cameraMotionHint, const Affine3f& cameraPoseHint, const cv::Mat& depth, const cv::Mat& color)
+    bool KinFuServer::KinFu(const Affine3f& cameraMotionHint, const Affine3f& currentCameraPoseHint, const Affine3f& previousCameraPoseHint, const cv::Mat& depth, const cv::Mat& color)
     {
         depthDevice_.upload(depth.data, depth.step, depth.rows, depth.cols);
-        return(* kinfu_)(cameraMotionHint, cameraPoseHint, depthDevice_);
+        return(* kinfu_)(cameraMotionHint, currentCameraPoseHint, previousCameraPoseHint, depthDevice_);
     }
 
     bool KinFuServer::ConnectCamera()
