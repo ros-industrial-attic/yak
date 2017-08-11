@@ -1,12 +1,22 @@
 # yak
 
-yak (yet another kinfu) is a library and ROS wrapper for truncated sign distance fields (TSDF)
+yak (yet another kinfu) is a library and ROS wrapper for Truncated Signed Distance Fields (TSDFs).
 
-This package handles two very different use cases. It can reconstruct from a RGBD camera moved around by a human without any knowledge of pose relative to the global frame. It can also reconstruct from a sensor mounted on a robot arm using pose hints provided by TF and robot kinematics. The idea is that this second case doesn't need to deduce sensor motion by comparing the most recent reading to previous readings via ICP, so it should work better in situations with incomplete sensor readings.
+A TSDF is a probabilistic representations of a solid surface in 3D space. It's a useful tool for combining many noisy incomplete sensor readings into a single smooth and complete model.
 
-The manual situation should work out of the box without any other packages. You might need to force the sensor to reset to get the volume positioned in a desirable orientation around your target. The easiest way to do this is to cover and uncover the camera lens.
+To break down the name:
 
-The robot-assisted situation is basically hardcoded to use the sensors and workcell models from the Godel blending project. This will change soon to make it more generalized!
+Distance field: Each voxel in the volume contains a value that represents its metric distance from the closest point on the surface. Voxels very far from the surface have high-magnitude distance values, while those near the surface have values approaching zero.
+
+Signed: Voxels outside the surface have positive distances, while voxels inside the surface have negative distances. This allows the representation of solid objects. The distance field becomes a gradient that shifts from positive to negative as it crosses the surface.
+
+Truncated: Only the distance values of voxels very close to the surface are regularly updated. Distances beyond a certain threshold have their values capped at +/- 1. This decreases the cost of integrating new readings, since not every voxel in the volume needs to be updated.
+
+yak handles two very different use cases. It can reconstruct from a RGBD camera moved around by a human without any knowledge of pose relative to the global frame. It can also reconstruct from a sensor mounted on a robot arm using pose hints provided by TF and robot kinematics. The idea is that this second case doesn't need to deduce sensor motion by comparing the most recent reading to previous readings via ICP, so it should work better in situations with incomplete sensor readings.
+
+The human-guided situation should work out of the box without any other packages. You might need to force the sensor to reset to get the volume positioned in a desirable orientation around your target. The easiest way to do this is to cover and uncover the camera lens.
+
+The robot-assisted situation is currently partially hardcoded to use the sensors and work cell models from the Godel blending project. This will change soon to make it more generalized!
 
 # yak_meshing
 
@@ -16,7 +26,7 @@ Meshing happens through the /get_mesh service, which in turn calls the kinfu_ros
 
 # nbv_planner
 
-nbv_planner is a ROS package to perform Next Best View analysis using data provided from RGBD cameras like the Asus Xtion. It relies on octomap to track voxel occupancy and integrate new readings.
+nbv_planner is a ROS package to perform Next Best View analysis using data provided from RGBD cameras like the Asus Xtion. It uses octomap to track voxel occupancy and integrate new readings.
 
 Call the /get_nbv service to return a sorted list (best to worst) of candidate poses near the volume that could expose unknown voxels. Currently evaluation of poses is conducted by casting rays corresponding to the camera's field of view into the octomap. More hits on unknowns = better view.
 
