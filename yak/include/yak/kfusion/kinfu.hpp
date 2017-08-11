@@ -54,6 +54,7 @@ namespace kfusion
 
             bool use_pose_hints;
             bool use_icp;
+            bool update_via_sensor_motion;
 
     };
 
@@ -76,7 +77,7 @@ namespace kfusion
             void resetPose();
             void resetVolume();
 
-            bool operator()(const Affine3f& inputCameraMotion, const Affine3f& cameraPose, const cuda::Depth& depth, const cuda::Image& image = cuda::Image());
+            bool operator()(const Affine3f& inputCameraMotion, const Affine3f& currentCameraPose, const Affine3f& previousCameraPose, const cuda::Depth& depth, const cuda::Image& image = cuda::Image());
 
             void renderImage(cuda::Image& image, int flags = 0);
             void renderImage(cuda::Image& image, const Affine3f& pose, int flags = 0);

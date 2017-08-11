@@ -20,4 +20,15 @@
         <!--<remap from="cloud_in" to="/narrow_stereo/points_filtered2" />-->
         <remap from="cloud_in" to="/camera/depth/points"/>
     </node>
+
+    <node pkg="nbv_planner" type="nbv_planner_node" name="nbv_planner_node" output="screen">
+        <param name="volume_dim_x" type="double" value="0.5" />
+        <param name="volume_dim_y" type="double" value="0.5" />
+        <param name="volume_dim_z" type="double" value="0.3" />
+        <param name="num_pose_slices" value="8" />
+        <param name="ray_count" value="16" />
+        <param name="raycast_distance" type="double" value="0.5" />
+    </node>
+
+    <node pkg="nbv_planner" type="octomap_reset_node" name="octomap_reset_node" output="screen"/>
 </launch>

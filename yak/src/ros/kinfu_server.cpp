@@ -49,11 +49,11 @@ namespace kfusion
       return Affine3f(inputAsCV);
     }
 
-    tf::Transform KinFuServer::SwitchToVolumeFrame(tf::Transform input) {
-      tf::Quaternion rotation = input.getRotation();
-      tf::Vector3 translation = input.getOrigin();
-      return tf::Transform(tf::Quaternion(-rotation.getX(), -rotation.getY(), rotation.getZ(), rotation.getW()), tf::Vector3(-translation.x(), -translation.y(), translation.z()));
-    }
+//    tf::Transform KinFuServer::SwitchToVolumeFrame(tf::Transform input) {
+//      tf::Quaternion rotation = input.getRotation();
+//      tf::Vector3 translation = input.getOrigin();
+//      return tf::Transform(tf::Quaternion(-rotation.getX(), -rotation.getY(), rotation.getZ(), rotation.getW()), tf::Vector3(-translation.x(), -translation.y(), translation.z()));
+//    }
 
     
     void KinFuServer::Update()
@@ -69,26 +69,34 @@ namespace kfusion
 
         //ensenso_sensor_optical_frame
         // Once we have a new image, find the transform between the poses where the current image and the previous image were captured.
+        Affine3f previousCameraPoseHint = Affine3f::Identity();
+
         if (use_pose_hints_) {
           tfListener_.waitForTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time::now(), ros::Duration(0.5));
           tfListener_.lookupTransform("volume_pose", "ensenso_sensor_optical_frame", ros::Time(0), current_volume_to_sensor_transform_);
 
-          tf::Transform past_to_current_sensor = current_volume_to_sensor_transform_.inverse() * previous_volume_to_sensor_transform_;
+          tf::Transform past_to_current_sensor = previous_volume_to_sensor_transform_.inverse() * current_volume_to_sensor_transform_;
 
-          lastCameraMotionHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(past_to_current_sensor));
+//          lastCameraMotionHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(past_to_current_sensor));
+          currentCameraMotionHint_ = KinFuServer::TransformToAffine(past_to_current_sensor);
 
-          lastCameraPoseHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(current_volume_to_sensor_transform_));
+//          lastCameraPoseHint_ = KinFuServer::TransformToAffine(KinFuServer::SwitchToVolumeFrame(current_volume_to_sensor_transform_));
+          currentCameraPoseHint_ = KinFuServer::TransformToAffine(current_volume_to_sensor_transform_);
+
+          previousCameraPoseHint = KinFuServer::TransformToAffine(previous_volume_to_sensor_transform_);
+
+          previous_volume_to_sensor_transform_ = current_volume_to_sensor_transform_;
 
         } else {
-          lastCameraMotionHint_ = Affine3f::Identity();
+          currentCameraMotionHint_ = Affine3f::Identity();
         }
 
-        bool has_image = KinFu(lastCameraMotionHint_, lastCameraPoseHint_, lastDepth_, lastColor_);
+        bool has_image = KinFu(currentCameraMotionHint_, currentCameraPoseHint_, previousCameraPoseHint, lastDepth_, lastColor_);
 
         if (has_image)
         {
             PublishRaycastImage();
-            previous_volume_to_sensor_transform_ = current_volume_to_sensor_transform_;
+
         }
 
         PublishTransform();
@@ -104,6 +112,7 @@ namespace kfusion
 
         kfusion::KinFu& kinfu = *kinfu_;
 
+
         // TODO: Need to change this to reflect actual sensor refresh rate? (e.g. Ensenso at ~4Hz)
         ROS_INFO("Starting tracking...\n");
         ros::Rate trackHz(30.0f);
@@ -116,10 +125,10 @@ namespace kfusion
         return true;
     }
 
-    bool KinFuServer::KinFu(const Affine3f& cameraMotionHint, const Affine3f& cameraPoseHint, const cv::Mat& depth, const cv::Mat& color)
+    bool KinFuServer::KinFu(const Affine3f& cameraMotionHint, const Affine3f& currentCameraPoseHint, const Affine3f& previousCameraPoseHint, const cv::Mat& depth, const cv::Mat& color)
     {
         depthDevice_.upload(depth.data, depth.step, depth.rows, depth.cols);
-        return(* kinfu_)(cameraMotionHint, cameraPoseHint, depthDevice_);
+        return(* kinfu_)(cameraMotionHint, currentCameraPoseHint, previousCameraPoseHint, depthDevice_);
     }
 
     bool KinFuServer::ConnectCamera()
@@ -174,28 +183,54 @@ namespace kfusion
 //        LoadParam(params.volume_size.val[2], "volume_size_z");
         LoadParam(params.volume_resolution, "volume_resolution");
 
-
-        float volPosX, volPosY, volPosZ;
-        volPosX = params.volume_pose.translation().val[0];
-        volPosY = params.volume_pose.translation().val[1];
-        volPosZ = params.volume_pose.translation().val[2];
-
-        ROS_INFO_STREAM("volPos (default): " << volPosX << ", " << volPosY << ", " << volPosZ);
-
-        LoadParam(volPosX, "volume_pos_x");
-        LoadParam(volPosY, "volume_pos_y");
-        LoadParam(volPosZ, "volume_pos_z");
-
-        params.volume_pose.translation(Vec3f(volPosX, volPosY, volPosZ));
-
-        ROS_INFO_STREAM("volPos (loaded): " << params.volume_pose.translation().val[0] << ", " << params.volume_pose.translation().val[1] << ", " << params.volume_pose.translation().val[2]);
-        ROS_INFO_STREAM("translation: " << cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
-
-        params.volume_pose.translate(-params.volume_pose.translation());
-        params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
-
         LoadParam(params.use_icp, "use_icp");
         params.use_pose_hints = use_pose_hints_;
+        LoadParam(params.update_via_sensor_motion, "update_via_sensor_motion");
+
+        if (params.use_pose_hints) {
+//          tf::Transform initialPose = KinFuServer::SwitchToVolumeFrame(previous_volume_to_sensor_transform_);
+          tf::Transform initialPose = previous_volume_to_sensor_transform_;
+          params.volume_pose.translation(Vec3f(initialPose.getOrigin().x(), initialPose.getOrigin().y(), initialPose.getOrigin().z()));
+
+
+// TODO: Properly set volume pose rotation from robot end effector orientation
+//          Eigen::Matrix3d rotationEigen;
+//          tf::matrixTFToEigen(previous_volume_to_sensor_transform_.getBasis(), rotationEigen);
+//          Vec3f rotationCv;
+
+//          rotationCv[0] = previous_volume_to_sensor_transform_.getRotation()
+
+//          cv::eigen2cv(rotationEigen, rotationCv);
+//          params.volume_pose.rotation();
+
+//          Affine3f pose;
+//          previous_volume_to_sensor_transform_.getBasis().
+//          pose.rotation();
+        }
+        else
+        {
+          float volPosX, volPosY, volPosZ;
+          volPosX = params.volume_pose.translation().val[0];
+          volPosY = params.volume_pose.translation().val[1];
+          volPosZ = params.volume_pose.translation().val[2];
+
+          ROS_INFO_STREAM("volPos (default): " << volPosX << ", " << volPosY << ", " << volPosZ);
+
+          LoadParam(volPosX, "volume_pos_x");
+          LoadParam(volPosY, "volume_pos_y");
+          LoadParam(volPosZ, "volume_pos_z");
+          params.volume_pose.translation(Vec3f(volPosX, volPosY, volPosZ));
+        }
+
+
+
+        ROS_INFO_STREAM("volPos (loaded): " << params.volume_pose.translation().val[0] << ", " << params.volume_pose.translation().val[1] << ", " << params.volume_pose.translation().val[2]);
+//        ROS_INFO_STREAM("translation: " << cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
+
+//        params.volume_pose.translate(-params.volume_pose.translation());
+//        params.volume_pose.translate(cv::Affine3f::Vec3(volPosX, volPosY, volPosZ));
+
+
 
         kinfu_ = KinFu::Ptr(new kfusion::KinFu(params));
         return true;
@@ -233,7 +268,10 @@ namespace kfusion
 
 //      tf::Transform temp(KinFuServer::SwitchToVolumeFrame(currTf));
 //      tf::Transform temp(currTf);
-      tf::Transform temp = tf::Transform(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(3.14159)), tf::Vector3(0,0,0)) * currTf;
+
+      tf::Transform temp = currTf;
+
+//      tf::Transform temp = tf::Transform(tf::Quaternion(tf::Vector3(0,0,1), tfScalar(3.14159)), tf::Vector3(0,0,0)) * currTf;
       tf::StampedTransform output;
       output.setRotation(temp.getRotation());
       output.setOrigin(temp.getOrigin());

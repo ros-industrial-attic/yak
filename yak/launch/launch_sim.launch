@@ -9,6 +9,9 @@
         <!-- The rosparams can be saved to a .yaml file. They're inlined here
              for convenience -->
         <rosparam>
+            use_icp: True
+            use_pose_hints: False
+            update_via_sensor_motion: True
             # The node reports the transform between the fixed frame and
             # a given camera frame.
             fixed_frame: "/map"
@@ -51,15 +54,11 @@
             volume_dims_x: 512
             volume_dims_y: 512
             volume_dims_z: 512
-            # The size of the TSDF volume in meters. The size of a voxel is 
-            # volume_size / volume_dims
-            volume_size_x: 3
-            volume_size_y: 3
-            volume_size_z: 3
+            volume_resolution: 0.005
             # The position of the topmost corner of the TSDF volume in meters
-            volume_pos_x: -1.5
-            volume_pos_y: -1.5
-            volume_pos_z: 0.5
+            volume_pos_x: 0.25
+            volume_pos_y: 0.25
+            volume_pos_z: -0.5
         </rosparam>
     </node>
 </launch>

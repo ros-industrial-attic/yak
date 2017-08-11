@@ -12,6 +12,7 @@
         <rosparam>
             use_icp: True
             use_pose_hints: False
+            update_via_sensor_motion: True
 
             # The node reports the transform between the fixed frame and
             # a given camera frame.
