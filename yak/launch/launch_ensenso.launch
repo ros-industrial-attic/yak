@@ -14,6 +14,10 @@
             fixed_frame: "/base_link"
             camera_frame: "/ensenso_sensor_optical_frame"
 
+            use_icp: True
+            use_pose_hints: True
+            update_via_sensor_motion: False
+
             # The bilateral kernel smooths the depth image and 
             # filters out noise around the edges
             bilateral_kernel_size: 4
@@ -57,19 +61,12 @@
             tsdf_trunc_dist: 0.04
 
             # The size of the TSDF volume in voxels
-            #volume_dims_x: 704
-            #volume_dims_y: 704
-            #volume_dims_z: 704
             volume_dims_x: 512
             volume_dims_y: 512
             volume_dims_z: 512
 
+            volume_resolution: 0.001
 
-            # The size of the TSDF volume in meters. The size of a voxel is 
-            # volume_size / volume_dims
-            volume_size_x: 1.5
-            volume_size_y: 1.5
-            volume_size_z: 1.5
 
             # The position of the topmost corner of the TSDF volume in meters
             volume_pos_x: 0.5
