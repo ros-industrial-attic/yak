@@ -49,4 +49,7 @@ Executing rosrun nbv_planner exploration_controller_node will execute an explora
 5. When you want to start exploration: rosrun nbv_planner exploration_controller_node 
 6. When you decide that the reconstruction is good enough: rosservice call /get_mesh
 
-
+# Build with Docker:
+```
+nvidia-docker run -v "<absolute path to your yak workspace:/yak_ws>" rosindustrial/yak:kinetic catkin build --workspace /yak_ws -DCMAKE_LIBRARY_PATH=/usr/local/nvidia/lib64/
+```

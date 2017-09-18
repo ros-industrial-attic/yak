@@ -12,7 +12,8 @@ env:
   global:
     - ROS_DISTRO=kinetic
     - DOCKER_IMAGE=rosindustrial/yak:kinetic
-    - BEFORE_SCRIPT='catkin config -w $CATKIN_WORKSPACE --no-install'
+    - CATKIN_CONFIG='--no-install'
+    - BEFORE_SCRIPT='-DCMAKE_LIBRARY_PATH=/usr/local/nvidia/lib64/'
   matrix:
     - ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu
