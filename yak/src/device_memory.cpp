@@ -1,5 +1,5 @@
-#include <kfusion/cuda/device_memory.hpp>
-#include "safe_call.hpp"
+#include "yak/kfusion/cuda/device_memory.hpp"
+#include "yak/kfusion/safe_call.hpp"
 #include <cassert>
 #include <iostream>
 #include <cstdlib>

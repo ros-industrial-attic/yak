@@ -1,8 +1,8 @@
 #ifndef KFUSION_DEVICE_H_
 #define KFUSION_DEVICE_H_
 
-#include "internal.hpp"
-#include "temp_utils.hpp"
+#include "yak/kfusion/internal.hpp"
+#include "yak/kfusion/cuda/temp_utils.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// TsdfVolume

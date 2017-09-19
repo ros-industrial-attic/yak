@@ -5,7 +5,7 @@
  *      Author: mklingen
  */
 
-#include <ros/kinfu_server.h>
+#include <yak/ros/kinfu_server.h>
 
 namespace kfusion
 {

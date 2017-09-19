@@ -42,9 +42,7 @@ NBVSolver::NBVSolver(ros::NodeHandle &nh)
   all_ray_pub_ = nh.advertise<visualization_msgs::Marker>("all_rays", 10);
   hit_ray_pub_ = nh.advertise<visualization_msgs::Marker>("hit_rays", 10);
 }
-
-bool NBVSolver::GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVResponse& res)
-{
+bool NBVSolver::GetNBV(nbv_planner::GetNBV::Request &req, nbv_planner::GetNBV::Response &res){
   // Download the octomap from octomap_server
   ROS_INFO("Attempting to get octomap");
   octomap_msgs::GetOctomap srv;

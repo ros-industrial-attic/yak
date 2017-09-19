@@ -49,10 +49,16 @@ include_directories(include
 link_libraries(${OCTOMAP_LIBRARIES})
 
 add_executable(${PROJECT_NAME}_node src/nbv_planner_node.cpp)
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
 add_executable(octomap_reset_node src/octomap_reset_node.cpp)
+add_dependencies(octomap_reset_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
 add_executable(exploration_controller_node src/exploration_controller_node.cpp)
+add_dependencies(exploration_controller_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
 target_link_libraries(${PROJECT_NAME}_node
     ${catkin_LIBRARIES}

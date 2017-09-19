@@ -1,7 +1,7 @@
 #ifndef KFUSION_PROJECTIVE_ICP_H_
 #define KFUSION_PROJECTIVE_ICP_H_
 
-#include <kfusion/types.hpp>
+#include <yak/kfusion/types.hpp>
 
 namespace kfusion
 {

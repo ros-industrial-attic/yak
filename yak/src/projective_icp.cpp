@@ -1,4 +1,4 @@
-#include "precomp.hpp"
+#include "yak/kfusion/precomp.hpp"
 
 using namespace kfusion;
 using namespace std;

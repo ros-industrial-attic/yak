@@ -1,4 +1,4 @@
-#include "precomp.hpp"
+#include "yak/kfusion/precomp.hpp"
 #include <stdio.h>
 using namespace kfusion;
 using namespace kfusion::cuda;

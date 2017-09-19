@@ -1,8 +1,8 @@
 #ifndef TEXTURE_BINDER_H_
 #define TEXTURE_BINDER_H_
 
-#include <kfusion/cuda/device_array.hpp>
-#include <safe_call.hpp>
+#include <yak/kfusion/cuda/device_array.hpp>
+#include <yak/kfusion/safe_call.hpp>
 
 namespace kfusion
 {

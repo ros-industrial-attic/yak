@@ -10,8 +10,6 @@
 #include <tf/transform_broadcaster.h>
 
 #include <yak_meshing/GetMesh.h>
-#include <yak_meshing/GetMeshRequest.h>
-#include <yak_meshing/GetMeshResponse.h>
 
 #include <yak/GetTSDF.h>
 
@@ -39,7 +37,7 @@ public:
 
   }
 
-  bool GetMesh(yak_meshing::GetMeshRequest& req, yak_meshing::GetMeshResponse& res) {
+  bool GetMesh(yak_meshing::GetMesh::Request& req, yak_meshing::GetMesh::Response &res) {
     ROS_INFO("Attempting to get sparse TSDF");
     yak::GetSparseTSDF srv;
     if (!tsdf_sparse_client_.call(srv))

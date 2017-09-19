@@ -5,7 +5,7 @@
  *      Author: jschornak
  */
 
-#include <ros/ros_sim_camera.hpp>
+#include <yak/ros/ros_sim_camera.hpp>
 #include <ros/console.h>
 
 namespace kfusion

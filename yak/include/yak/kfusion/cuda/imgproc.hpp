@@ -1,7 +1,7 @@
 #ifndef KFUSION_IMAGE_PROC_H_
 #define KFUSION_IMAGE_PROC_H_
 
-#include <kfusion/types.hpp>
+#include <yak/kfusion/types.hpp>
 
 namespace kfusion
 {

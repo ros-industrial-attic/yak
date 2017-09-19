@@ -5,7 +5,7 @@
  *      Author: mklingen
  */
 
-#include <ros/ros_rgbd_camera.hpp>
+#include <yak/ros/ros_rgbd_camera.hpp>
 #include <ros/console.h>
 
 namespace kfusion

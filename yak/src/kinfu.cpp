@@ -1,5 +1,5 @@
-#include "precomp.hpp"
-#include "internal.hpp"
+#include "yak/kfusion/precomp.hpp"
+#include "yak/kfusion/internal.hpp"
 #include <stdio.h>
 #include <ros/ros.h>
 using namespace std;
