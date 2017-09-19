@@ -1,7 +1,7 @@
 #ifndef TSDF_VOLUME_H_
 #define TSDF_VOLUME_H_
 
-#include <kfusion/types.hpp>
+#include <yak/kfusion/types.hpp>
 
 namespace kfusion
 {

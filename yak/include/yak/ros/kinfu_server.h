@@ -13,8 +13,8 @@
 
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <kfusion/kinfu.hpp>
-#include <ros/ros_rgbd_camera.hpp>
+#include <yak/kfusion/kinfu.hpp>
+#include <yak/ros/ros_rgbd_camera.hpp>
 #include <sensor_msgs/Image.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
@@ -33,16 +33,7 @@
 #include <yak/ResetVolumeRequest.h>
 #include <yak/ResetVolumeResponse.h>
 
-/*
-#include <yak/GetMesh.h>
-#include <yak/GetMeshRequest.h>
-#include <yak/GetMeshResponse.h>
-*/
-//#include <pcl/point_types.h>
-//#include <pcl/gpu/kinfu/marching_cubes.h>
-//#include <pcl/gpu/kinfu/tsdf_volume.h>
-
-#include <ros/half.hpp>
+#include <yak/ros/half.hpp>
 #include <tf/transform_listener.h>
 
 #include "tf/transform_datatypes.h"
@@ -50,10 +41,6 @@
 #include "Eigen/Geometry"
 #include <tf_conversions/tf_eigen.h>
 #include <opencv2/core/eigen.hpp>
-
-//#include <Eigen/Sparse>
-
-//#include <marching_cubes.h>
 
 namespace kfusion
 {

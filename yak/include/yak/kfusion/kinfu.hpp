@@ -1,9 +1,9 @@
 #ifndef KINFU_H_
 #define KINFU_H_
 
-#include <kfusion/types.hpp>
-#include <kfusion/cuda/tsdf_volume.hpp>
-#include <kfusion/cuda/projective_icp.hpp>
+#include "yak/kfusion/types.hpp"
+#include "yak/kfusion/cuda/tsdf_volume.hpp"
+#include "yak/kfusion/cuda/projective_icp.hpp"
 #include <vector>
 #include <string>
 

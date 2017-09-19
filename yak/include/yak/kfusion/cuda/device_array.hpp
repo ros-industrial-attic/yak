@@ -1,8 +1,8 @@
 #ifndef KFUSION_DEVICEARRAY_H_
 #define KFUSION_DEVICEARRAY_H_
 
-#include <kfusion/exports.hpp>
-#include <kfusion/cuda/device_memory.hpp>
+#include "yak/kfusion/exports.hpp"
+#include "yak/kfusion/cuda/device_memory.hpp"
 
 #include <vector>
 

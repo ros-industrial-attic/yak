@@ -1,8 +1,6 @@
 #include <ros/ros.h>
 #include <moveit/move_group_interface/move_group_interface.h>
-#include <nbv_planner/GetNBV.h>
-#include <nbv_planner/GetNBVRequest.h>
-#include <nbv_planner/GetNBVResponse.h>
+#include "nbv_planner/GetNBV.h"
 
 #include <tf/tf.h>
 #include <tf/transform_listener.h>

@@ -10,6 +10,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>message_generation</build_depend>
+
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>rosconsole</depend>
@@ -18,12 +20,10 @@
   <depend>tf</depend>
   <depend>pcl_ros</depend>
   <depend>visualization_msgs</depend>
-  <depend>Eigen3</depend>
   <depend>tf_conversions</depend>
   <depend>interactive_markers</depend>
 
-
-
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
   </export>

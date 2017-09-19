@@ -1,8 +1,8 @@
 #ifndef KFUSION_DEVICE_MEMORY_H
 #define KFUSION_DEVICE_MEMORY_H
 
-#include <kfusion/exports.hpp>
-#include <kfusion/cuda/kernel_containers.hpp>
+#include <yak/kfusion/exports.hpp>
+#include <yak/kfusion/cuda/kernel_containers.hpp>
 
 namespace kfusion
 {

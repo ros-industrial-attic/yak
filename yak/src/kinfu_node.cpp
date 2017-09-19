@@ -1,11 +1,11 @@
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <kfusion/kinfu.hpp>
-#include <ros/ros_rgbd_camera.hpp>
+#include <yak/kfusion/kinfu.hpp>
+#include <yak/ros/ros_rgbd_camera.hpp>
 #include <sensor_msgs/Image.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
-#include <ros/kinfu_server.h>
+#include <yak/ros/kinfu_server.h>
 
 #include <interactive_markers/interactive_marker_server.h>
 

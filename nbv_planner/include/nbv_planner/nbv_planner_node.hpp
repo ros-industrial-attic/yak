@@ -1,9 +1,7 @@
 #include <time.h>
 
 #include <ros/ros.h>
-#include <nbv_planner/GetNBV.h>
-#include <nbv_planner/GetNBVRequest.h>
-#include <nbv_planner/GetNBVResponse.h>
+#include "nbv_planner/GetNBV.h"
 
 #include <octomap_msgs/GetOctomap.h>
 #include <octomap_msgs/GetOctomapRequest.h>
@@ -43,7 +41,7 @@ class NBVSolver {
   public:
     NBVSolver(ros::NodeHandle& nh);
 
-    bool GetNBV(nbv_planner::GetNBVRequest& req, nbv_planner::GetNBVResponse& res);
+    bool GetNBV(nbv_planner::GetNBV::Request &req, nbv_planner::GetNBV::Response &res);
 
     void GenerateViewPosesSpherical(float distance, int slices, float yawMin, float yawMax, float pitchMin, float pitchMax, tf::Transform &origin, std::list<tf::Transform> &poseList);
 

@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 2.8.3)
-
 project(yak)
 add_definitions(-std=c++11)
 
@@ -43,8 +42,6 @@ ENDMACRO()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 message(STATUS "CMAKE MODULE PATH IS ${CMAKE_MODULE_PATH}")
-#include(cmake/Utils.cmake)
-#include(cmake/Targets.cmake)
 
 find_package(OpenCV REQUIRED COMPONENTS core highgui)
 message(STATUS "Found OpenCV At ${OpenCV_INCLUDE_DIRS}")
@@ -64,6 +61,7 @@ APPEND_TARGET_ARCH_FLAGS()
 message(STATUS "CUDA_BIN_ARCH ${CUDA_ARCH_BIN}")
 
 find_package(catkin REQUIRED COMPONENTS
+  message_generation
   cv_bridge
   image_transport
   rosconsole
@@ -74,6 +72,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   tf_conversions
   interactive_markers
+
 )
 
 add_message_files(
@@ -87,7 +86,6 @@ add_service_files(
  GetTSDF.srv
  GetSparseTSDF.srv
  ResetVolume.srv
- #GetMesh.srv
 )
 
 
@@ -100,11 +98,23 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES yak
-  CATKIN_DEPENDS cv_bridge image_transport rosconsole roscpp sensor_msgs pcl_ros visualization_msgs Eigen3 tf_conversions
+  CATKIN_DEPENDS
+    cv_bridge
+    image_transport
+    rosconsole
+    roscpp
+    sensor_msgs
+    tf
+    pcl_ros
+    visualization_msgs
+    tf_conversions
+    interactive_markers
+    message_runtime
 )
 
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${CUDA_INCLUDE_DIRS}
@@ -122,9 +132,6 @@ set(HAVE_CUDA 1)
 list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_20,code=sm_20;-gencode;arch=compute_20,code=sm_21;-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35")
   list(APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC;")
 
-include_directories(${PROJECT_SOURCE_DIR}/include/yak)
-include_directories(${PROJECT_SOURCE_DIR}/src)
-
 link_directories(${PCL_LIBRARY_DIRS})
 
 cuda_add_library(yak
@@ -141,25 +148,27 @@ cuda_add_library(yak
       src/ros/ros_rgbd_camera.cpp
       src/ros/kinfu_server.cpp
 )
+add_dependencies(yak ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
  target_link_libraries(yak
    ${catkin_LIBRARIES}
    ${CUDA_LIBRARIES}
    ${CUDA_CUDA_LIBRARY}
    ${OpenCV_LIBS}
-   #openvdb
-   #Half
-   #tbb
  )
 
 add_executable(kinfu_node
   src/kinfu_node.cpp)
+add_dependencies(kinfu_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(volume_tf_broadcaster
   src/ros/volume_tf_broadcaster.cpp)
+add_dependencies(volume_tf_broadcaster ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(volume_marker
   src/ros/volume_marker.cpp)
+add_dependencies(volume_marker ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_definitions(${PCL_DEFINITIONS})
 
@@ -183,12 +192,12 @@ target_link_libraries(volume_marker
  ${OpenCV_LIBS}
 )
 
- install(TARGETS yak kinfu_node
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
+install(TARGETS yak kinfu_node
+ ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
- install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
- )
+install(DIRECTORY include/${PROJECT_NAME}/
+ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
