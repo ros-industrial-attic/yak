@@ -1,4 +1,4 @@
-#include <nbv_planner_node.hpp>
+#include "nbv_planner/nbv_planner_node.hpp"
 
 NBVSolver::NBVSolver(ros::NodeHandle &nh)
 {

@@ -1,4 +1,4 @@
-#include <octomap_reset_node.hpp>
+#include "nbv_planner/octomap_reset_node.hpp"
 
 OctomapResetter::OctomapResetter(ros::NodeHandle &nh) {
   volume_update_subscriber_ = nh.subscribe("/volume_marker/feedback", 1, &OctomapResetter::UpdateCallback, this);
