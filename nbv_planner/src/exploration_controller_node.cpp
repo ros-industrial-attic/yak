@@ -1,4 +1,4 @@
-#include <exploration_controller_node.hpp>
+#include "nbv_planner/exploration_controller_node.hpp"
 
 Explorer::Explorer(ros::NodeHandle &nh) {
 //  moveit::planning_interface::MoveGroupInterface move_group("manipulator");
