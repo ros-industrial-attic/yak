@@ -8,6 +8,10 @@
 
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
+#include <pcl/common/common.h>
+#include <pcl/point_types.h>
+#include <pcl/PolygonMesh.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #include <yak_meshing/GetMesh.h>
 
@@ -89,6 +93,11 @@ public:
     WriteMesh(path.c_str(), mesher);
     //WriteMesh("/home/jschornak/meshes/new_mesh.obj", mesher);
     ROS_INFO("Done saving!");
+
+    // convert VDB mesh to pcl_msgs::PolygonMesh and return
+    pcl::PolygonMesh out_mesh;
+    ConvertMesh(mesher, out_mesh);
+    pcl_conversions::fromPCL(out_mesh, res.mesh);
 
     return true;
   }
@@ -216,6 +225,44 @@ private:
     file.close();
   }
 
+  void ConvertMesh(openvdb::tools::VolumeToMesh &in_mesh, pcl::PolygonMesh& out_mesh)
+  {
+    openvdb::tools::PointList *verts = &in_mesh.pointList();
+    openvdb::tools::PolygonPoolList *polys = &in_mesh.polygonPoolList();
+
+    pcl::PointCloud<pcl::PointXYZ> out_cloud;
+    for( size_t i = 0; i < in_mesh.pointListSize(); i++ ){
+      openvdb::Vec3s &v = (*verts)[i];
+      pcl::PointXYZ pt(v[0], v[1], v[2]);
+      out_cloud.push_back(pt);
+    }
+
+    out_mesh.polygons.clear();
+    for( size_t i = 0; i < in_mesh.polygonPoolListSize(); i++ ){
+      for( size_t ndx = 0; ndx < (*polys)[i].numTriangles(); ndx++ ){
+        pcl::Vertices v;
+        openvdb::Vec3I *p = &((*polys)[i].triangle(ndx));
+        v.vertices.push_back(p->x()+1);
+        v.vertices.push_back(p->y()+1);
+        v.vertices.push_back(p->z()+1);
+        out_mesh.polygons.push_back(v);
+      }
+
+      for( size_t ndx = 0; ndx < (*polys)[i].numQuads(); ndx++ ){
+        openvdb::Vec4I *p = &((*polys)[i].quad(ndx));
+        pcl::Vertices v;
+        v.vertices.push_back(p->x()+1);
+        v.vertices.push_back(p->y()+1);
+        v.vertices.push_back(p->z()+1);
+        v.vertices.push_back(p->w()+1);
+        out_mesh.polygons.push_back(v);
+      }
+    }
+    pcl::toPCLPointCloud2(out_cloud, out_mesh.cloud);
+
+  }
+
+
   ros::ServiceClient tsdf_client_;
   ros::ServiceClient tsdf_sparse_client_;
   ros::ServiceServer mesh_server_;
@@ -223,6 +270,7 @@ private:
   std::string mesh_output_path_;
 
 };
+
 
 
 int main(int argc, char* argv[])
