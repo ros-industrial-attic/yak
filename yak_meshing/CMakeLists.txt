@@ -4,6 +4,7 @@ project(yak_meshing)
 add_definitions(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  message_generation
   rosconsole
   roscpp
   rospy
@@ -13,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   visualization_msgs
   yak
+  pcl_ros
+  pcl_msgs
 )
 
 find_library(OPENVDB_LIBRARY NAMES openvdb)
@@ -28,10 +31,12 @@ generate_messages(
  DEPENDENCIES
    std_msgs
    geometry_msgs
+   pcl_msgs
  )
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
+    message_runtime
     rosconsole
     roscpp
     rospy
@@ -39,6 +44,7 @@ catkin_package(
     sensor_msgs
     tf
     pcl_ros
+    pcl_msgs
     visualization_msgs
     yak
 )

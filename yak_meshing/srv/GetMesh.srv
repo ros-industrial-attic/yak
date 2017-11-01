@@ -1,5 +1,6 @@
 #Request
 ---
+pcl_msgs/PolygonMesh mesh
 bool value
 
 #Respose

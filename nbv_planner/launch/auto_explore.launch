@@ -1,3 +1,30 @@
 <launch>
+  <arg name="sim_robot" default="true"/>
+  <arg name="robot_ip" unless="$(arg sim_robot)" />
+  <arg name="robot_model_plugin" default="abb_irb2400_descartes/AbbIrb2400RobotModel"/>
+  <arg name="sim_sensor" default="true"/>
+  <arg name="real_pcd" default="false"/>
+  <arg name="pcd_location"/> <!-- path to pcd file of part -->
+  <arg name="pcd_frame" default="/base_link"/>
+  <arg name="debug_rviz" default="false"/>
+  <arg name="save_data" default="false" />
+  <arg name="save_location" default="$(env HOME)/.ros/" />
+
+  <include file="$(find godel_irb2400_support)/launch/irb2400_support.launch">
+    <arg name="robot_model_plugin" value="$(arg robot_model_plugin)"/>
+    <arg name="sim_robot" value="$(arg sim_robot)"/>
+    <arg name="robot_ip" value="$(arg robot_ip)"/>
+    <arg name="sim_laser" value="$(arg sim_laser)"/>
+    <arg name="laser_ip" value="$(arg laser_ip)"/>
+    <arg name="robot_model_plugin" value="$(arg robot_model_plugin)"/>
+    <arg name="sim_sensor" value="$(arg sim_sensor)"/>
+    <arg name="real_pcd" value="$(arg real_pcd)"/>
+    <arg name="pcd_location" value="$(arg pcd_location)"/>
+    <arg name="pcd_frame" value="$(arg pcd_frame)"/>
+    <arg name="debug_rviz" value="$(arg debug_rviz)"/>
+    <arg name="debug_core" value="$(arg debug_core)"/> <!--Brings up the surface blending service in debug mode-->
+    <arg name="save_data" value="$(arg save_data)"/>
+    <arg name="save_location" value="$(arg save_location)"/>
+  </include>
 
 </launch>

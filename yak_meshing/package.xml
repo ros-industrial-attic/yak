@@ -20,6 +20,7 @@
   <depend>sensor_msgs</depend>
   <depend>tf</depend>
   <depend>pcl_ros</depend>
+  <depend>pcl_msgs</depend>
   <depend>visualization_msgs</depend>
 
   <exec_depend>message_runtime</exec_depend>

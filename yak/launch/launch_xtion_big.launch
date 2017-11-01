@@ -85,7 +85,7 @@
 
     <node name="meshing" pkg="yak_meshing" type="yak_meshing_node" output="screen">
         <rosparam>
-            output_path: "/home/joe/meshes"
+            output_path: "/home/aderic/meshes"
         </rosparam>
     </node>
 </launch>
