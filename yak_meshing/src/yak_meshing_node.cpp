@@ -99,6 +99,9 @@ public:
     ConvertMesh(mesher, out_mesh);
     pcl_conversions::fromPCL(out_mesh, res.mesh);
 
+    // copy transform info
+    res.camera_pose = srv.response.tsdf.pose;
+
     return true;
   }
 

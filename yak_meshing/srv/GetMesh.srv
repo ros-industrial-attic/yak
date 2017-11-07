@@ -1,6 +1,7 @@
 #Request
 ---
 pcl_msgs/PolygonMesh mesh
+geometry_msgs/Pose camera_pose
 bool value
 
 #Respose

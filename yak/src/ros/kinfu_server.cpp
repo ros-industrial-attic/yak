@@ -296,10 +296,19 @@ namespace kfusion
         res.tsdf.size_y = volume. getSize().val[1];
         res.tsdf.size_z = volume. getSize().val[2];
         res.tsdf.truncation_dist = volume.getTruncDist();
-        res.tsdf.pose.position.x = volume.getPose().translation().val[0];
-        res.tsdf.pose.position.y = volume.getPose().translation().val[1];
-        res.tsdf.pose.position.z = volume.getPose().translation().val[2];
-        cv::Affine3f::Mat3 rot = volume.getPose().rotation();
+
+        kfusion::Affine3f cam_pose = kinfu_->getCameraPose(0);
+        res.tsdf.pose.position.x = cam_pose.translation().val[0];
+        res.tsdf.pose.position.y = cam_pose.translation().val[1];
+        res.tsdf.pose.position.z = cam_pose.translation().val[2];
+        cv::Affine3f::Mat3 rot = cam_pose.rotation();
+
+//        res.tsdf.pose.position.x = volume.getPose().translation().val[0];
+//        res.tsdf.pose.position.y = volume.getPose().translation().val[1];
+//        res.tsdf.pose.position.z = volume.getPose().translation().val[2];
+
+
+//        cv::Affine3f::Mat3 rot = volume.getPose().rotation();
         tf::Matrix3x3 tfRot(rot.val[0], rot.val[1], rot.val[2], rot.val[3], rot.val[4], rot.val[5], rot.val[6], rot.val[7], rot.val[8]);
         tf::Quaternion tfQuat;
         tfRot.getRotation(tfQuat);
@@ -307,6 +316,8 @@ namespace kfusion
         res.tsdf.pose.orientation.y = tfQuat.y();
         res.tsdf.pose.orientation.z = tfQuat.z();
         res.tsdf.pose.orientation.w = tfQuat.w();
+
+
         res.tsdf.data.resize(res.tsdf.num_voxels_x * res.tsdf.num_voxels_y * res.tsdf.num_voxels_z, 0);
         ROS_INFO("About to download TSDF data...");
         volume.data().download(res.tsdf.data.data());
@@ -327,10 +338,17 @@ namespace kfusion
         res.tsdf.size_y = volume. getSize().val[1];
         res.tsdf.size_z = volume. getSize().val[2];
         res.tsdf.truncation_dist = volume.getTruncDist();
-        res.tsdf.pose.position.x = volume.getPose().translation().val[0];
-        res.tsdf.pose.position.y = volume.getPose().translation().val[1];
-        res.tsdf.pose.position.z = volume.getPose().translation().val[2];
-        cv::Affine3f::Mat3 rot = volume.getPose().rotation();
+
+        kfusion::Affine3f cam_pose = kinfu_->getCameraPose(0);
+        res.tsdf.pose.position.x = cam_pose.translation().val[0];
+        res.tsdf.pose.position.y = cam_pose.translation().val[1];
+        res.tsdf.pose.position.z = cam_pose.translation().val[2];
+        cv::Affine3f::Mat3 rot = cam_pose.rotation();
+
+//        res.tsdf.pose.position.x = volume.getPose().translation().val[0];
+//        res.tsdf.pose.position.y = volume.getPose().translation().val[1];
+//        res.tsdf.pose.position.z = volume.getPose().translation().val[2];
+//        cv::Affine3f::Mat3 rot = volume.getPose().rotation();
         tf::Matrix3x3 tfRot(rot.val[0], rot.val[1], rot.val[2], rot.val[3], rot.val[4], rot.val[5], rot.val[6], rot.val[7], rot.val[8]);
         tf::Quaternion tfQuat;
         tfRot.getRotation(tfQuat);
@@ -338,6 +356,8 @@ namespace kfusion
         res.tsdf.pose.orientation.y = tfQuat.y();
         res.tsdf.pose.orientation.z = tfQuat.z();
         res.tsdf.pose.orientation.w = tfQuat.w();
+
+
 
         ROS_INFO("Making array to hold data...");
         std::vector<uint32_t> dataTemp;
