@@ -162,6 +162,12 @@ add_executable(kinfu_node
   src/kinfu_node.cpp)
 add_dependencies(kinfu_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+# Jmeyer Debug
+add_executable(offline_fusion_node
+  src/ros/offline_fusion.cpp)
+add_dependencies(offline_fusion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
 add_executable(volume_tf_broadcaster
   src/ros/volume_tf_broadcaster.cpp)
 add_dependencies(volume_tf_broadcaster ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -173,6 +179,14 @@ add_dependencies(volume_marker ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 add_definitions(${PCL_DEFINITIONS})
 
 target_link_libraries(kinfu_node
+ yak
+ ${catkin_LIBRARIES}
+ ${CUDA_LIBRARIES}
+ ${CUDA_CUDA_LIBRARY}
+ ${OpenCV_LIBS}
+)
+
+target_link_libraries(offline_fusion_node
  yak
  ${catkin_LIBRARIES}
  ${CUDA_LIBRARIES}
