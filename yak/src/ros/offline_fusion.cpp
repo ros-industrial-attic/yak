@@ -35,13 +35,20 @@ bool loadPose(const std::string& file, Eigen::Affine3d& out)
   return true;
 }
 
+std::string toFormattedInt(int i)
+{
+  if (i < 10) return "00" + std::to_string(i);
+  else if (i < 100) return "0" + std::to_string(i);
+  else return std::to_string(i);
+}
+
 bool loadBuffer(const std::string& directory, ObservationBuffer& buffer)
 {
-  const int count = 9;
+  const int count = 362;
 
   for (int i = 1; i <= count; ++i)
   {
-    const std::string img_file = directory + "depth_orig00" + std::to_string(i) + ".png";
+    const std::string img_file = directory + "depth_orig" + toFormattedInt(i) + ".png";
     const std::string pose_file = directory + "pose" + std::to_string(i) + ".txt";
     cv::Mat m = cv::imread(img_file, CV_LOAD_IMAGE_ANYDEPTH);
 
@@ -59,13 +66,29 @@ bool loadBuffer(const std::string& directory, ObservationBuffer& buffer)
 class OfflineFusionServer
 {
 public:
-  OfflineFusionServer(const kfusion::KinFuParams& params)
+  OfflineFusionServer(const kfusion::KinFuParams& params, const Eigen::Affine3f& world_to_volume)
   {
     kinfu_.reset(new kfusion::KinFu(params));
+
+    // Debug displays
+    cv::namedWindow("input");
+    cv::moveWindow("input", 10, 1000);
+    cv::namedWindow("output");
+    cv::moveWindow("output", 10, 600);
+
+    volume_origin_ = world_to_volume;
   }
 
-  void fuse(const ObservationBuffer& buffer)
+  void fuse(const ObservationBuffer& origin_buffer)
   {
+    auto buffer = origin_buffer;
+    for (auto& pose : buffer.image_poses)
+    {
+      ROS_INFO_STREAM("\n" << pose.matrix());
+      pose = volume_origin_.cast<double>() * pose;
+      ROS_INFO_STREAM("\n" << pose.matrix());
+    }
+
     for (std::size_t i = 0; i < buffer.image_data.size(); ++i)
     {
       const auto& depth_image = buffer.image_data[i];
@@ -75,8 +98,6 @@ public:
       if (i == 0) last_pose = image_pose.cast<float>();
       else last_pose = buffer.image_poses[i-1].cast<float>();
 
-      ROS_INFO_STREAM("Feeding image " << i << " at pose =\n" << image_pose.matrix());
-
       cv::imshow("input", depth_image);
 
       ROS_INFO_STREAM(depth_image.channels());
@@ -85,6 +106,8 @@ public:
       cv::waitKey();
 
       step(image_pose.cast<float>(), last_pose, depth_image);
+
+      display();
     }
   }
 
@@ -93,14 +116,27 @@ private:
   {
     // Compute the 'step' from the last_pose to the current pose
     Eigen::Affine3f step = current_pose * last_pose.inverse();
+    step = step.inverse();
 
     depthDevice_.upload(depth.data, depth.step, depth.rows, depth.cols);
     return kinfu_->operator()(step, current_pose, last_pose, depthDevice_);
   }
 
+  void display()
+  {
+    kinfu_->renderImage(viewDevice_, 3);
+
+    cv::Mat viewHost;
+    viewHost.create(viewDevice_.rows(), viewDevice_.cols(), CV_8UC4);
+    viewDevice_.download(viewHost.ptr<void>(), viewHost.step);
+
+    cv::imshow("output", viewHost);
+  }
+
   kfusion::KinFu::Ptr kinfu_;
   kfusion::cuda::Image viewDevice_;
   kfusion::cuda::Depth depthDevice_;
+  Eigen::Affine3f volume_origin_;
 };
 
 
@@ -126,9 +162,30 @@ int main(int argc, char** argv)
 
   // Load parameters
   kfusion::KinFuParams default_params = kfusion::KinFuParams::default_params();
-//  default_params.
+  default_params.use_icp = false;
+  default_params.use_pose_hints = true;
+  default_params.update_via_sensor_motion = false;
 
-  OfflineFusionServer fusion (default_params);
+  default_params.volume_dims = cv::Vec3i(1024, 1024, 1024);
+  default_params.volume_resolution = 0.005;
+
+  // World to volume
+  Eigen::Affine3f world_to_volume (Eigen::Affine3f::Identity());
+
+  world_to_volume.translation() = Eigen::Vector3f(default_params.volume_dims[0] * default_params.volume_resolution / 2.0,
+                                                  default_params.volume_dims[1] * default_params.volume_resolution / 2.0,
+                                                  -0.01);//default_params.volume_dims[2] * default_params.volume_resolution / 2.0);
+
+  default_params.volume_pose = world_to_volume * buffer.image_poses.front().cast<float>();
+
+  default_params.tsdf_trunc_dist = 0.04f; //meters;
+  default_params.tsdf_max_weight = 5;   //frames
+  default_params.raycast_step_factor = 0.25;  //in voxel sizes
+  default_params.gradient_delta_factor = 0.25; //in voxel sizes
+
+
+
+  OfflineFusionServer fusion (default_params, world_to_volume);
 
   fusion.fuse(buffer);
 

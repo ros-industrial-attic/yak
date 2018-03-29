@@ -20,15 +20,10 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 
     p.cols = 640;  //pixels
     p.rows = 480;  //pixels
-    p.intr = Intr(525.f, 525.f, p.cols / 2 - 0.5f, p.rows / 2 - 0.5f);
+    p.intr = Intr(580.f, 580.f, p.cols / 2 - 0.5f, p.rows / 2 - 0.5f);
 
     p.volume_dims = Vec3i::all(512);  //number of voxels
-//    p.volume_size = Vec3f::all(3.f);  //meters
     p.volume_resolution = 0.005859375;
-
-
-
-//    p.volume_pose = Affine3f().translate(Vec3f(-p.volume_size[0] / 2, -p.volume_size[1] / 2, 0.5f));
 
     p.volume_pose = Affine3f::Identity().translate(Vec3f(1,0,0));
 
@@ -47,8 +42,6 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 
     p.raycast_step_factor = 0.75f;  //in voxel sizes
     p.gradient_delta_factor = 0.5f; //in voxel sizes
-
-    //p.light_pose = p.volume_pose.translation()/4; //meters
     p.light_pose = Vec3f::all(0.f); //meters
 
     p.use_pose_hints = false;
@@ -71,10 +64,10 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
     // Set the metric dimensions of the volume using the voxel dimensions and the metric voxel resolution
     Vec3f volumeSize(params_.volume_dims[0]*params_.volume_resolution, params_.volume_dims[1]*params_.volume_resolution, params_.volume_dims[2]*params_.volume_resolution);
     volume_->setSize(volumeSize);
-    ROS_INFO_STREAM("Volume size set to: " << volume_->getSize());
 //    volume_->setPose(params_.volume_pose);
-    volume_->setPose(Affine3f::Identity());
-    ROS_INFO_STREAM("Volume pose set to: " << volume_->getPose().matrix);
+
+    ROS_INFO_STREAM("Volume size set to: " << volume_->getSize());
+    ROS_INFO_STREAM("Volume pose set to:\n" << volume_->getPose().matrix);
     volume_->setRaycastStepFactor(params_.raycast_step_factor);
     volume_->setGradientDeltaFactor(params_.gradient_delta_factor);
 
@@ -266,7 +259,12 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
 
 #endif
         if (!ok)
-            return resetVolume(), resetPose(), false;
+        {
+          ROS_ERROR_STREAM("Not okay");
+          resetVolume();
+          resetPose();
+          return false;
+        }
     }
 
 //    poses_.push_back(poses_.back() * cameraMotion);
