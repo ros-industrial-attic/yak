@@ -82,6 +82,8 @@ namespace kfusion
             void renderImage(cuda::Image& image, int flags = 0);
             void renderImage(cuda::Image& image, const Affine3f& pose, int flags = 0);
 
+            std::vector<kfusion::Point> downloadCloud() const;
+
             Affine3f getCameraPose(int time = -1) const;
         private:
             void allocate_buffers();

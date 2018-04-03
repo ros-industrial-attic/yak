@@ -375,6 +375,17 @@ void kfusion::KinFu::renderImage(cuda::Image& image, const Affine3f& pose, int f
 #undef PASS1
 }
 
+std::vector<Point> KinFu::downloadCloud() const
+{
+  DeviceArray<kfusion::Point> cloud_buffer; // What does this do? How does it relate to extracted?
+  DeviceArray<kfusion::Point> extracted = volume_->fetchCloud(cloud_buffer);
+
+  std::vector<kfusion::Point> result (extracted.size());
+  extracted.download(result.data());
+
+  return result;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //namespace pcl
