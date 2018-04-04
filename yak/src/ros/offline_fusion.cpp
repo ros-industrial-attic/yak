@@ -158,16 +158,16 @@ public:
       if (i == 0) last_pose = image_pose.cast<float>();
       else last_pose = buffer.image_poses[i-1].cast<float>();
 
-//      cv::imshow("input", depth_image);
+      cv::imshow("input", depth_image);
 
       ROS_INFO_STREAM(depth_image.channels());
       ROS_INFO_STREAM(depth_image.elemSize());
 
-//      cv::waitKey();
+      cv::waitKey();
 
       step(image_pose.cast<float>(), last_pose, depth_image);
 
-//      display();
+      display();
     }
   }
 
@@ -425,6 +425,47 @@ void printStats(const TSDFContainer& tsdf)
   ROS_INFO("Avg weight: %f", avg_weight / tsdf.size());
 }
 
+pcl::PointCloud<pcl::PointXYZ> projectAll(const kfusion::Intr& intr,
+                                          const ObservationBuffer& buffer)
+{
+  pcl::PointCloud<pcl::PointXYZ> result;
+
+  // For each image
+  for (std::size_t i = 0; i < buffer.image_data.size(); ++i)
+  {
+    const auto& img_pose = buffer.image_poses[i];
+    const auto& img = buffer.image_data[i];
+
+    // For each pixel
+    for (auto j = 0; j < img.rows; ++j)
+    {
+      for (auto k = 0; k < img.cols; ++k)
+      {
+        uint16_t depth = img.at<uint16_t>(j, k);
+
+        if (depth == 0) continue;
+        // Project the pixel into the camera space
+        Eigen::Vector3d pt_in_cam;
+        pt_in_cam.z() = static_cast<double>(depth) / 1000.0;
+        pt_in_cam.x() = (k - intr.cx) * pt_in_cam.z() / intr.fx;
+        pt_in_cam.y() = (j - intr.cy) * pt_in_cam.z() / intr.fy;
+
+        // Transform the point into world space
+        Eigen::Vector3d pt_in_world = img_pose * pt_in_cam;
+
+        // Add to results
+        pcl::PointXYZ pcl_pt;
+        pcl_pt.x = pt_in_world.x();
+        pcl_pt.y = pt_in_world.y();
+        pcl_pt.z = pt_in_world.z();
+        result.push_back(pcl_pt);
+      }
+    }
+  }
+
+  return result;
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "offline_fusion");
@@ -520,6 +561,10 @@ int main(int argc, char** argv)
   pub_interface.publish(interface_cloud);
   pcl::io::savePCDFileBinary("interface.pcd", interface_cloud);
   ROS_INFO_STREAM("interface: " << interface_cloud.size());
+
+//  auto raw_cloud = projectAll(default_params.intr, buffer);
+//  pcl::io::savePCDFileBinary("raw.pcd", raw_cloud);
+//  ROS_INFO_STREAM("raw");
 
   ros::spin();
 
