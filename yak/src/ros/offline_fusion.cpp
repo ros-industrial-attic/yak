@@ -276,8 +276,8 @@ pcl::PointCloud<pcl::PointXYZ> naiveSurfaceCloud(const TSDFContainer& tsdf, floa
 {
   pcl::PointCloud<pcl::PointXYZ> cloud;
 
-  const int min_weight = 10;
-  const float min_thresh = 0.5 * res;
+  const int min_weight = 0;
+  const float min_thresh = (0.006 * 0.55) / (0.006 * 5.0);//0.75f;
 
   for (int i = 0; i < tsdf.size(); ++i)
   {
@@ -285,7 +285,7 @@ pcl::PointCloud<pcl::PointXYZ> naiveSurfaceCloud(const TSDFContainer& tsdf, floa
     uint16_t weight;
     tsdf.read(i, dist, weight);
 
-    if (weight > min_weight && dist < min_thresh) {
+    if (weight > min_weight && std::abs(dist) < min_thresh) {
 
       int x,y,z;
       tsdf.fromIndex(i, x, y, z);
@@ -503,8 +503,8 @@ int main(int argc, char** argv)
 
   default_params.volume_pose = world_to_volume * buffer.image_poses.front().cast<float>();
 
-  default_params.tsdf_trunc_dist = 0.1f; //meters;
-  default_params.tsdf_max_weight = 30;   //frames
+  default_params.tsdf_trunc_dist = default_params.volume_resolution * 5.0; //meters;
+  default_params.tsdf_max_weight = 1;   //frames
   default_params.raycast_step_factor = 0.25;  //in voxel sizes
   default_params.gradient_delta_factor = 0.25; //in voxel sizes
 
