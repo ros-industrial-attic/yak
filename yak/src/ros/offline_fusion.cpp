@@ -50,24 +50,26 @@ std::string toFormattedInt(int i)
 
 bool loadBuffer(const std::string& directory, ObservationBuffer& buffer)
 {
-  const int count = 999;
+  unsigned counter = 0;
 
-  for (int i = 1; i <= count; ++i)
+  while (true)
   {
-    const std::string img_file = directory + "depth_orig" + toFormattedInt(i) + ".png";
-    const std::string pose_file = directory + "pose" + std::to_string(i) + ".txt";
-
+    const std::string img_file = directory + "depth_" + std::to_string(counter) + ".png";
+    const std::string pose_file = directory + "pose_" + std::to_string(counter) + ".txt";
     Eigen::Affine3d pose = Eigen::Affine3d::Identity();
+
     if (!loadPose(pose_file, pose))
     {
-      ROS_INFO("Done loading %d", i);
-      return true;
+      ROS_INFO("Done loading %d", counter);
+      break;
     }
 
     cv::Mat m = cv::imread(img_file, CV_LOAD_IMAGE_ANYDEPTH);
 
     buffer.image_data.push_back(m);
     buffer.image_poses.push_back(pose);
+
+    counter += 1;
   }
 
   return true;
