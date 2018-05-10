@@ -167,6 +167,14 @@ add_executable(offline_fusion_node
   src/ros/offline_fusion.cpp)
 add_dependencies(offline_fusion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+# Jmeyer Marching Cubes
+add_executable(marching_cubes_tests
+  src/mc/marching_cubes.cpp
+  src/mc/marching_cubes_tests.cpp)
+add_dependencies(marching_cubes_tests ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(marching_cubes_tests
+ ${catkin_LIBRARIES}
+)
 
 add_executable(volume_tf_broadcaster
   src/ros/volume_tf_broadcaster.cpp)
@@ -175,6 +183,7 @@ add_dependencies(volume_tf_broadcaster ${${PROJECT_NAME}_EXPORTED_TARGETS} ${cat
 add_executable(volume_marker
   src/ros/volume_marker.cpp)
 add_dependencies(volume_marker ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
 add_definitions(${PCL_DEFINITIONS})
 
