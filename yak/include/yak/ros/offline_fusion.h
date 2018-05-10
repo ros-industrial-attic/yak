@@ -1,0 +1,4 @@
+#ifndef ROS_OFFLINE_FUSION_H
+#define ROS_OFFLINE_FUSION_H
+
+#define // ROS_OFFLINE_FUSION_H
