@@ -89,7 +89,7 @@ namespace kfusion
 
                         if (sdf >= -volume.trunc_dist)
                         {
-                            float tsdf = abs(fmin(1.f, sdf * tranc_dist_inv));
+                            float tsdf = fmin(1.f, sdf * tranc_dist_inv);
 
                             //read and unpack
                             int weight_prev;

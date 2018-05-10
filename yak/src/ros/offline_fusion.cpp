@@ -278,8 +278,8 @@ pcl::PointCloud<pcl::PointXYZ> naiveSurfaceCloud(const TSDFContainer& tsdf, floa
 {
   pcl::PointCloud<pcl::PointXYZ> cloud;
 
-  const int min_weight = 0;
-  const float min_thresh = (0.006 * 0.55) / (0.006 * 5.0);//0.75f;
+  const int min_weight = 1;
+  const float min_thresh = (0.006 * 1) / (0.006 * 5.0);//0.75f;
 
   for (int i = 0; i < tsdf.size(); ++i)
   {
@@ -506,7 +506,7 @@ int main(int argc, char** argv)
   default_params.volume_pose = world_to_volume * buffer.image_poses.front().cast<float>();
 
   default_params.tsdf_trunc_dist = default_params.volume_resolution * 5.0; //meters;
-  default_params.tsdf_max_weight = 1;   //frames
+  default_params.tsdf_max_weight = 50;   //frames
   default_params.raycast_step_factor = 0.25;  //in voxel sizes
   default_params.gradient_delta_factor = 0.25; //in voxel sizes
 
