@@ -170,7 +170,8 @@ add_dependencies(offline_fusion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catki
 # Jmeyer Marching Cubes
 add_executable(marching_cubes_tests
   src/mc/marching_cubes.cpp
-  src/mc/marching_cubes_tests.cpp)
+  src/mc/marching_cubes_tests.cpp
+  src/mc/marching_cubes_tables.cpp)
 add_dependencies(marching_cubes_tests ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(marching_cubes_tests
  ${catkin_LIBRARIES}

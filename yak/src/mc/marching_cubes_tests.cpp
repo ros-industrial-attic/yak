@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include "marching_cubes.h"
+#include "marching_cubes_tables.h"
 
 #include <pcl/PolygonMesh.h>
 #include <pcl/io/ply_io.h>
@@ -16,6 +16,7 @@ struct ScalarField
 };
 
 using Grid = ScalarField<256, 256, 256>;
+
 
 std::unique_ptr<Grid> makeScene()
 {
@@ -164,7 +165,7 @@ std::vector<Triangle> processCube(const Grid& grid, int x, int y, int z)
   // Now look up the triangulation for this cubeindex. This returns a number with up to 15 bits. Each set of
   // three subsequent bits represents the edge intersection that will make up this triangle. The list terminates
   // with a negative one (-1).
-  int* triangulation = yak::triangleTable[cubeindex];
+  const int* triangulation = yak::triangleTable[cubeindex];
 
   // Up to 5 triangles
   std::vector<Triangle> triangles;
@@ -208,7 +209,7 @@ pcl::PolygonMesh makeMesh(const Grid& grid)
   pcl::PointCloud<pcl::PointXYZ> vertices;
   vertices.resize(triangles.size() * 3); // We have 3 times triangles number of vertices
 
-  for (std::size_t i = 0; i < triangles.size(); ++i)
+  for (unsigned i = 0; i < triangles.size(); ++i)
   {
     auto idx = i * 3;
     auto& verts = mesh.polygons[i];
