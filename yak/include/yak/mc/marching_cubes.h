@@ -4,7 +4,7 @@
 #include <yak/ros/offline_fusion.h>
 #include <pcl/PolygonMesh.h>
 
-namespace
+namespace yak
 {
 
 pcl::PolygonMesh marchingCubesCPU(const TSDFContainer& tsdf);

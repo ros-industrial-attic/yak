@@ -15,6 +15,9 @@
 
 #include <fstream>
 
+#include <yak/mc/marching_cubes.h>
+#include <pcl/io/ply_io.h>
+
 struct ObservationBuffer
 {
   std::vector<cv::Mat> image_data;
@@ -516,6 +519,12 @@ int main(int argc, char** argv)
   pub_interface.publish(interface_cloud);
   pcl::io::savePCDFileBinary("interface.pcd", interface_cloud);
   ROS_INFO_STREAM("interface: " << interface_cloud.size());
+
+  ROS_INFO_STREAM("Starting marching cubes...");
+  auto mesh = yak::marchingCubesCPU(tsdf);
+  pcl::io::savePLYFileBinary("cubes.ply", mesh);
+
+  ROS_INFO_STREAM("All done!");
 
 //  auto raw_cloud = projectAll(default_params.intr, buffer);
 //  pcl::io::savePCDFileBinary("raw.pcd", raw_cloud);

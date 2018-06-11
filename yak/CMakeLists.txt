@@ -164,7 +164,9 @@ add_dependencies(kinfu_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTE
 
 # Jmeyer Debug
 add_executable(offline_fusion_node
-  src/ros/offline_fusion.cpp)
+  src/ros/offline_fusion.cpp
+  src/mc/marching_cubes.cpp
+  src/mc/marching_cubes_tables.cpp)
 add_dependencies(offline_fusion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 # Jmeyer Marching Cubes
