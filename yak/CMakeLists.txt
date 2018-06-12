@@ -140,11 +140,35 @@ target_link_libraries(yak
   ${OpenCV_LIBS}
 )
 
+# Marching Cubes Meshing Impl
+add_library(${PROJECT_NAME}_marching_cubes
+  src/mc/marching_cubes.cpp
+  src/mc/marching_cubes_tables.cpp)
+
+add_dependencies(${PROJECT_NAME}_marching_cubes ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(${PROJECT_NAME}_marching_cubes
+  ${catkin_LIBRARIES}
+)
+
+# Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
+# a minimal interface of pushing and image with a pose guess into the server and integrating.
+add_library(${PROJECT_NAME}_frontend
+  src/offline/offline_fusion_server.cpp)
+
+add_dependencies(${PROJECT_NAME}_frontend ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(${PROJECT_NAME}_frontend
+ yak
+ ${catkin_LIBRARIES}
+)
+
 # ROS Node Interface for Depth Image Processing
 add_executable(kinfu_node
   src/ros/kinfu_node.cpp
   src/ros/ros_rgbd_camera.cpp
   src/ros/kinfu_server.cpp)
+
 add_dependencies(kinfu_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(kinfu_node
@@ -153,27 +177,23 @@ target_link_libraries(kinfu_node
 )
 
 # Jmeyer Debug
-add_executable(offline_fusion_node
-  src/ros/offline_fusion.cpp
-  src/mc/marching_cubes.cpp
-  src/mc/marching_cubes_tables.cpp)
+add_executable(offline_fusion_node src/ros/offline_fusion.cpp)
 
 add_dependencies(offline_fusion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(offline_fusion_node
  yak
+ ${PROJECT_NAME}_marching_cubes
  ${catkin_LIBRARIES}
 )
 
 # Jmeyer Marching Cubes
-add_executable(marching_cubes_tests
-  src/mc/marching_cubes.cpp
-  src/mc/marching_cubes_tests.cpp
-  src/mc/marching_cubes_tables.cpp)
+add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
 
 add_dependencies(marching_cubes_tests ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(marching_cubes_tests
+ ${PROJECT_NAME}_marching_cubes
  ${catkin_LIBRARIES}
 )
 
