@@ -14,17 +14,17 @@ MACRO(CUDA_COMPUTE_TARGET_FLAGS arch_bin arch_ptx cuda_nvcc_target_flags)
     foreach(ARCH IN LISTS ARCH_LIST)
         if (ARCH MATCHES "([0-9]+)\\(([0-9]+)\\)")
             # User explicitly specified PTX for the concrete BIN
-            set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode arch=compute_${CMAKE_MATCH_2},code=sm_${CMAKE_MATCH_1})
+            set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode;arch=compute_${CMAKE_MATCH_2},code=sm_${CMAKE_MATCH_1};)
         else()
             # User didn't explicitly specify PTX for the concrete BIN, we assume PTX=BIN
-            set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode arch=compute_${ARCH},code=sm_${ARCH})
+            set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode;arch=compute_${ARCH},code=sm_${ARCH};)
         endif()
     endforeach()
 
     # Tell NVCC to add PTX intermediate code for the specified architectures
     string(REGEX MATCHALL "[0-9]+" ARCH_LIST "${ARCH_PTX_WITHOUT_DOTS}")
     foreach(ARCH IN LISTS ARCH_LIST)
-        set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode arch=compute_${ARCH},code=compute_${ARCH})
+        set(cuda_computer_target_flags_temp ${cuda_computer_target_flags_temp} -gencode;arch=compute_${ARCH},code=compute_${ARCH};)
     endforeach()
 
     set(${cuda_nvcc_target_flags} ${cuda_computer_target_flags_temp})
@@ -46,19 +46,13 @@ message(STATUS "CMAKE MODULE PATH IS ${CMAKE_MODULE_PATH}")
 find_package(OpenCV REQUIRED COMPONENTS core highgui)
 message(STATUS "Found OpenCV At ${OpenCV_INCLUDE_DIRS}")
 
-#find_library(OPENVDB_LIBRARY NAMES openvdb)
-#find_library(TBB_LIBRARY NAMES tbb)
-#find_library(HALF_LIBRARY NAMES Half)
-find_library(PCL 1.8 REQUIRED COMPONENTS common gpu)
+#find_library(PCL 1.8 REQUIRED COMPONENTS common gpu)
 
 find_package(CUDA REQUIRED)
-if(${CUDA_VERSION_STRING} VERSION_GREATER "4.1")
-        set(CUDA_ARCH_BIN "2.0 2.1(2.0) 3.0 5.0 5.2 6.0 6.1" CACHE STRING "Specify 'real' GPU architectures to build binaries for, BIN(PTX) format is supported")
-    else()
-        set(CUDA_ARCH_BIN "2.0 2.1(2.0)" CACHE STRING "Specify 'real' GPU architectures to build binaries for, BIN(PTX) format is supported")
-    endif()
+set(CUDA_ARCH_BIN "2.0 2.1(2.0) 3.0 5.0 5.2 6.0 6.1" CACHE STRING "Specify 'real' GPU architectures to build binaries for, BIN(PTX) format is supported")
 APPEND_TARGET_ARCH_FLAGS()
-message(STATUS "CUDA_BIN_ARCH ${CUDA_ARCH_BIN}")
+
+message(WARNING ${CUDA_NVCC_FLAGS})
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation
@@ -96,8 +90,10 @@ generate_messages(
 )
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES yak
+  INCLUDE_DIRS
+    include
+  LIBRARIES
+    yak
   CATKIN_DEPENDS
     cv_bridge
     image_transport
@@ -112,7 +108,6 @@ catkin_package(
     message_runtime
 )
 
-
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -121,109 +116,98 @@ include_directories(
   ${PCL_INCLUDE_DIRS}
 )
 
-#messages for debugging cuda libraries
-#message("debugging")
-#message("PCL_INCLUDE_DIRS: ${PCL_INCLUDE_DIRS}")
-#message("CUDA_INCLUDE_DIRS: ${CUDA_INCLUDE_DIRS}")
-#message("CUDA_CUDA_LIBRARY: ${CUDA_CUDA_LIBRARY}")
-
-set(HAVE_CUDA 1)
-#list(APPEND CUDA_NVCC_FLAGS "-arch;compute_20")
-list(APPEND CUDA_NVCC_FLAGS "-gencode;arch=compute_20,code=sm_20;-gencode;arch=compute_20,code=sm_21;-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35;-gencode;arch=compute_61,code=sm_61")
-  list(APPEND CUDA_NVCC_FLAGS "-Xcompiler;-fPIC;")
-
 link_directories(${PCL_LIBRARY_DIRS})
 
+# Core CUDA Library for depth image processing
 cuda_add_library(yak
-      src/core.cpp
-      src/device_memory.cpp
-      src/imgproc.cpp
-      src/kinfu.cpp
-      src/precomp.cpp
-      src/projective_icp.cpp
-      src/tsdf_volume.cpp
-      src/cuda/imgproc.cu
-      src/cuda/proj_icp.cu
-      src/cuda/tsdf_volume.cu
-      src/ros/ros_rgbd_camera.cpp
-      src/ros/kinfu_server.cpp
+  src/core.cpp
+  src/device_memory.cpp
+  src/imgproc.cpp
+  src/kinfu.cpp
+  src/precomp.cpp
+  src/projective_icp.cpp
+  src/tsdf_volume.cpp
+  src/cuda/imgproc.cu
+  src/cuda/proj_icp.cu
+  src/cuda/tsdf_volume.cu
 )
+
 add_dependencies(yak ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+target_link_libraries(yak
+  ${CUDA_LIBRARIES}
+  ${CUDA_CUDA_LIBRARY}
+  ${OpenCV_LIBS}
+)
 
- target_link_libraries(yak
-   ${catkin_LIBRARIES}
-   ${CUDA_LIBRARIES}
-   ${CUDA_CUDA_LIBRARY}
-   ${OpenCV_LIBS}
- )
-
+# ROS Node Interface for Depth Image Processing
 add_executable(kinfu_node
-  src/kinfu_node.cpp)
+  src/ros/kinfu_node.cpp
+  src/ros/ros_rgbd_camera.cpp
+  src/ros/kinfu_server.cpp)
 add_dependencies(kinfu_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(kinfu_node
+ yak
+ ${catkin_LIBRARIES}
+)
 
 # Jmeyer Debug
 add_executable(offline_fusion_node
   src/ros/offline_fusion.cpp
   src/mc/marching_cubes.cpp
   src/mc/marching_cubes_tables.cpp)
+
 add_dependencies(offline_fusion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(offline_fusion_node
+ yak
+ ${catkin_LIBRARIES}
+)
 
 # Jmeyer Marching Cubes
 add_executable(marching_cubes_tests
   src/mc/marching_cubes.cpp
   src/mc/marching_cubes_tests.cpp
   src/mc/marching_cubes_tables.cpp)
+
 add_dependencies(marching_cubes_tests ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 target_link_libraries(marching_cubes_tests
  ${catkin_LIBRARIES}
 )
 
-add_executable(volume_tf_broadcaster
-  src/ros/volume_tf_broadcaster.cpp)
+# TODO: What is this?
+add_executable(volume_tf_broadcaster src/ros/volume_tf_broadcaster.cpp)
+
 add_dependencies(volume_tf_broadcaster ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-add_executable(volume_marker
-  src/ros/volume_marker.cpp)
-add_dependencies(volume_marker ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-add_definitions(${PCL_DEFINITIONS})
-
-target_link_libraries(kinfu_node
- yak
- ${catkin_LIBRARIES}
- ${CUDA_LIBRARIES}
- ${CUDA_CUDA_LIBRARY}
- ${OpenCV_LIBS}
-)
-
-target_link_libraries(offline_fusion_node
- yak
- ${catkin_LIBRARIES}
- ${CUDA_LIBRARIES}
- ${CUDA_CUDA_LIBRARY}
- ${OpenCV_LIBS}
-)
 
 target_link_libraries(volume_tf_broadcaster
  yak
  ${catkin_LIBRARIES}
- ${OpenCV_LIBS}
 )
+
+# TODO: What is this?
+add_executable(volume_marker src/ros/volume_marker.cpp)
+
+add_dependencies(volume_marker ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(volume_marker
- yak
- ${catkin_LIBRARIES}
- ${OpenCV_LIBS}
+  yak
+  ${catkin_LIBRARIES}
 )
 
-install(TARGETS yak kinfu_node
- ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
- LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
- RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# TODO: Why is this here?
+#add_definitions(${PCL_DEFINITIONS})
+
+install(TARGETS
+  yak
+  kinfu_node
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 install(DIRECTORY include/${PROJECT_NAME}/
- DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
