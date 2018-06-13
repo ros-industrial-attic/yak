@@ -31,6 +31,8 @@ bool yak_offline::OfflineFusionServer::fuse(const cv::Mat& depth_data, const Eig
   // Update the "last camera pose" TODO: Do I update this if the fusion step failed?
   last_camera_pose_ = current_camera_in_volume;
 
+  display();
+
   return result;
 }
 
@@ -108,6 +110,7 @@ void yak_offline::OfflineFusionServer::downloadAndDisplayView()
   viewDevice_.download(viewHost.ptr<void>(), viewHost.step);
 
   cv::imshow("output", viewHost);
+  cv::waitKey(1);
 }
 
 void yak_offline::OfflineFusionServer::display()
