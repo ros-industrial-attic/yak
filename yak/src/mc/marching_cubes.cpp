@@ -1,6 +1,5 @@
 #include "yak/mc/marching_cubes.h"
 #include "marching_cubes_tables.h"
-
 #include <pcl/io/ply_io.h>
 
 namespace
@@ -36,7 +35,7 @@ const static int cubeOffsets[8][3] = {
   {0, 1, 1},
 };
 
-std::vector<Triangle> processCube(const TSDFContainer& grid, int x, int y, int z)
+std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, int z)
 {
 
   // Copy the isovalues of the nearby surfaces into a local array
@@ -133,7 +132,7 @@ std::vector<Triangle> processCube(const TSDFContainer& grid, int x, int y, int z
   return triangles;
 }
 
-pcl::PolygonMesh makeMesh(const TSDFContainer& grid)
+pcl::PolygonMesh makeMesh(const yak::TSDFContainer& grid)
 {
   // For each cube inside the grid, let's generate triangles...
   std::vector<Triangle> triangles;
@@ -174,7 +173,7 @@ pcl::PolygonMesh makeMesh(const TSDFContainer& grid)
 
 } // end anon namespace
 
-pcl::PolygonMesh yak::marchingCubesCPU(const TSDFContainer& tsdf)
+pcl::PolygonMesh yak::marchingCubesCPU(const yak::TSDFContainer& tsdf)
 {
   return makeMesh(tsdf);
 }

@@ -95,6 +95,7 @@ catkin_package(
   LIBRARIES
     yak
     ${PROJECT_NAME}_frontend
+    ${PROJECT_NAME}_marching_cubes
   CATKIN_DEPENDS
     cv_bridge
     image_transport
@@ -150,6 +151,7 @@ add_dependencies(${PROJECT_NAME}_marching_cubes ${${PROJECT_NAME}_EXPORTED_TARGE
 
 target_link_libraries(${PROJECT_NAME}_marching_cubes
   ${catkin_LIBRARIES}
+  ${PROJECT_NAME}_frontend
 )
 
 # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support

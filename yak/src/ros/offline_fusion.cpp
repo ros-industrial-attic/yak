@@ -426,105 +426,105 @@ pcl::PointCloud<pcl::PointXYZ> projectAll(const kfusion::Intr& intr,
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "offline_fusion");
-  ros::NodeHandle nh, pnh ("~");
+//  ros::init(argc, argv, "offline_fusion");
+//  ros::NodeHandle nh, pnh ("~");
 
-  std::string buffer_dir;
-  if (!pnh.getParam("buffer", buffer_dir))
-  {
-    ROS_ERROR("Must set 'buffer'");
-    return 1;
-  }
+//  std::string buffer_dir;
+//  if (!pnh.getParam("buffer", buffer_dir))
+//  {
+//    ROS_ERROR("Must set 'buffer'");
+//    return 1;
+//  }
 
-  ObservationBuffer buffer;
-  if (!loadBuffer(buffer_dir, buffer))
-  {
-    ROS_ERROR("Failed to load buffer data");
-    return 2;
-  }
+//  ObservationBuffer buffer;
+//  if (!loadBuffer(buffer_dir, buffer))
+//  {
+//    ROS_ERROR("Failed to load buffer data");
+//    return 2;
+//  }
 
-  // Load parameters
-  kfusion::KinFuParams default_params = kfusion::KinFuParams::default_params();
-  default_params.use_icp = false;
-  default_params.use_pose_hints = true;
-  default_params.update_via_sensor_motion = false;
+//  // Load parameters
+//  kfusion::KinFuParams default_params = kfusion::KinFuParams::default_params();
+//  default_params.use_icp = false;
+//  default_params.use_pose_hints = true;
+//  default_params.update_via_sensor_motion = false;
 
-  default_params.volume_dims = cv::Vec3i(1248, 512, 512);
-  default_params.volume_resolution = 0.006;
+//  default_params.volume_dims = cv::Vec3i(1248, 512, 512);
+//  default_params.volume_resolution = 0.006;
 
-  // World to volume
-  Eigen::Affine3f world_to_volume (Eigen::Affine3f::Identity());
+//  // World to volume
+//  Eigen::Affine3f world_to_volume (Eigen::Affine3f::Identity());
 
-  world_to_volume.translation() = Eigen::Vector3f(default_params.volume_dims[0] * default_params.volume_resolution / 2.0,
-                                                  default_params.volume_dims[1] * default_params.volume_resolution / 2.0,
-                                                  -0.1);//default_params.volume_dims[2] * default_params.volume_resolution / 2.0);
+//  world_to_volume.translation() = Eigen::Vector3f(default_params.volume_dims[0] * default_params.volume_resolution / 2.0,
+//                                                  default_params.volume_dims[1] * default_params.volume_resolution / 2.0,
+//                                                  -0.1);//default_params.volume_dims[2] * default_params.volume_resolution / 2.0);
 
-  default_params.volume_pose = world_to_volume * buffer.image_poses.front().cast<float>();
+//  default_params.volume_pose = world_to_volume * buffer.image_poses.front().cast<float>();
 
-  default_params.tsdf_trunc_dist = default_params.volume_resolution * 5.0; //meters;
-  default_params.tsdf_max_weight = 50;   //frames
-  default_params.raycast_step_factor = 0.25;  //in voxel sizes
-  default_params.gradient_delta_factor = 0.25; //in voxel sizes
+//  default_params.tsdf_trunc_dist = default_params.volume_resolution * 5.0; //meters;
+//  default_params.tsdf_max_weight = 50;   //frames
+//  default_params.raycast_step_factor = 0.25;  //in voxel sizes
+//  default_params.gradient_delta_factor = 0.25; //in voxel sizes
 
 
 
-  OfflineFusionServer fusion (default_params, world_to_volume);
+//  OfflineFusionServer fusion (default_params, world_to_volume);
 
-  fusion.fuse(buffer);
+//  fusion.fuse(buffer);
 
-  pcl::PointCloud<pcl::PointXYZ> cloud;
-  cloud.header.frame_id = "world";
-  fusion.getCloud(cloud);
+//  pcl::PointCloud<pcl::PointXYZ> cloud;
+//  cloud.header.frame_id = "world";
+//  fusion.getCloud(cloud);
 
-  ros::Publisher pub = nh.advertise<decltype(cloud)>("cloud", 1, true);
+//  ros::Publisher pub = nh.advertise<decltype(cloud)>("cloud", 1, true);
 
-  ros::Rate pub_rate (1.0);
-  ROS_INFO_STREAM("publishing cloud w/ n-points = " << cloud.size());
+//  ros::Rate pub_rate (1.0);
+//  ROS_INFO_STREAM("publishing cloud w/ n-points = " << cloud.size());
 
-  pub.publish(cloud);
+//  pub.publish(cloud);
 
-  ros::spinOnce();
+//  ros::spinOnce();
 
-  flythrough(fusion, buffer.image_poses.back().cast<float>(), world_to_volume);
+//  flythrough(fusion, buffer.image_poses.back().cast<float>(), world_to_volume);
 
-  // Download cloud
-  auto tsdf = fusion.downloadTSDF();
+//  // Download cloud
+//  auto tsdf = fusion.downloadTSDF();
 
-  ROS_INFO_STREAM("Downloaded");
-  ROS_INFO_STREAM("Size: " << tsdf.size());
-  ROS_INFO_STREAM("DIMS: " << tsdf.dims().transpose());
+//  ROS_INFO_STREAM("Downloaded");
+//  ROS_INFO_STREAM("Size: " << tsdf.size());
+//  ROS_INFO_STREAM("DIMS: " << tsdf.dims().transpose());
 
-  printStats(tsdf);
+//  printStats(tsdf);
 
-  // naive surface
-  ros::Publisher pub_naive = nh.advertise<decltype(cloud)>("cloud_naive", 1, true);
-  auto naive_cloud = naiveSurfaceCloud(tsdf, default_params.volume_resolution);
-  naive_cloud.header.frame_id = "world";
-  pub_naive.publish(naive_cloud);
-  pcl::io::savePCDFileBinary("surface.pcd", naive_cloud);
-  ROS_INFO_STREAM("naive");
+//  // naive surface
+//  ros::Publisher pub_naive = nh.advertise<decltype(cloud)>("cloud_naive", 1, true);
+//  auto naive_cloud = naiveSurfaceCloud(tsdf, default_params.volume_resolution);
+//  naive_cloud.header.frame_id = "world";
+//  pub_naive.publish(naive_cloud);
+//  pcl::io::savePCDFileBinary("surface.pcd", naive_cloud);
+//  ROS_INFO_STREAM("naive");
 
-  // unseen
-//  ros::Publisher pub_unseen = nh.advertise<decltype(cloud)>("cloud_unseen", 1, true);
-//  auto unseen_cloud = unseenCloud(tsdf, default_params.volume_resolution);
-//  unseen_cloud.header.frame_id = "world";
-//  pub_unseen.publish(unseen_cloud);
-//  pcl::io::savePCDFileBinary("unseen.pcd", unseen_cloud);
-//  ROS_INFO_STREAM("unseen: " << unseen_cloud.size());
+//  // unseen
+////  ros::Publisher pub_unseen = nh.advertise<decltype(cloud)>("cloud_unseen", 1, true);
+////  auto unseen_cloud = unseenCloud(tsdf, default_params.volume_resolution);
+////  unseen_cloud.header.frame_id = "world";
+////  pub_unseen.publish(unseen_cloud);
+////  pcl::io::savePCDFileBinary("unseen.pcd", unseen_cloud);
+////  ROS_INFO_STREAM("unseen: " << unseen_cloud.size());
 
-  // interface
-  ros::Publisher pub_interface = nh.advertise<decltype(cloud)>("cloud_interface", 1, true);
-  auto interface_cloud = unseenEmptyInterface(tsdf, default_params.volume_resolution);
-  interface_cloud.header.frame_id = "world";
-  pub_interface.publish(interface_cloud);
-  pcl::io::savePCDFileBinary("interface.pcd", interface_cloud);
-  ROS_INFO_STREAM("interface: " << interface_cloud.size());
+//  // interface
+//  ros::Publisher pub_interface = nh.advertise<decltype(cloud)>("cloud_interface", 1, true);
+//  auto interface_cloud = unseenEmptyInterface(tsdf, default_params.volume_resolution);
+//  interface_cloud.header.frame_id = "world";
+//  pub_interface.publish(interface_cloud);
+//  pcl::io::savePCDFileBinary("interface.pcd", interface_cloud);
+//  ROS_INFO_STREAM("interface: " << interface_cloud.size());
 
-  ROS_INFO_STREAM("Starting marching cubes...");
-  auto mesh = yak::marchingCubesCPU(tsdf);
-  pcl::io::savePLYFileBinary("cubes.ply", mesh);
+//  ROS_INFO_STREAM("Starting marching cubes...");
+//  auto mesh = yak::marchingCubesCPU(tsdf);
+//  pcl::io::savePLYFileBinary("cubes.ply", mesh);
 
-  ROS_INFO_STREAM("All done!");
+//  ROS_INFO_STREAM("All done!");
 
 //  auto raw_cloud = projectAll(default_params.intr, buffer);
 //  pcl::io::savePCDFileBinary("raw.pcd", raw_cloud);
