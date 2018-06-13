@@ -94,6 +94,7 @@ catkin_package(
     include
   LIBRARIES
     yak
+    ${PROJECT_NAME}_frontend
   CATKIN_DEPENDS
     cv_bridge
     image_transport
@@ -154,7 +155,8 @@ target_link_libraries(${PROJECT_NAME}_marching_cubes
 # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
 # a minimal interface of pushing and image with a pose guess into the server and integrating.
 add_library(${PROJECT_NAME}_frontend
-  src/offline/offline_fusion_server.cpp)
+  src/offline/offline_fusion_server.cpp
+  src/offline/tsdf_container.cpp)
 
 add_dependencies(${PROJECT_NAME}_frontend ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
