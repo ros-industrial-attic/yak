@@ -41,31 +41,27 @@ std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, 
   // Copy the isovalues of the nearby surfaces into a local array
   float val[8];
   // bottom face
-  auto read = [&grid] (int x, int y, int z) {
+  auto read = [&grid] (int x, int y, int z, uint16_t& w) {
     half_float::half f;
-    uint16_t w;
+//    uint16_t w;
     grid.read(grid.toIndex(x,y,z), f, w);
 
-    if (w > 4)
-      return 5.0f * float(f);
-    else
-      return 0.0f;
+    return 5.0f * float(f);
+
   };
 
-  val[0] = read(x+1, y+1, z); //grid.data[x+1][y+1][z];
-  val[1] = read(x+1, y, z);//grid.data[x+1][y][z];
-  val[2] = read(x, y, z);//grid.data[x][y][z];
-  val[3] = read(x, y+1, z);
+  const static uint16_t min_weight = 4;
 
-  val[4] = read(x+1, y+1, z+1); //grid.data[x+1][y+1][z];
-  val[5] = read(x+1, y, z+1);//grid.data[x+1][y][z];
-  val[6] = read(x, y, z+1);//grid.data[x][y][z];
-  val[7] = read(x, y+1, z+1);
-  // top face
-//  val[4] = grid.data[x+1][y+1][z+1];
-//  val[5] = grid.data[x+1][y][z+1];
-//  val[6] = grid.data[x][y][z+1];
-//  val[7] = grid.data[x][y+1][z+1];
+  uint16_t w;
+  val[0] = read(x+1, y+1, z, w); if (w < min_weight) return {};
+  val[1] = read(x+1, y, z, w); if (w < min_weight) return {};
+  val[2] = read(x, y, z, w); if (w < min_weight) return {};
+  val[3] = read(x, y+1, z, w); if (w < min_weight) return {};
+
+  val[4] = read(x+1, y+1, z+1, w); if (w < min_weight) return {};
+  val[5] = read(x+1, y, z+1, w); if (w < min_weight) return {};
+  val[6] = read(x, y, z+1, w); if (w < min_weight) return {};
+  val[7] = read(x, y+1, z+1, w); if (w < min_weight) return {};
 
   const static float isolevel = 0.0f;
 
