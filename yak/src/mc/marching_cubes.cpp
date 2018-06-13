@@ -46,7 +46,10 @@ std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, 
     uint16_t w;
     grid.read(grid.toIndex(x,y,z), f, w);
 
-    return 5.0f * float(f);
+    if (w > 4)
+      return 5.0f * float(f);
+    else
+      return 0.0f;
   };
 
   val[0] = read(x+1, y+1, z); //grid.data[x+1][y+1][z];
