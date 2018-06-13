@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(yak)
-add_definitions(-std=c++11)
+add_definitions(-std=c++11 -fopenmp)
 
 #compute flags macros
 MACRO(CUDA_COMPUTE_TARGET_FLAGS arch_bin arch_ptx cuda_nvcc_target_flags)

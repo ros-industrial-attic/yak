@@ -2,6 +2,8 @@
 #include "marching_cubes_tables.h"
 #include <pcl/io/ply_io.h>
 
+#include <omp.h>
+
 namespace
 {
 
@@ -40,14 +42,10 @@ std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, 
 
   // Copy the isovalues of the nearby surfaces into a local array
   float val[8];
-  // bottom face
   auto read = [&grid] (int x, int y, int z, uint16_t& w) {
     half_float::half f;
-//    uint16_t w;
     grid.read(grid.toIndex(x,y,z), f, w);
-
     return 5.0f * float(f);
-
   };
 
   const static uint16_t min_weight = 4;
@@ -133,37 +131,48 @@ std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, 
 
 pcl::PolygonMesh makeMesh(const yak::TSDFContainer& grid)
 {
-  // For each cube inside the grid, let's generate triangles...
-  std::vector<Triangle> triangles;
+  const int max_threads = omp_get_max_threads();
+  std::vector<std::vector<Triangle>> triangle_buffers (max_threads);
 
+  #pragma omp parallel for
   for (int x = 1; x < grid.dims().x(); ++x)
   {
+    const int tid = omp_get_thread_num();
+
     for (int y = 1; y < grid.dims().y(); ++y)
     {
       for (int z = 1; z < grid.dims().z(); ++z)
       {
         std::vector<Triangle> ts = processCube(grid, x - 1, y - 1, z - 1);
-        triangles.insert(triangles.end(), ts.begin(), ts.end());
+        triangle_buffers[tid].insert(triangle_buffers[tid].end(), ts.begin(), ts.end());
       }
     }
   }
 
+  std::size_t n_triangles = 0;
+  for (const auto& buffer : triangle_buffers) n_triangles += buffer.size();
+
   // Now we have polygon soup. Let's add em all to the polygon mesh
   pcl::PolygonMesh mesh;
-  mesh.polygons.resize(triangles.size()); // We have N_TRIANGLES number of polygons, each of size 3
+  mesh.polygons.resize(n_triangles); // We have N_TRIANGLES number of polygons, each of size 3
   pcl::PointCloud<pcl::PointXYZ> vertices;
-  vertices.resize(triangles.size() * 3); // We have 3 times triangles number of vertices
+  vertices.resize(n_triangles * 3); // We have 3 times triangles number of vertices
 
-  for (unsigned i = 0; i < triangles.size(); ++i)
-  {
-    auto idx = i * 3;
-    auto& verts = mesh.polygons[i];
-    verts.vertices = {idx, idx+1, idx+2};
 
-    vertices[idx+0] = pcl::PointXYZ(triangles[i].v[0].x(), triangles[i].v[0].y(), triangles[i].v[0].z());
-    vertices[idx+1] = pcl::PointXYZ(triangles[i].v[1].x(), triangles[i].v[1].y(), triangles[i].v[1].z());
-    vertices[idx+2] = pcl::PointXYZ(triangles[i].v[2].x(), triangles[i].v[2].y(), triangles[i].v[2].z());
-  }
+  unsigned int counter = 0;
+  for (std::size_t j = 0; j < triangle_buffers.size(); ++j)
+    for (unsigned i = 0; i < triangle_buffers[j].size(); ++i)
+    {
+      auto idx = counter * 3;
+      auto& verts = mesh.polygons[counter];
+      verts.vertices = {idx, idx+1, idx+2};
+
+      vertices[idx+0] = pcl::PointXYZ(triangle_buffers[j][i].v[0].x(), triangle_buffers[j][i].v[0].y(), triangle_buffers[j][i].v[0].z());
+      vertices[idx+1] = pcl::PointXYZ(triangle_buffers[j][i].v[1].x(), triangle_buffers[j][i].v[1].y(), triangle_buffers[j][i].v[1].z());
+      vertices[idx+2] = pcl::PointXYZ(triangle_buffers[j][i].v[2].x(), triangle_buffers[j][i].v[2].y(), triangle_buffers[j][i].v[2].z());
+
+      counter++;
+    }
 
   pcl::toPCLPointCloud2(vertices, mesh.cloud);
 
