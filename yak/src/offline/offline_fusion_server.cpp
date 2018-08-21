@@ -4,7 +4,7 @@
 yak_offline::OfflineFusionServer::OfflineFusionServer(const kfusion::KinFuParams& params,
                                                       const Eigen::Affine3f& world_to_volume)
   : kinfu_(new kfusion::KinFu(params))
-  , volume_origin_(world_to_volume)
+  , volume_to_world_(world_to_volume.inverse())
   , last_camera_pose_(Eigen::Affine3f::Identity())
 {
   // Debug displays
@@ -16,7 +16,11 @@ yak_offline::OfflineFusionServer::OfflineFusionServer(const kfusion::KinFuParams
 
 bool yak_offline::OfflineFusionServer::fuse(const cv::Mat& depth_data, const Eigen::Affine3f& world_to_camera)
 {
-  const Eigen::Affine3f current_camera_in_volume = volume_origin_ * world_to_camera;
+  // world_to_volume * world_to_camera
+  // we want volume to camera
+  const Eigen::Affine3f current_camera_in_volume = volume_to_world_ * world_to_camera;
+
+  std::cout << "Offline camera pose:\n" << current_camera_in_volume.matrix() << "\n";
 
   // Compute the 'motion' from the last_pose to the current pose
   Eigen::Affine3f motion = current_camera_in_volume * last_camera_pose_.inverse();
@@ -35,38 +39,6 @@ bool yak_offline::OfflineFusionServer::fuse(const cv::Mat& depth_data, const Eig
 
   return result;
 }
-
-//void yak_offline::OfflineFusionServer::fuse(const ObservationBuffer& origin_buffer)
-//{
-//  auto buffer = origin_buffer;
-//  for (auto& pose : buffer.image_poses)
-//  {
-//    ROS_INFO_STREAM("\n" << pose.matrix());
-//    pose = volume_origin_.cast<double>() * pose;
-//    ROS_INFO_STREAM("\n" << pose.matrix());
-//  }
-
-//  for (std::size_t i = 0; i < buffer.image_data.size(); ++i)
-//  {
-//    const auto& depth_image = buffer.image_data[i];
-//    const auto& image_pose = buffer.image_poses[i];
-
-//    Eigen::Affine3f last_pose;
-//    if (i == 0) last_pose = image_pose.cast<float>();
-//    else last_pose = buffer.image_poses[i-1].cast<float>();
-
-//    cv::imshow("input", depth_image);
-
-//    ROS_INFO_STREAM(depth_image.channels());
-//    ROS_INFO_STREAM(depth_image.elemSize());
-
-//    cv::waitKey();
-
-//    step(image_pose.cast<float>(), last_pose, depth_image);
-
-//    display();
-//  }
-//}
 
 void yak_offline::OfflineFusionServer::getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const
 {

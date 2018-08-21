@@ -44,7 +44,7 @@ private:
   kfusion::cuda::Image viewDevice_;
   kfusion::cuda::Depth depthDevice_;
 
-  Eigen::Affine3f volume_origin_;
+  Eigen::Affine3f volume_to_world_;
   Eigen::Affine3f last_camera_pose_;
 };
 
