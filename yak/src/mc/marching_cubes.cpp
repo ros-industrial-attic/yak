@@ -129,7 +129,7 @@ std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, 
   return triangles;
 }
 
-pcl::PolygonMesh makeMesh(const yak::TSDFContainer& grid)
+pcl::PolygonMesh makeMesh(const yak::TSDFContainer& grid, const yak::MarchingCubesParameters& params)
 {
   const int max_threads = omp_get_max_threads();
   std::vector<std::vector<Triangle>> triangle_buffers (max_threads);
@@ -167,9 +167,14 @@ pcl::PolygonMesh makeMesh(const yak::TSDFContainer& grid)
       auto& verts = mesh.polygons[counter];
       verts.vertices = {idx, idx+1, idx+2};
 
-      vertices[idx+0] = pcl::PointXYZ(triangle_buffers[j][i].v[0].x(), triangle_buffers[j][i].v[0].y(), triangle_buffers[j][i].v[0].z());
-      vertices[idx+1] = pcl::PointXYZ(triangle_buffers[j][i].v[1].x(), triangle_buffers[j][i].v[1].y(), triangle_buffers[j][i].v[1].z());
-      vertices[idx+2] = pcl::PointXYZ(triangle_buffers[j][i].v[2].x(), triangle_buffers[j][i].v[2].y(), triangle_buffers[j][i].v[2].z());
+      const float scale = static_cast<float>(params.scale);
+      const auto v0 = triangle_buffers[j][i].v[0] * scale;
+      const auto v1 = triangle_buffers[j][i].v[1] * scale;
+      const auto v2 = triangle_buffers[j][i].v[2] * scale;
+
+      vertices[idx+0] = pcl::PointXYZ(v0.x(), v0.y(), v0.z());
+      vertices[idx+1] = pcl::PointXYZ(v1.x(), v1.y(), v1.z());
+      vertices[idx+2] = pcl::PointXYZ(v2.x(), v2.y(), v2.z());
 
       counter++;
     }
@@ -181,7 +186,7 @@ pcl::PolygonMesh makeMesh(const yak::TSDFContainer& grid)
 
 } // end anon namespace
 
-pcl::PolygonMesh yak::marchingCubesCPU(const yak::TSDFContainer& tsdf)
+pcl::PolygonMesh yak::marchingCubesCPU(const yak::TSDFContainer& tsdf, const MarchingCubesParameters& params)
 {
-  return makeMesh(tsdf);
+  return makeMesh(tsdf, params);
 }

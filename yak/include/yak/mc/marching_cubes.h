@@ -7,7 +7,14 @@
 namespace yak
 {
 
-pcl::PolygonMesh marchingCubesCPU(const yak::TSDFContainer& tsdf);
+struct MarchingCubesParameters
+{
+  // Scale factor applied to vertices. Usually equal to physical size of a single
+  // voxel element.
+  double scale = 1.0;
+};
+
+pcl::PolygonMesh marchingCubesCPU(const yak::TSDFContainer& tsdf, const MarchingCubesParameters& params = {});
 
 }
 
