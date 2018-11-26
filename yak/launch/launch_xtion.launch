@@ -1,6 +1,6 @@
 <launch>
-     <node name="volume_marker" pkg="yak" type="volume_marker" output="screen"/>
-     <node name="volume_tf_broadcaster" pkg="yak" type="volume_tf_broadcaster" output="screen"/>
+<!--     <node name="volume_marker" pkg="yak" type="volume_marker" output="screen"/>-->
+<!--     <node name="volume_tf_broadcaster" pkg="yak" type="volume_tf_broadcaster" output="screen"/>-->
     <!-- Remap the depth and color image topics to the ones output by the
          sensor of your choice -->
      <remap from="/camera/depth/image_raw" to="/camera/depth/image_raw"/>
@@ -79,9 +79,9 @@
         </rosparam>
     </node>
 
-    <node name="meshing" pkg="yak_meshing" type="yak_meshing_node" output="screen">
+<!--    <node name="meshing" pkg="yak_meshing" type="yak_meshing_node" output="screen">
         <rosparam>
             output_path: "/home/joe/meshes"
         </rosparam>
-    </node>
+    </node>-->
 </launch>

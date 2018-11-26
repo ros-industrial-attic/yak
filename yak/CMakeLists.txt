@@ -49,7 +49,7 @@ message(STATUS "Found OpenCV At ${OpenCV_INCLUDE_DIRS}")
 #find_library(PCL 1.8 REQUIRED COMPONENTS common gpu)
 
 find_package(CUDA REQUIRED)
-set(CUDA_ARCH_BIN "2.0 2.1(2.0) 3.0 5.0 5.2 6.0 6.1" CACHE STRING "Specify 'real' GPU architectures to build binaries for, BIN(PTX) format is supported")
+set(CUDA_ARCH_BIN "3.0 5.0 5.2 6.0 6.1" CACHE STRING "Specify 'real' GPU architectures to build binaries for, BIN(PTX) format is supported")
 APPEND_TARGET_ARCH_FLAGS()
 
 message(WARNING ${CUDA_NVCC_FLAGS})
