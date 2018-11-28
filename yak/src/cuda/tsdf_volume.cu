@@ -1,5 +1,6 @@
 #include "yak/kfusion/cuda/device.hpp"
 #include "yak/kfusion/cuda/texture_binder.hpp"
+#include <stdio.h>
 
 using namespace kfusion::device;
 
@@ -61,6 +62,8 @@ namespace kfusion
                     int x = blockIdx.x * blockDim.x + threadIdx.x;
                     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
+//                    printf("hello from %i, %i\n", x, y);
+
                     if (x >= volume.dims.x || y >= volume.dims.y)
                         return;
 
@@ -70,10 +73,14 @@ namespace kfusion
                     float3 vx = make_float3(x * volume.voxel_size.x, y * volume.voxel_size.y, 0);
                     float3 vc = vol2cam * vx; //tranform from volume coo frame to camera one
 
+
                     TsdfVolume::elem_type* vptr = volume.beg(x, y);
                     for (int i = 0; i < volume.dims.z; ++i, vc += zstep, vptr = volume.zstep(vptr))
                     {
                         float2 coo = proj(vc);
+
+//                        printf("x: %i y: %i \nvc: %f, %f, %f\ncoo: %f, %f\n\n", x, y, vc.x, vc.y, vc.z, coo.x, coo.y);
+
 
                         //#if defined __CUDA_ARCH__ && __CUDA_ARCH__ >= 300
                         // this is actually workaround for kepler. it doesn't return 0.f for texture
@@ -82,10 +89,20 @@ namespace kfusion
                             continue;
                         //#endif
                         float Dp = tex2D(dists_tex, coo.x, coo.y);
+//                        if(blockIdx.x == 0)
+//                        {
+//                          printf("Dp: %.10f\n", Dp);
+//                        }
+
+                        printf("x: %i y: %i \nvx: %f %f %f\nvc: %f, %f, %f\ncoo: %f, %f\nDp: %.10f\n\n", x, y, vx.x, vx.y, vx.z, vc.x, vc.y, vc.z, coo.x, coo.y, Dp);
+
+
                         if (Dp == 0 || vc.z <= 0)
                             continue;
 
                         float sdf = Dp - __fsqrt_rn(dot(vc, vc)); //Dp - norm(v)
+
+//                        printf("sdf: %f, neg trunc dist: %f\n", sdf, -volume.trunc_dist);
 
                         if (sdf >= -volume.trunc_dist)
                         {
@@ -97,6 +114,8 @@ namespace kfusion
 
                             float tsdf_new = __fdividef(__fmaf_rn(tsdf_prev, weight_prev, tsdf), weight_prev + 1);
                             int weight_new = min(weight_prev + 1, volume.max_weight);
+
+//                            printf("old tsdf: %f  old weight: %i\nnew tsdf: %f  new weight: %i\n", tsdf_prev, weight_prev, tsdf_new, weight_new);
 
                             //pack and write
                             gmem::StCs(pack_tsdf(tsdf_new, weight_new), vptr);

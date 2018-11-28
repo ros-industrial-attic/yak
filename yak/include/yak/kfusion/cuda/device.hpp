@@ -62,7 +62,7 @@ __kf_device__ float3 kfusion::device::Reprojector::operator()(int u, int v, floa
 
 __kf_device__ ushort2 kfusion::device::pack_tsdf(float tsdf, int weight)
 {
-    return make_ushort2(__float2half_rn(tsdf), weight);
+    return make_ushort2(__float2half(tsdf), weight);
 }
 
 __kf_device__ float kfusion::device::unpack_tsdf(ushort2 value, int& weight)

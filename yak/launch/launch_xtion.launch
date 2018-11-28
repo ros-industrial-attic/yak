@@ -11,9 +11,9 @@
         <!-- The rosparams can be saved to a .yaml file. They're inlined here
              for convenience -->
         <rosparam>
-            use_icp: True
+            use_icp: False
             use_pose_hints: False
-            update_via_sensor_motion: True
+            update_via_sensor_motion: False
 
             # The node reports the transform between the fixed frame and
             # a given camera frame.
@@ -63,16 +63,16 @@
             tsdf_trunc_dist: 0.003
 
             # The size of the TSDF volume in voxels
-            volume_dims_x: 512
-            volume_dims_y: 512
-            volume_dims_z: 512
+            volume_dims_x: 32
+            volume_dims_y: 32
+            volume_dims_z: 32
 
-            volume_resolution: 0.005
+            volume_resolution: 0.05
 
             # The position of the topmost corner of the TSDF volume in meters
-            volume_pos_x: 1.28
-            volume_pos_y: 1.28
-            volume_pos_z: -0.5
+            volume_pos_x: -0.75
+            volume_pos_y: -0.75
+            volume_pos_z: 0.5
 
 <!--            output_path: "/home/jschornak/meshes"-->
 

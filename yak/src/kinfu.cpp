@@ -271,11 +271,11 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     if (params_.update_via_sensor_motion){
         // Update pose with latest measured pose
         // TODO: Make this not put the estimated sensor pose in the wrong position relative to the global frame.
-        cout << "Updating via motion" << endl;
+//        cout << "Updating via motion" << endl;
         poses_.push_back(poses_.back() * cameraMotionCorrected);
     } else {
         // Update pose estimate using latest camera motion transform
-        cout << "Updating via pose" << endl;
+//        cout << "Updating via pose" << endl;
         poses_.push_back(cameraPoseCorrected);
     }
 
@@ -283,7 +283,7 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     // Volume integration
 
     // This is the transform from the origin of the volume to the camera.
-    cout << "Newest pose is  " << poses_.back().matrix << endl;
+//    cout << "Newest pose is  " << poses_.back().matrix << endl;
 
     // We do not integrate volume if camera does not move.
     // TODO: As it turns out I do care about this! Leaving the camera in one place introduces a lot of noise. Come up with a better metric for determining motion.
