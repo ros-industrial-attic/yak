@@ -1,6 +1,8 @@
 #ifndef KFUSION_INTERNAL_H_
 #define KFUSION_INTERNAL_H_
 
+
+#include <cuda_fp16.h>
 #include "yak/kfusion/cuda/device_array.hpp"
 #include "yak/kfusion/safe_call.hpp"
 
@@ -16,7 +18,11 @@ namespace kfusion
         typedef unsigned short ushort;
         typedef unsigned char uchar;
 
+#if defined __CUDA_ARCH__ && __CUDA_ARCH__ >= 500
+        typedef PtrStepSz<__half> Dists;
+#else
         typedef PtrStepSz<ushort> Dists;
+#endif
         typedef DeviceArray2D<ushort> Depth;
         typedef DeviceArray2D<Normal> Normals;
         typedef DeviceArray2D<Point> Points;
@@ -37,7 +43,11 @@ namespace kfusion
         struct TsdfVolume
         {
             public:
-                typedef ushort2 elem_type;
+                #if defined __CUDA_ARCH__ && __CUDA_ARCH__ >= 500
+                            typedef short2 elem_type;
+                #else
+                            typedef ushort2 elem_type;
+                #endif
 
                 elem_type * const data;
                 const int3 dims;
@@ -46,7 +56,7 @@ namespace kfusion
                 const int max_weight;
 
                 TsdfVolume(elem_type* data, int3 dims, float3 voxel_size, float trunc_dist, int max_weight);
-                //TsdfVolume(const TsdfVolume&);
+                TsdfVolume(const TsdfVolume&);
 
                 __kf_device__
                 elem_type* operator()(int x, int y, int z);__kf_device__
@@ -122,9 +132,9 @@ namespace kfusion
         void raycast(const TsdfVolume& volume, const Aff3f& aff, const Mat3f& Rinv, const Reprojector& reproj, Depth& depth, Normals& normals, float step_factor, float delta_factor);
 
         void raycast(const TsdfVolume& volume, const Aff3f& aff, const Mat3f& Rinv, const Reprojector& reproj, Points& points, Normals& normals, float step_factor, float delta_factor);
-        __kf_device__ ushort2 pack_tsdf(float tsdf, int weight);
-        __kf_device__ float unpack_tsdf(ushort2 value, int& weight);
-        __kf_device__ float unpack_tsdf(ushort2 value);
+        __kf_device__ TsdfVolume::elem_type pack_tsdf(float tsdf, int weight);
+        __kf_device__ float unpack_tsdf(TsdfVolume::elem_type value, int& weight);
+        __kf_device__ float unpack_tsdf(TsdfVolume::elem_type value);
 
         //image proc functions
         void compute_dists(const Depth& depth, Dists dists, float2 f, float2 c);

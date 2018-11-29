@@ -1,6 +1,6 @@
 #include "yak/kfusion/cuda/device.hpp"
 #include "yak/kfusion/cuda/texture_binder.hpp"
-#include <stdio.h>
+//#include <stdio.h>
 
 using namespace kfusion::device;
 
@@ -18,10 +18,10 @@ namespace kfusion
 
             if (x < tsdf.dims.x && y < tsdf.dims.y)
             {
-                ushort2 *beg = tsdf.beg(x, y);
-                ushort2 *end = beg + tsdf.dims.x * tsdf.dims.y * tsdf.dims.z;
+                TsdfVolume::elem_type *beg = tsdf.beg(x, y);
+                TsdfVolume::elem_type *end = beg + tsdf.dims.x * tsdf.dims.y * tsdf.dims.z;
 
-                for (ushort2* pos = beg; pos != end; pos = tsdf.zstep(pos))
+                for (TsdfVolume::elem_type* pos = beg; pos != end; pos = tsdf.zstep(pos))
                     *pos = pack_tsdf(0.f, 0);
             }
         }
@@ -62,8 +62,6 @@ namespace kfusion
                     int x = blockIdx.x * blockDim.x + threadIdx.x;
                     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-//                    printf("hello from %i, %i\n", x, y);
-
                     if (x >= volume.dims.x || y >= volume.dims.y)
                         return;
 
@@ -79,30 +77,22 @@ namespace kfusion
                     {
                         float2 coo = proj(vc);
 
-//                        printf("x: %i y: %i \nvc: %f, %f, %f\ncoo: %f, %f\n\n", x, y, vc.x, vc.y, vc.z, coo.x, coo.y);
-
-
                         //#if defined __CUDA_ARCH__ && __CUDA_ARCH__ >= 300
                         // this is actually workaround for kepler. it doesn't return 0.f for texture
                         // fetches for out-of-border coordinates even for cudaaddressmodeborder mode
                         if (coo.x < 0 || coo.y < 0 || coo.x >= dists_size.x || coo.y >= dists_size.y)
                             continue;
                         //#endif
+
                         float Dp = tex2D(dists_tex, coo.x, coo.y);
-//                        if(blockIdx.x == 0)
-//                        {
-//                          printf("Dp: %.10f\n", Dp);
-//                        }
-
-                        printf("x: %i y: %i \nvx: %f %f %f\nvc: %f, %f, %f\ncoo: %f, %f\nDp: %.10f\n\n", x, y, vx.x, vx.y, vx.z, vc.x, vc.y, vc.z, coo.x, coo.y, Dp);
-
 
                         if (Dp == 0 || vc.z <= 0)
                             continue;
 
                         float sdf = Dp - __fsqrt_rn(dot(vc, vc)); //Dp - norm(v)
 
-//                        printf("sdf: %f, neg trunc dist: %f\n", sdf, -volume.trunc_dist);
+//                        printf("x: %i y: %i \nvx: %f %f %f\nvc: %f, %f, %f\ncoo: %f, %f\nDp: %.10f\nsdf: %f\nneg trunc dist: %f\n\n", x, y, vx.x, vx.y, vx.z, vc.x, vc.y, vc.z, coo.x, coo.y, Dp, sdf, -volume.trunc_dist);
+
 
                         if (sdf >= -volume.trunc_dist)
                         {
@@ -115,8 +105,6 @@ namespace kfusion
                             float tsdf_new = __fdividef(__fmaf_rn(tsdf_prev, weight_prev, tsdf), weight_prev + 1);
                             int weight_new = min(weight_prev + 1, volume.max_weight);
 
-//                            printf("old tsdf: %f  old weight: %i\nnew tsdf: %f  new weight: %i\n", tsdf_prev, weight_prev, tsdf_new, weight_new);
-
                             //pack and write
                             gmem::StCs(pack_tsdf(tsdf_new, weight_new), vptr);
                         }
@@ -128,11 +116,10 @@ namespace kfusion
         {
             integrator(volume);
         }
-        ;
     }
 }
 
-void kfusion::device::integrate(const PtrStepSz<ushort>& dists, TsdfVolume& volume, const Aff3f& aff, const Projector& proj)
+void kfusion::device::integrate(const Dists& dists, TsdfVolume& volume, const Aff3f& aff, const Projector& proj)
 {
     TsdfIntegrator ti;
     ti.dists_size = make_int2(dists.cols, dists.rows);
