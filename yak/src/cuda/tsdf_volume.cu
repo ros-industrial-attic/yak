@@ -91,9 +91,6 @@ namespace kfusion
 
                         float sdf = Dp - __fsqrt_rn(dot(vc, vc)); //Dp - norm(v)
 
-//                        printf("x: %i y: %i \nvx: %f %f %f\nvc: %f, %f, %f\ncoo: %f, %f\nDp: %.10f\nsdf: %f\nneg trunc dist: %f\n\n", x, y, vx.x, vx.y, vx.z, vc.x, vc.y, vc.z, coo.x, coo.y, Dp, sdf, -volume.trunc_dist);
-
-
                         if (sdf >= -volume.trunc_dist)
                         {
                             float tsdf = fmin(1.f, sdf * tranc_dist_inv);
@@ -108,7 +105,7 @@ namespace kfusion
                             //pack and write
                             gmem::StCs(pack_tsdf(tsdf_new, weight_new), vptr);
                         }
-                    }  // for(;;)
+                    }
                 }
         };
 

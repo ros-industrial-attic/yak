@@ -59,34 +59,36 @@ __kf_device__ float3 kfusion::device::Reprojector::operator()(int u, int v, floa
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// packing/unpacking tsdf volume element
-
+/// for CUDA >= 9.0 use short
+/// else use ushort
 #if defined __CUDA_ARCH__ && __CUDA_ARCH__ >= 500
-#define DIVISOR 32767
 __kf_device__ kfusion::device::TsdfVolume::elem_type kfusion::device::pack_tsdf (float tsdf, int weight)
 {
-  int fixedp = max (-DIVISOR, min (DIVISOR, __float2int_rz (tsdf * DIVISOR)));
-  return make_short2 (fixedp, weight);
+  return make_short2(__half_as_short(__float2half(tsdf)), weight);
 }
 __kf_device__ float kfusion::device::unpack_tsdf (TsdfVolume::elem_type value, int& weight)
 {
   weight = value.y;
-  return __int2float_rn (value.x) / DIVISOR;
+  return __half2float(__short_as_half(value.x));
 }
-__kf_device__ float kfusion::device::unpack_tsdf (TsdfVolume::elem_type value) { return static_cast<float>(value.x) / DIVISOR;}
+__kf_device__ float kfusion::device::unpack_tsdf (TsdfVolume::elem_type value)
+{
+  return __half2float(__short_as_half(value.x));
+}
 #else
 __kf_device__ kfusion::device::TsdfVolume::elem_type kfusion::device::pack_tsdf (float tsdf, int weight)
 {
-    return make_ushort2(__float2half(tsdf), weight);
+    return make_ushort2(__half_as_ushort(__float2half(tsdf)), weight);
 }
 
 __kf_device__ float kfusion::device::unpack_tsdf(TsdfVolume::elem_type value, int& weight)
 {
     weight = value.y;
-    return __half2float((__half)value.x);
+    return __half2float(__ushort_as_half(value.x));
 }
 __kf_device__ float kfusion::device::unpack_tsdf(TsdfVolume::elem_type value)
 {
-    return __half2float((__half)value.x);
+    return __half2float(__ushort_as_half(value.x));
 }
 #endif
 
