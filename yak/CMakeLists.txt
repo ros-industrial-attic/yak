@@ -56,7 +56,7 @@ else()
 endif()
 APPEND_TARGET_ARCH_FLAGS()
 
-message(WARNING ${CUDA_NVCC_FLAGS})
+message(STATUS ${CUDA_NVCC_FLAGS})
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation
