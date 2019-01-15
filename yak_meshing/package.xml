@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>yak_meshing</name>
+  <version>0.0.0</version>
+  <description>The yak_meshing package</description>
+
+  <maintainer email="austin.deric@gmail.com">AustinDeric</maintainer>
+
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>yak</depend>
+  <depend>rosconsole</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf</depend>
+  <depend>pcl_ros</depend>
+  <depend>pcl_msgs</depend>
+  <depend>visualization_msgs</depend>
+
+  <exec_depend>message_runtime</exec_depend>
+
+  <export>
+
+  </export>
+</package>

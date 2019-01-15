@@ -1,0 +1,5 @@
+#Request
+---
+#Respose
+bool exploration_done
+geometry_msgs/PoseArray bestViewPose

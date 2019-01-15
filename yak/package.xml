@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>yak</name>
+  <version>0.0.0</version>
+  <description>A truncated signed distance field(TSDF) to mesh tool</description>
+  <author email="Joseph.Schornak@SwRI.org">schornakj</author>
+  <author email="Austin.Deric@SwRI.org">AustinDeric</author>
+  <maintainer email="Austin.Deric@SwRI.org">AustinDeric</maintainer>
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+
+  <depend>cv_bridge</depend>
+  <depend>image_transport</depend>
+  <depend>rosconsole</depend>
+  <depend>roscpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf</depend>
+  <depend>pcl_ros</depend>
+  <depend>visualization_msgs</depend>
+  <depend>tf_conversions</depend>
+  <depend>interactive_markers</depend>
+
+  <exec_depend>message_runtime</exec_depend>
+
+  <export>
+  </export>
+
+</package>
