@@ -1,6 +1,0 @@
-<launch>
-     <remap from="/camera/ir/image_rect" to="/camera/ir/image"/>
-     <node name="camera_check_node" pkg="camera_calibration" type="cameracheck.py" output="screen" args="--size 8x6 --square 0.00246126 monocular:=/camera/ir">
-
-     </node>
-</launch>
