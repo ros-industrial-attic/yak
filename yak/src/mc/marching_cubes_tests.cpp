@@ -1,6 +1,6 @@
 #include "marching_cubes_tables.h"
 
-#include <pcl/geometry/polygon_mesh.h>
+#include <pcl/PolygonMesh.h>
 #include <pcl/io/ply_io.h>
 
 #include <memory>
@@ -92,6 +92,7 @@ float getOffset(float value1, float value2, float value_desired)
 const static int cubeOffsets[8][3] = {
   {1, 1, 0},
   {1, 0, 0},
+
   {0, 0, 0},
   {0, 1, 0},
 
@@ -185,7 +186,7 @@ std::vector<Triangle> processCube(const Grid& grid, int x, int y, int z)
   return triangles;
 }
 
-pcl::geometry::PolygonMesh makeMesh(const Grid& grid)
+pcl::PolygonMesh makeMesh(const Grid& grid)
 {
   // For each cube inside the grid, let's generate triangles...
   std::vector<Triangle> triangles;
@@ -203,7 +204,7 @@ pcl::geometry::PolygonMesh makeMesh(const Grid& grid)
   }
 
   // Now we have polygon soup. Let's add em all to the polygon mesh
-  pcl::geometry::PolygonMesh mesh;
+  pcl::PolygonMesh mesh;
   mesh.polygons.resize(triangles.size()); // We have N_TRIANGLES number of polygons, each of size 3
   pcl::PointCloud<pcl::PointXYZ> vertices;
   vertices.resize(triangles.size() * 3); // We have 3 times triangles number of vertices

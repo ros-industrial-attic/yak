@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(yak)
 
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -50,11 +50,6 @@ ENDMACRO()
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 message(STATUS "CMAKE MODULE PATH IS ${CMAKE_MODULE_PATH}")
 
-find_package(OpenCV REQUIRED COMPONENTS core highgui)
-message(STATUS "Found OpenCV At ${OpenCV_INCLUDE_DIRS}")
-
-find_library(PCL REQUIRED COMPONENTS common io geometry)
-
 find_package(CUDA REQUIRED)
 if (CUDA_VERSION_MAJOR GREATER 8)
     set(CUDA_ARCH_BIN "3.0 5.0 5.2 6.0 6.1" CACHE STRING "Specify 'real' GPU architectures to build binaries for, BIN(PTX) format is supported")
@@ -67,6 +62,9 @@ message(STATUS ${CUDA_NVCC_FLAGS})
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core highgui)
+find_package(PCL 1.8 REQUIRED COMPONENTS common io geometry)
+set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 
 include_directories(
   include
@@ -122,6 +120,10 @@ target_link_libraries(${PROJECT_NAME}_marching_cubes
 add_library(${PROJECT_NAME}_frontend
   src/ros/yak_server.cpp
   src/offline/tsdf_container.cpp)
+
+target_include_directories(${PROJECT_NAME}_frontend
+    PUBLIC include/offline/ include/ros/
+)
 
 ament_target_dependencies(${PROJECT_NAME}_frontend ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
