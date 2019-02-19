@@ -1,20 +1,20 @@
-#include "yak/offline/offline_fusion_server.h"
-#include <opencv2/highgui.hpp> // named-window apparatus; TODO: Remove this
+#include "yak/ros/yak_server.h"
+//#include <opencv2/highgui.hpp> // named-window apparatus; TODO: Remove this
 
-yak_offline::OfflineFusionServer::OfflineFusionServer(const kfusion::KinFuParams& params,
+yak::FusionServer::FusionServer(const kfusion::KinFuParams& params,
                                                       const Eigen::Affine3f& world_to_volume)
   : kinfu_(new kfusion::KinFu(params))
   , volume_to_world_(world_to_volume.inverse())
   , last_camera_pose_(Eigen::Affine3f::Identity())
 {
   // Debug displays
-  cv::namedWindow("input");
-  cv::moveWindow("input", 10, 1000);
-  cv::namedWindow("output");
-  cv::moveWindow("output", 10, 600);
+//  cv::namedWindow("input");
+//  cv::moveWindow("input", 10, 1000);
+//  cv::namedWindow("output");
+//  cv::moveWindow("output", 10, 600);
 }
 
-bool yak_offline::OfflineFusionServer::fuse(const cv::Mat& depth_data, const Eigen::Affine3f& world_to_camera)
+bool yak::FusionServer::fuse(const cv::Mat& depth_data, const Eigen::Affine3f& world_to_camera)
 {
   // world_to_volume * world_to_camera
   // we want volume to camera
@@ -40,7 +40,7 @@ bool yak_offline::OfflineFusionServer::fuse(const cv::Mat& depth_data, const Eig
   return result;
 }
 
-void yak_offline::OfflineFusionServer::getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const
+void yak::FusionServer::getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const
 {
   const auto points = kinfu_->downloadCloud();
   cloud.resize(points.size());
@@ -54,7 +54,7 @@ void yak_offline::OfflineFusionServer::getCloud(pcl::PointCloud<pcl::PointXYZ>& 
   });
 }
 
-yak::TSDFContainer yak_offline::OfflineFusionServer::downloadTSDF()
+yak::TSDFContainer yak::FusionServer::downloadTSDF()
 {
   const kfusion::cuda::TsdfVolume& vol = kinfu_->tsdf();
   const cv::Vec3i& vol_dims = vol.getDims();
@@ -65,7 +65,7 @@ yak::TSDFContainer yak_offline::OfflineFusionServer::downloadTSDF()
   return result;
 }
 
-bool yak_offline::OfflineFusionServer::step(const Eigen::Affine3f& current_pose, const Eigen::Affine3f& last_pose, const cv::Mat& depth)
+bool yak::FusionServer::step(const Eigen::Affine3f& current_pose, const Eigen::Affine3f& last_pose, const cv::Mat& depth)
 {
   // Compute the 'step' from the last_pose to the current pose
   Eigen::Affine3f step = current_pose * last_pose.inverse();
@@ -75,23 +75,23 @@ bool yak_offline::OfflineFusionServer::step(const Eigen::Affine3f& current_pose,
   return kinfu_->operator()(step, current_pose, last_pose, depthDevice_);
 }
 
-void yak_offline::OfflineFusionServer::downloadAndDisplayView()
+void yak::FusionServer::downloadAndDisplayView()
 {
-  cv::Mat viewHost;
-  viewHost.create(viewDevice_.rows(), viewDevice_.cols(), CV_8UC4);
-  viewDevice_.download(viewHost.ptr<void>(), viewHost.step);
+//  cv::Mat viewHost;
+//  viewHost.create(viewDevice_.rows(), viewDevice_.cols(), CV_8UC4);
+//  viewDevice_.download(viewHost.ptr<void>(), viewHost.step);
 
-  cv::imshow("output", viewHost);
-  cv::waitKey(1);
+//  cv::imshow("output", viewHost);
+//  cv::waitKey(1);
 }
 
-void yak_offline::OfflineFusionServer::display()
+void yak::FusionServer::display()
 {
   kinfu_->renderImage(viewDevice_, 3);
   downloadAndDisplayView();
 }
 
-void yak_offline::OfflineFusionServer::display(const Eigen::Affine3f& pose)
+void yak::FusionServer::display(const Eigen::Affine3f& pose)
 {
   kinfu_->renderImage(viewDevice_, pose, 3);
   downloadAndDisplayView();

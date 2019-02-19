@@ -1,3 +1,10 @@
+/*
+ * KinfuServer.h
+ *
+ *  Created on: Jun 3, 2015
+ *      Author: mklingen
+ */
+
 #ifndef YAK_OFFLINE_FUSION_SERVER_H
 #define YAK_OFFLINE_FUSION_SERVER_H
 
@@ -7,18 +14,18 @@
 #include <pcl/point_types.h>  // For the 'getCloud' interface - TODO: Should this return a "native" point3d type
 #include <pcl/point_cloud.h>  // and we provide a PCL conversion seperately?
 
-namespace yak_offline
+namespace yak
 {
-
+    
 /**
  * @brief The OfflineFusionServer class
  *
  * @note Absolutely nothing in here is thread safe
  */
-class OfflineFusionServer
+class FusionServer
 {
 public:
-  OfflineFusionServer(const kfusion::KinFuParams& params, const Eigen::Affine3f& world_to_volume);
+  FusionServer(const kfusion::KinFuParams& params, const Eigen::Affine3f& world_to_volume);
 
   bool fuse(const cv::Mat& depth_data, const Eigen::Affine3f& world_to_camera);
 
@@ -48,6 +55,5 @@ private:
   Eigen::Affine3f last_camera_pose_;
 };
 
-}
-
-#endif
+} /* namespace kfusion */
+#endif /* KINFUSERVER_H_ */

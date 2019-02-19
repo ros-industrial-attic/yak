@@ -1,7 +1,6 @@
 #include "yak/kfusion/precomp.hpp"
 #include "yak/kfusion/internal.hpp"
 #include <stdio.h>
-#include <ros/ros.h>
 using namespace std;
 using namespace kfusion;
 using namespace kfusion::cuda;
@@ -66,8 +65,6 @@ kfusion::KinFu::KinFu(const KinFuParams& params) :
     volume_->setSize(volumeSize);
 //    volume_->setPose(params_.volume_pose);
 
-    ROS_INFO_STREAM("Volume size set to: " << volume_->getSize());
-    ROS_INFO_STREAM("Volume pose set to:\n" << volume_->getPose().matrix);
     volume_->setRaycastStepFactor(params_.raycast_step_factor);
     volume_->setGradientDeltaFactor(params_.gradient_delta_factor);
 
@@ -247,10 +244,6 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
     if (params_.use_icp) {
         ok =  icp_->estimateTransform(cameraMotion, cameraMotionCorrected, p.intr, curr_.points_pyr, curr_.normals_pyr, prev_.points_pyr, prev_.normals_pyr);
         cameraPoseCorrected = previousCameraPose * cameraMotionCorrected;
-
-        ROS_INFO_STREAM("\nMotion Input: " << cameraMotion.matrix << "\nMotion Corrected: " << cameraMotionCorrected.matrix << "\nPose Input: " << currentCameraPose.matrix << "\nPose Corrected: " << cameraPoseCorrected.matrix << "\n");
-//        cameraPoseCorrected = cameraPose;
-//        cameraMotion = cameraMotionCorrected;
     }
     else {
       cameraPoseCorrected = currentCameraPose;
@@ -260,7 +253,6 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion, const Affine3
 #endif
         if (!ok)
         {
-          ROS_ERROR_STREAM("Not okay");
           resetVolume();
           resetPose();
           return false;
