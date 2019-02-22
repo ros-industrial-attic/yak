@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Dense>
 #include <yak/ros/half.hpp>
 #include <memory>
+#include <vector>
 
 namespace yak
 {
