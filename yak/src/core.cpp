@@ -110,7 +110,7 @@ void kf::cuda::printCudaDeviceInfo(int device)
         printf("  (%2d) Multiprocessors x (%2d) CUDA Cores/MP:     %d CUDA Cores\n", prop.multiProcessorCount, sm_cores, sm_cores * prop.multiProcessorCount);
         printf("  GPU Clock Speed:                               %.2f GHz\n", prop.clockRate * 1e-6f);
 
-#if (CUDART_VERSION >= 4000)
+#if CUDART_VERSION >= 4000
         // This is not available in the CUDA Runtime API, so we make the necessary calls the driver API to support this for output
         int memoryClock, memBusWidth, L2CacheSize;
         getCudaAttribute<int>(&memoryClock, CU_DEVICE_ATTRIBUTE_MEMORY_CLOCK_RATE, dev);
