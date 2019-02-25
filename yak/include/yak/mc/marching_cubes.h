@@ -1,5 +1,5 @@
-#ifndef MARCHING_CUBES_FUSION_H
-#define MARCHING_CUBES_FUSION_H
+#ifndef YAK_MARCHING_CUBES_H
+#define YAK_MARCHING_CUBES_H
 
 #include <yak/offline/tsdf_container.h>
 #include <pcl/PolygonMesh.h>

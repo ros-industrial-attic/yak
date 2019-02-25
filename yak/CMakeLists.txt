@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(yak)
 
+# Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
@@ -9,7 +10,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-### START CUDA MACROS
 MACRO(CUDA_COMPUTE_TARGET_FLAGS arch_bin arch_ptx cuda_nvcc_target_flags)
     string(REGEX REPLACE "\\." "" ARCH_BIN_WITHOUT_DOTS "${${arch_bin}}")
     string(REGEX REPLACE "\\." "" ARCH_PTX_WITHOUT_DOTS "${${arch_ptx}}")
@@ -45,7 +45,6 @@ MACRO(APPEND_TARGET_ARCH_FLAGS)
         list(APPEND CUDA_NVCC_FLAGS ${cuda_nvcc_target_flags})
     endif()
 ENDMACRO()
-### END CUDA MACROS
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 message(STATUS "CMAKE MODULE PATH IS ${CMAKE_MODULE_PATH}")
@@ -83,94 +82,87 @@ cuda_add_library(yak
 )
 
 
+# build for ROS 2 using Ament
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
 
-if ($ENV{ROS_VERSION} VERSION_EQUAL "1")
-    # build for ROS 1 using Catkin
-    # TODO: not yet implemented (i.e. actively de-implemented)
-    message(FATAL "ROS 1 not supported!")
-else()
-    # build for ROS 2 using Ament
-    find_package(ament_cmake REQUIRED)
-    find_package(rclcpp REQUIRED)
+include_directories(
+  include
+  ${rclcpp_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${CUDA_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
+)
 
-    include_directories(
-      include
-      ${rclcpp_INCLUDE_DIRS}
-      ${OpenCV_INCLUDE_DIRS}
-      ${CUDA_INCLUDE_DIRS}
-      ${PCL_INCLUDE_DIRS}
-      ${Eigen_INCLUDE_DIRS}
-    )
+#ament_target_dependencies(yak ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-    #ament_target_dependencies(yak ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(yak
+  ${CUDA_LIBRARIES}
+  ${CUDA_CUDA_LIBRARY}
+  ${OpenCV_LIBS}
+  ${rclcpp_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
 
-    target_link_libraries(yak
-      ${CUDA_LIBRARIES}
-      ${CUDA_CUDA_LIBRARY}
-      ${OpenCV_LIBS}
-      ${rclcpp_LIBRARIES}
-      ${PCL_LIBRARIES}
-    )
+# Marching Cubes Meshing Impl
+add_library(${PROJECT_NAME}_marching_cubes
+  src/mc/marching_cubes.cpp
+  src/mc/marching_cubes_tables.cpp)
 
-    # Marching Cubes Meshing Impl
-    add_library(${PROJECT_NAME}_marching_cubes
-      src/mc/marching_cubes.cpp
-      src/mc/marching_cubes_tables.cpp)
+#ament_target_dependencies(${PROJECT_NAME}_marching_cubes ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-    #ament_target_dependencies(${PROJECT_NAME}_marching_cubes ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME}_marching_cubes
+  ${rclcpp_LIBRARIES}
+  ${PROJECT_NAME}_frontend
+)
 
-    target_link_libraries(${PROJECT_NAME}_marching_cubes
-      ${rclcpp_LIBRARIES}
-      ${PROJECT_NAME}_frontend
-    )
+# Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
+# a minimal interface of pushing and image with a pose guess into the server and integrating.
+add_library(${PROJECT_NAME}_frontend
+  src/ros/yak_server.cpp
+  src/offline/tsdf_container.cpp)
 
-    # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
-    # a minimal interface of pushing and image with a pose guess into the server and integrating.
-    add_library(${PROJECT_NAME}_frontend
-      src/ros/yak_server.cpp
-      src/offline/tsdf_container.cpp)
+target_include_directories(${PROJECT_NAME}_frontend
+    PUBLIC include/offline/ include/ros/
+)
 
-    target_include_directories(${PROJECT_NAME}_frontend
-        PUBLIC include/offline/ include/ros/
-    )
+#ament_target_dependencies(${PROJECT_NAME}_frontend ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-    #ament_target_dependencies(${PROJECT_NAME}_frontend ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME}_frontend
+ yak
+ ${rclcpp_LIBRARIES}
+ ${PCL_LIBRARIES}
+)
 
-    target_link_libraries(${PROJECT_NAME}_frontend
-     yak
-     ${rclcpp_LIBRARIES}
-     ${PCL_LIBRARIES}
-    )
+# Jmeyer Marching Cubes
+add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
+#ament_target_dependencies(marching_cubes_tests ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-    # Jmeyer Marching Cubes
-    add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
-    #ament_target_dependencies(marching_cubes_tests ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(marching_cubes_tests
+ ${PROJECT_NAME}_marching_cubes
+ ${PCL_LIBRARIES}
+ ${rclcpp_LIBRARIES}
+)
 
-    target_link_libraries(marching_cubes_tests
-     ${PROJECT_NAME}_marching_cubes
-     ${PCL_LIBRARIES}
-     ${rclcpp_LIBRARIES}
-    )
-
-    ament_export_include_directories(include)
-    ament_export_libraries(${PROJECT_NAME})  #  ${PROJECT_NAME}_marching_cubes ${PROJECT_NAME}_frontend
-    ament_export_dependencies(PCL)
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})  #  ${PROJECT_NAME}_marching_cubes ${PROJECT_NAME}_frontend
+ament_export_dependencies(PCL)
 
 
 
-    # Install binaries
-    install(TARGETS ${PROJECT_NAME}
-      EXPORT ${PROJECT_NAME}
-      RUNTIME DESTINATION bin
-      ARCHIVE DESTINATION lib
-      LIBRARY DESTINATION lib
-      INCLUDES DESTINATION include
-      )
+# Install binaries
+install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  INCLUDES DESTINATION include
+  )
 
-  install(
-      DIRECTORY include/
-      DESTINATION include
-      )
+install(
+  DIRECTORY include/
+  DESTINATION include
+  )
 
-    ament_package()
-endif()
+ament_package()

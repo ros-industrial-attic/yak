@@ -1,5 +1,5 @@
-#ifndef YAK_MARCHING_CUBES_H
-#define YAK_MARCHING_CUBES_H
+#ifndef YAK_MARCHING_CUBES_TABLES_H
+#define YAK_MARCHING_CUBES_TABLES_H
 
 namespace yak
 {

@@ -5,8 +5,8 @@
  *      Author: mklingen
  */
 
-#ifndef YAK_OFFLINE_FUSION_SERVER_H
-#define YAK_OFFLINE_FUSION_SERVER_H
+#ifndef YAK_YAK_SERVER_H
+#define YAK_YAK_SERVER_H
 
 #include "yak/offline/tsdf_container.h"
 #include "yak/kfusion/kinfu.hpp"
@@ -55,5 +55,5 @@ private:
   Eigen::Affine3f last_camera_pose_;
 };
 
-} /* namespace kfusion */
-#endif /* KINFUSERVER_H_ */
+} /* namespace yak */
+#endif /* YAK_YAK_SERVER_H_ */
