@@ -1,5 +1,5 @@
-#ifndef KINFU_TYPES_H_
-#define KINFU_TYPES_H_
+#ifndef KFUSION_TYPES_H_
+#define KFUSION_TYPES_H_
 
 #include "yak/kfusion/cuda/device_array.hpp"
 #include <opencv2/core/core.hpp>

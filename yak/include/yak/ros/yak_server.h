@@ -5,8 +5,8 @@
  *      Author: mklingen
  */
 
-#ifndef YAK_YAK_SERVER_H
-#define YAK_YAK_SERVER_H
+#ifndef YAK_OFFLINE_FUSION_SERVER_H_
+#define YAK_OFFLINE_FUSION_SERVER_H_
 
 #include "yak/offline/tsdf_container.h"
 #include "yak/kfusion/kinfu.hpp"
@@ -56,4 +56,4 @@ private:
 };
 
 } /* namespace yak */
-#endif /* YAK_YAK_SERVER_H_ */
+#endif /* YAK_OFFLINE_FUSION_SERVER_H_ */

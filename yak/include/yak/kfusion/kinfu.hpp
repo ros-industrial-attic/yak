@@ -1,5 +1,5 @@
-#ifndef KINFU_H_
-#define KINFU_H_
+#ifndef KFUSION_KINFU_H_
+#define KFUSION_KINFU_H_
 
 #include "yak/kfusion/types.hpp"
 #include "yak/kfusion/cuda/tsdf_volume.hpp"

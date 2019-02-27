@@ -1,5 +1,5 @@
-#ifndef SAFE_CALL_H_
-#define SAFE_CALL_H_
+#ifndef KFUSION_CUDA_SAFE_CALL_H_
+#define KFUSION_CUDA_SAFE_CALL_H_
 
 #include "cuda_runtime_api.h"
 
