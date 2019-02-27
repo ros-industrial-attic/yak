@@ -11,8 +11,8 @@
 #include "yak/offline/tsdf_container.h"
 #include "yak/kfusion/kinfu.hpp"
 
-#include <pcl/point_types.h>  // For the 'getCloud' interface - TODO: Should this return a "native" point3d type
-#include <pcl/point_cloud.h>  // and we provide a PCL conversion seperately?
+//#include <pcl/point_types.h>  // For the 'getCloud' interface - TODO: Should this return a "native" point3d type
+//#include <pcl/point_cloud.h>  // and we provide a PCL conversion seperately?
 
 namespace yak
 {
@@ -29,7 +29,7 @@ public:
 
   bool fuse(const cv::Mat& depth_data, const Eigen::Affine3f& world_to_camera);
 
-  void getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const;
+//  void getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const;
 
   yak::TSDFContainer downloadTSDF();
 

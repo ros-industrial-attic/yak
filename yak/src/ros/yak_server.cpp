@@ -40,19 +40,19 @@ bool yak::FusionServer::fuse(const cv::Mat& depth_data, const Eigen::Affine3f& w
   return result;
 }
 
-void yak::FusionServer::getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const
-{
-  const auto points = kinfu_->downloadCloud();
-  cloud.resize(points.size());
-  std::transform(points.begin(), points.end(), cloud.begin(), [] (const kfusion::Point& pt)
-  {
-    pcl::PointXYZ pcl_pt;
-    pcl_pt.x = pt.x;
-    pcl_pt.z = pt.y;
-    pcl_pt.y = pt.z;
-    return pcl_pt;
-  });
-}
+//void yak::FusionServer::getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const
+//{
+//  const auto points = kinfu_->downloadCloud();
+//  cloud.resize(points.size());
+//  std::transform(points.begin(), points.end(), cloud.begin(), [] (const kfusion::Point& pt)
+//  {
+//    pcl::PointXYZ pcl_pt;
+//    pcl_pt.x = pt.x;
+//    pcl_pt.z = pt.y;
+//    pcl_pt.y = pt.z;
+//    return pcl_pt;
+//  });
+//}
 
 yak::TSDFContainer yak::FusionServer::downloadTSDF()
 {
