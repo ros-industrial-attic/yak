@@ -80,6 +80,29 @@ find_package(OpenCV 3 REQUIRED COMPONENTS core highgui)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 
+ament_export_include_directories(include
+                                ${OpenCV_INCLUDE_DIRS}
+                                ${CUDA_INCLUDE_DIRS}
+                                ${Eigen_INCLUDE_DIRS}
+                                )
+
+#ament_export_interfaces(${PROJECT_NAME})
+#ament_export_interfaces(${PROJECT_NAME}_frontend)
+#ament_export_interfaces(${PROJECT_NAME}_marching_cubes)
+
+ament_export_libraries(${PROJECT_NAME}
+                       ${PROJECT_NAME}_frontend
+                       # ${PROJECT_NAME}_marching_cubes
+                       ${CUDA_LIBRARIES}
+                       ${CUDA_CUDA_LIBRARY}
+                       ${OpenCV_LIBS}
+                       )
+
+ament_export_dependencies(rclcpp OpenCV Eigen3 CUDA)
+#ament_export_dependencies(PCL)
+
+ament_package()
+
 include_directories(
   include
   ${rclcpp_INCLUDE_DIRS}
@@ -105,25 +128,26 @@ cuda_add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${CUDA_LIBRARIES}
   ${CUDA_CUDA_LIBRARY}
-  ${OpenCV_LIBS}
+  ${OpenCV_LIBRARIES}
   ${rclcpp_LIBRARIES}
 #  ${PCL_LIBRARIES}
 )
 
-#target_include_directories(${PROJECT_NAME} PUBLIC
-#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}include>
-#    $<INSTALL_INTERFACE:include>
+#target_include_directories(${PROJECT_NAME}
+#    PUBLIC
+#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}include/${PROJECT_NAME}>
+#    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 #    )
 
-ament_target_dependencies(${PROJECT_NAME}
-    ${${PROJECT_NAME}_EXPORTED_TARGETS})
+#ament_target_dependencies(${PROJECT_NAME}
+#    ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
 # a minimal interface of pushing and image with a pose guess into the server and integrating.
 
 add_library(${PROJECT_NAME}_frontend
     src/ros/yak_server.cpp
-    src/offline/tsdf_container.cpp  # uncommenting these introduces macro error (one error per linked source file)
+    src/offline/tsdf_container.cpp
     src/offline/test_file.cpp
 )
 target_link_libraries(${PROJECT_NAME}_frontend
@@ -136,11 +160,12 @@ target_link_libraries(${PROJECT_NAME}_frontend
 #                          "PCL")
 
 
-#target_include_directories(${PROJECT_NAME}_frontend PUBLIC
-#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}include/offline>
-#    $<INSTALL_INTERFACE:include/offline>
-#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}include/ros>
-#    $<INSTALL_INTERFACE:include/ros>
+#target_include_directories(${PROJECT_NAME}_frontend
+#    PUBLIC
+#    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/offline>
+#    $<INSTALL_INTERFACE:include/${PROJECT_NAME}/offline>
+#    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/ros>
+#    $<INSTALL_INTERFACE:include/${PROJECT_NAME}/ros>
 #    )
 
 
@@ -181,33 +206,27 @@ set(ROS_LIB_DESTINATION lib)
 set(ROS_BIN_DESTINATION bin)
 set(ROS_INCLUDE_DESTINATION include)
 
-install(DIRECTORY include/${PROJECT_NAME}/
+
+
+install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION ${ROS_INCLUDE_DESTINATION}
 )
 
-# weird macro error introduced here?
 
+#install(EXPORT ${PROJECT_NAME})
 
-#install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_frontend #${PROJECT_NAME}_marching_cubes
-#  ARCHIVE DESTINATION ${ROS_LIB_DESTINATION}
-#  LIBRARY DESTINATION ${ROS_LIB_DESTINATION}
-#  RUNTIME DESTINATION ${ROS_BIN_DESTINATION}
-#)
-
-
-install(TARGETS ${PROJECT_NAME}
-    ARCHIVE DESTINATION ${ROS_LIB_DESTINATION}
-    LIBRARY DESTINATION ${ROS_LIB_DESTINATION}
-    RUNTIME DESTINATION ${ROS_BIN_DESTINATION}
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_frontend #${PROJECT_NAME}_marching_cubes
+  ARCHIVE DESTINATION ${ROS_LIB_DESTINATION}
+  LIBRARY DESTINATION ${ROS_LIB_DESTINATION}
+  RUNTIME DESTINATION ${ROS_BIN_DESTINATION}
   )
 
-
-## seems to fail if both of these install statements are enabled
-install(TARGETS ${PROJECT_NAME}_frontend
-    ARCHIVE DESTINATION ${ROS_LIB_DESTINATION}
-    LIBRARY DESTINATION ${ROS_LIB_DESTINATION}
-    RUNTIME DESTINATION ${ROS_BIN_DESTINATION}
-  )
+#install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_frontend
+#    EXPORT ${PROJECT_NAME} ${PROJECT_NAME}_frontend
+#    ARCHIVE DESTINATION ${ROS_LIB_DESTINATION}
+#    LIBRARY DESTINATION ${ROS_LIB_DESTINATION}
+#    RUNTIME DESTINATION ${ROS_BIN_DESTINATION}
+#  )
 
 #install(TARGETS ${PROJECT_NAME}_marching_cubes
 #    ARCHIVE DESTINATION ${ROS_LIB_DESTINATION}
@@ -216,28 +235,3 @@ install(TARGETS ${PROJECT_NAME}_frontend
 #  )
 
 
-
-ament_export_include_directories(include
-                                ${OpenCV_INCLUDE_DIRS}
-                                ${CUDA_INCLUDE_DIRS}
-                                ${Eigen_INCLUDE_DIRS}
-                                )
-
-#ament_export_interfaces(export_${PROJECT_NAME})
-#ament_export_interfaces(export_${PROJECT_NAME}_frontend)
-#ament_export_interfaces(export_${PROJECT_NAME}_marching_cubes)
-
-ament_export_libraries(${PROJECT_NAME}
-                       ${PROJECT_NAME}_frontend
-                       # ${PROJECT_NAME}_marching_cubes
-                       ${CUDA_LIBRARIES}
-                       ${CUDA_CUDA_LIBRARY}
-                       ${OpenCV_LIBS}
-                       )
-
-#ament_export_libraries(${PROJECT_NAME}_marching_cubes)
-
-ament_export_dependencies(rclcpp)
-#ament_export_dependencies(PCL)
-
-ament_package()

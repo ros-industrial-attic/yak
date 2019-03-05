@@ -10,7 +10,7 @@
 
   <buildtool_depend>ament</buildtool_depend>
 
-  <depend>libpcl-all-dev</depend>
+<!--  <depend>libpcl-all-dev</depend>-->
   <depend>rclcpp</depend>
 
   <export>
