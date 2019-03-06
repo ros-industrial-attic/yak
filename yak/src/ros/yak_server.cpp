@@ -1,5 +1,5 @@
 #include <yak/ros/yak_server.h>
-//#include <opencv2/highgui.hpp> // named-window apparatus; TODO: Remove this
+#include <opencv2/highgui.hpp> // named-window apparatus; TODO: Remove this
 
 yak::FusionServer::FusionServer(const kfusion::KinFuParams& params,
                                                       const Eigen::Affine3f& world_to_volume)
@@ -10,8 +10,8 @@ yak::FusionServer::FusionServer(const kfusion::KinFuParams& params,
   // Debug displays
 //  cv::namedWindow("input");
 //  cv::moveWindow("input", 10, 1000);
-//  cv::namedWindow("output");
-//  cv::moveWindow("output", 10, 600);
+  cv::namedWindow("output");
+  cv::moveWindow("output", 10, 600);
 }
 
 bool yak::FusionServer::fuse(const cv::Mat& depth_data, const Eigen::Affine3f& world_to_camera)
@@ -77,12 +77,12 @@ bool yak::FusionServer::step(const Eigen::Affine3f& current_pose, const Eigen::A
 
 void yak::FusionServer::downloadAndDisplayView()
 {
-//  cv::Mat viewHost;
-//  viewHost.create(viewDevice_.rows(), viewDevice_.cols(), CV_8UC4);
-//  viewDevice_.download(viewHost.ptr<void>(), viewHost.step);
+  cv::Mat viewHost;
+  viewHost.create(viewDevice_.rows(), viewDevice_.cols(), CV_8UC4);
+  viewDevice_.download(viewHost.ptr<void>(), viewHost.step);
 
-//  cv::imshow("output", viewHost);
-//  cv::waitKey(1);
+  cv::imshow("output", viewHost);
+  cv::waitKey(1);
 }
 
 void yak::FusionServer::display()
