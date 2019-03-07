@@ -1,7 +1,7 @@
 #ifndef YAK_TSDF_CONTAINER_H
 #define YAK_TSDF_CONTAINER_H
 
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <yak/ros/half.hpp>
 #include <memory>
 #include <vector>

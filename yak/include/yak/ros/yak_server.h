@@ -8,7 +8,7 @@
 #ifndef YAK_OFFLINE_FUSION_SERVER_H_
 #define YAK_OFFLINE_FUSION_SERVER_H_
 
-#include "yak/offline/tsdf_container.h"
+#include "yak/kfusion/tsdf_container.h"
 #include "yak/kfusion/kinfu.hpp"
 
 //#include <pcl/point_types.h>  // For the 'getCloud' interface - TODO: Should this return a "native" point3d type

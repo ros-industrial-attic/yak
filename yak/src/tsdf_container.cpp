@@ -1,4 +1,4 @@
-#include <yak/offline/tsdf_container.h>
+#include <yak/kfusion/tsdf_container.h>
 
 yak::TSDFContainer::TSDFContainer(int x, int y, int z)
   : data_(std::make_shared<std::vector<uint32_t>>(x * y * z, 0))

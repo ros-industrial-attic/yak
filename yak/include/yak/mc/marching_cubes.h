@@ -1,7 +1,7 @@
 #ifndef YAK_MARCHING_CUBES_H
 #define YAK_MARCHING_CUBES_H
 
-#include <yak/offline/tsdf_container.h>
+#include <yak/kfusion/tsdf_container.h>
 #include <pcl/PolygonMesh.h>
 
 namespace yak

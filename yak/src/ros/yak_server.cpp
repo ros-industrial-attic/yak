@@ -8,8 +8,6 @@ yak::FusionServer::FusionServer(const kfusion::KinFuParams& params,
   , last_camera_pose_(Eigen::Affine3f::Identity())
 {
   // Debug displays
-//  cv::namedWindow("input");
-//  cv::moveWindow("input", 10, 1000);
   cv::namedWindow("output");
   cv::moveWindow("output", 10, 600);
 }

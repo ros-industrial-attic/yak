@@ -52,10 +52,10 @@ message(STATUS "CMAKE MODULE PATH IS ${CMAKE_MODULE_PATH}")
 # TODO: Use built-in CUDA language support from CMake 3.8+ (requires different flags)
 #enable_language(CUDA)
 
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+find_package(OpenMP REQUIRED)
+#if (OpenMP_CXX_FOUND)
+#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#endif()
 
 find_package(CUDA REQUIRED)
 
@@ -70,11 +70,12 @@ message(STATUS ${CUDA_NVCC_FLAGS})
 
 
 find_package(OpenCV 3 REQUIRED COMPONENTS core highgui)
-#find_package(PCL 1.8 REQUIRED COMPONENTS common io geometry)
-#set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
+find_package(Eigen3 REQUIRED)
+find_package(PCL 1.9 REQUIRED COMPONENTS common io geometry)
+set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 
-#link_directories(${PCL_LIBRARY_DIRS})
-#add_definitions(${PCL_DEFINITIONS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 # build for ROS 2 using Ament
 find_package(ament_cmake REQUIRED)
@@ -92,14 +93,15 @@ ament_export_include_directories(include
 
 ament_export_libraries(${PROJECT_NAME}
                        ${PROJECT_NAME}_frontend
-                       # ${PROJECT_NAME}_marching_cubes
+                       ${PROJECT_NAME}_marching_cubes
                        ${CUDA_LIBRARIES}
                        ${CUDA_CUDA_LIBRARY}
                        ${OpenCV_LIBS}
+                       ${OpenMP_CXX_LIBRARIES}
                        )
 
-ament_export_dependencies(rclcpp OpenCV Eigen3 CUDA)
-#ament_export_dependencies(PCL)
+ament_export_dependencies(rclcpp OpenCV Eigen3 CUDA OpenMP)
+ament_export_dependencies(PCL)
 
 ament_package()
 
@@ -108,8 +110,8 @@ include_directories(
   ${rclcpp_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${CUDA_INCLUDE_DIRS}
-#  ${PCL_INCLUDE_DIRS}
-  ${Eigen_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
 )
 
 # Core CUDA Library for depth image processing
@@ -130,7 +132,8 @@ target_link_libraries(${PROJECT_NAME}
   ${CUDA_CUDA_LIBRARY}
   ${OpenCV_LIBRARIES}
   ${rclcpp_LIBRARIES}
-#  ${PCL_LIBRARIES}
+  ${PCL_LIBRARIES}
+
 )
 
 #target_include_directories(${PROJECT_NAME}
@@ -147,12 +150,11 @@ target_link_libraries(${PROJECT_NAME}
 
 add_library(${PROJECT_NAME}_frontend
     src/ros/yak_server.cpp
-    src/offline/tsdf_container.cpp
-    src/offline/test_file.cpp
+    src/tsdf_container.cpp
 )
 target_link_libraries(${PROJECT_NAME}_frontend
  ${PROJECT_NAME}
-# ${PCL_LIBRARIES}
+ ${PCL_LIBRARIES}
 # ${rclcpp_LIBRARIES}
 )
 #ament_target_dependencies(${PROJECT_NAME}_frontend
@@ -169,36 +171,37 @@ target_link_libraries(${PROJECT_NAME}_frontend
 #    )
 
 
-## Marching Cubes Meshing Impl
-#add_library(${PROJECT_NAME}_marching_cubes
-#  src/mc/marching_cubes.cpp
-#  src/mc/marching_cubes_tables.cpp)
+# Marching Cubes Meshing Impl
+add_library(${PROJECT_NAME}_marching_cubes
+  src/mc/marching_cubes.cpp
+  src/mc/marching_cubes_tables.cpp)
 
-#ament_target_dependencies(${PROJECT_NAME}_marching_cubes ${${PROJECT_NAME}_EXPORTED_TARGETS})
+ament_target_dependencies(${PROJECT_NAME}_marching_cubes ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-#target_link_libraries(${PROJECT_NAME}_marching_cubes
-#  ${rclcpp_LIBRARIES}
-#  ${PROJECT_NAME}
-#)
+target_link_libraries(${PROJECT_NAME}_marching_cubes
+    PUBLIC
+  ${rclcpp_LIBRARIES}
+  ${PROJECT_NAME}
+  OpenMP::OpenMP_CXX
+)
 
-add_executable(tsdf_tests src/ros/tsdf_tests.cpp)
-#ament_target_dependencies(tsdf_tests
-#                          "rclcpp")
-target_link_libraries(tsdf_tests
-                      ${rclcpp_LIBRARIES}
-                      ${PROJECT_NAME}_frontend
-#                      ${PROJECT_NAME}_marching_cubes
-                      )
+
+#add_executable(tsdf_tests src/test/tsdf_tests.cpp)
+#target_link_libraries(tsdf_tests
+#                      ${rclcpp_LIBRARIES}
+#                      ${PROJECT_NAME}_frontend
+##                      ${PROJECT_NAME}_marching_cubes
+#                      )
 
 # Jmeyer Marching Cubes
-#add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
-#ament_target_dependencies(marching_cubes_tests ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
+ament_target_dependencies(marching_cubes_tests ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-#target_link_libraries(marching_cubes_tests
-#    ${PROJECT_NAME}_marching_cubes
-#    ${PCL_LIBRARIES}
-#    ${rclcpp_LIBRARIES}
-#)
+target_link_libraries(marching_cubes_tests
+    ${PROJECT_NAME}_marching_cubes
+    ${PCL_LIBRARIES}
+    ${rclcpp_LIBRARIES}
+)
 
 
 
@@ -206,32 +209,12 @@ set(ROS_LIB_DESTINATION lib)
 set(ROS_BIN_DESTINATION bin)
 set(ROS_INCLUDE_DESTINATION include)
 
-
-
 install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION ${ROS_INCLUDE_DESTINATION}
 )
 
-
-#install(EXPORT ${PROJECT_NAME})
-
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_frontend #${PROJECT_NAME}_marching_cubes
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_frontend ${PROJECT_NAME}_marching_cubes
   ARCHIVE DESTINATION ${ROS_LIB_DESTINATION}
   LIBRARY DESTINATION ${ROS_LIB_DESTINATION}
   RUNTIME DESTINATION ${ROS_BIN_DESTINATION}
   )
-
-#install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_frontend
-#    EXPORT ${PROJECT_NAME} ${PROJECT_NAME}_frontend
-#    ARCHIVE DESTINATION ${ROS_LIB_DESTINATION}
-#    LIBRARY DESTINATION ${ROS_LIB_DESTINATION}
-#    RUNTIME DESTINATION ${ROS_BIN_DESTINATION}
-#  )
-
-#install(TARGETS ${PROJECT_NAME}_marching_cubes
-#    ARCHIVE DESTINATION ${ROS_LIB_DESTINATION}
-#    LIBRARY DESTINATION ${ROS_LIB_DESTINATION}
-#    RUNTIME DESTINATION ${ROS_BIN_DESTINATION}
-#  )
-
-

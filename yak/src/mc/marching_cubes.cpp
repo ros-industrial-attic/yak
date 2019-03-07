@@ -1,6 +1,6 @@
 #include "yak/mc/marching_cubes.h"
 #include "marching_cubes_tables.h"
-//#include <pcl/io/ply_io.h>
+#include <pcl/io/ply_io.h>
 
 #include <omp.h>
 
