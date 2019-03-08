@@ -53,9 +53,6 @@ message(STATUS "CMAKE MODULE PATH IS ${CMAKE_MODULE_PATH}")
 #enable_language(CUDA)
 
 find_package(OpenMP REQUIRED)
-#if (OpenMP_CXX_FOUND)
-#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#endif()
 
 find_package(CUDA REQUIRED)
 
@@ -71,7 +68,7 @@ message(STATUS ${CUDA_NVCC_FLAGS})
 
 find_package(OpenCV 3 REQUIRED COMPONENTS core highgui)
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.9 REQUIRED COMPONENTS common io geometry)
+find_package(PCL 1.9 REQUIRED COMPONENTS common io geometry)  # need to use PCL 1.9 because there's a GCC flag problem when building with 1.8
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 
 link_directories(${PCL_LIBRARY_DIRS})
@@ -87,10 +84,6 @@ ament_export_include_directories(include
                                 ${Eigen_INCLUDE_DIRS}
                                 )
 
-#ament_export_interfaces(${PROJECT_NAME})
-#ament_export_interfaces(${PROJECT_NAME}_frontend)
-#ament_export_interfaces(${PROJECT_NAME}_marching_cubes)
-
 ament_export_libraries(${PROJECT_NAME}
                        ${PROJECT_NAME}_frontend
                        ${PROJECT_NAME}_marching_cubes
@@ -100,8 +93,7 @@ ament_export_libraries(${PROJECT_NAME}
                        ${OpenMP_CXX_LIBRARIES}
                        )
 
-ament_export_dependencies(rclcpp OpenCV Eigen3 CUDA OpenMP)
-ament_export_dependencies(PCL)
+ament_export_dependencies(rclcpp OpenCV Eigen3 CUDA OpenMP PCL)
 
 ament_package()
 
@@ -136,15 +128,6 @@ target_link_libraries(${PROJECT_NAME}
 
 )
 
-#target_include_directories(${PROJECT_NAME}
-#    PUBLIC
-#    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}include/${PROJECT_NAME}>
-#    $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
-#    )
-
-#ament_target_dependencies(${PROJECT_NAME}
-#    ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
 # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
 # a minimal interface of pushing and image with a pose guess into the server and integrating.
 
@@ -155,21 +138,7 @@ add_library(${PROJECT_NAME}_frontend
 target_link_libraries(${PROJECT_NAME}_frontend
  ${PROJECT_NAME}
  ${PCL_LIBRARIES}
-# ${rclcpp_LIBRARIES}
 )
-#ament_target_dependencies(${PROJECT_NAME}_frontend
-#                          ${${PROJECT_NAME}_EXPORTED_TARGETS}
-#                          "PCL")
-
-
-#target_include_directories(${PROJECT_NAME}_frontend
-#    PUBLIC
-#    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/offline>
-#    $<INSTALL_INTERFACE:include/${PROJECT_NAME}/offline>
-#    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/ros>
-#    $<INSTALL_INTERFACE:include/${PROJECT_NAME}/ros>
-#    )
-
 
 # Marching Cubes Meshing Impl
 add_library(${PROJECT_NAME}_marching_cubes
@@ -185,14 +154,6 @@ target_link_libraries(${PROJECT_NAME}_marching_cubes
   OpenMP::OpenMP_CXX
 )
 
-
-#add_executable(tsdf_tests src/test/tsdf_tests.cpp)
-#target_link_libraries(tsdf_tests
-#                      ${rclcpp_LIBRARIES}
-#                      ${PROJECT_NAME}_frontend
-##                      ${PROJECT_NAME}_marching_cubes
-#                      )
-
 # Jmeyer Marching Cubes
 add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
 ament_target_dependencies(marching_cubes_tests ${${PROJECT_NAME}_EXPORTED_TARGETS})
@@ -202,8 +163,6 @@ target_link_libraries(marching_cubes_tests
     ${PCL_LIBRARIES}
     ${rclcpp_LIBRARIES}
 )
-
-
 
 set(ROS_LIB_DESTINATION lib)
 set(ROS_BIN_DESTINATION bin)

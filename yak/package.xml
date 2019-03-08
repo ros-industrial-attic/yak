@@ -12,6 +12,8 @@
 
 <!--  <depend>libpcl-all-dev</depend>-->
   <depend>rclcpp</depend>
+  <depend>OpenMP</depend>
+  <depend>Eigen3</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
