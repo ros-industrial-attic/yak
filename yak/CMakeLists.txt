@@ -126,13 +126,13 @@ endif()
 
 # Core CUDA Library for depth image processing
 cuda_add_library(${PROJECT_NAME}
-  src/core.cpp
-  src/device_memory.cpp
-  src/imgproc.cpp
-  src/kinfu.cpp
-  src/precomp.cpp
-  src/projective_icp.cpp
-  src/tsdf_volume.cpp
+  src/kfusion/core.cpp
+  src/kfusion/device_memory.cpp
+  src/kfusion/imgproc.cpp
+  src/kfusion/kinfu.cpp
+  src/kfusion/precomp.cpp
+  src/kfusion/projective_icp.cpp
+  src/kfusion/tsdf_volume.cpp
   src/cuda/imgproc.cu
   src/cuda/proj_icp.cu
   src/cuda/tsdf_volume.cu
@@ -157,8 +157,8 @@ target_link_libraries(${PROJECT_NAME}
 # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
 # a minimal interface of pushing and image with a pose guess into the server and integrating.
 add_library(${PROJECT_NAME}_frontend
-    src/ros/yak_server.cpp
-    src/tsdf_container.cpp
+    src/yak_server.cpp
+    src/kfusion/tsdf_container.cpp
 )
 
 target_include_directories(${PROJECT_NAME}_frontend PUBLIC

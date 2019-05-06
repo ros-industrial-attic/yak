@@ -1,4 +1,4 @@
-#include <yak/ros/yak_server.h>
+#include <yak/yak_server.h>
 #include <opencv2/highgui.hpp> // named-window apparatus; TODO: Remove this
 
 yak::FusionServer::FusionServer(const kfusion::KinFuParams& params,

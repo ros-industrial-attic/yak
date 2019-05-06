@@ -2,7 +2,7 @@
 #define YAK_TSDF_CONTAINER_H
 
 #include <Eigen/Dense>
-#include <yak/ros/half.hpp>
+#include <yak/kfusion/half.hpp>
 #include <memory>
 #include <vector>
 
