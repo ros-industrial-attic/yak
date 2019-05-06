@@ -1,22 +1,23 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>yak</name>
-  <version>0.0.0</version>
+  <version>0.1.0</version>
   <description>A truncated signed distance field(TSDF) to mesh tool</description>
   <author email="Joseph.Schornak@SwRI.org">Joseph Schornak</author>
   <author>Jonathan Meyer</author>
   <maintainer email="Joseph.Schornak@SwRI.org">Joseph Schornak</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend>ament</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
 
-<!--  <depend>libpcl-all-dev</depend>-->
-  <depend>rclcpp</depend>
+  <depend>libpcl-all-dev</depend>
   <depend>OpenMP</depend>
   <depend>Eigen3</depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
   </export>
 
 </package>
