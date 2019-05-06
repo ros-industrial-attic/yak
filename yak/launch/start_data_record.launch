@@ -1,4 +1,0 @@
-<launch>
-    <include file="$(find openni2_launch)/launch/openni2.launch"> </include>
-    <node name="Record" pkg="rosbag" type="record" output="screen" args="/camera/depth/image_raw /camera/depth/camera_info /camera/rgb/image_rect_color /camera/rgb/camera_info tf --output-name=/home/jschornak/BagFiles/xtion_data.bag"> </node>
-</launch>

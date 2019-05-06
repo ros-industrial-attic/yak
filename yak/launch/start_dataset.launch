@@ -1,4 +1,0 @@
-<launch>
-    <node name="Dataset" pkg="rosbag" type="play" output="screen" args="--clock --delay 5 /home/jschornak/BagFiles/rgbd_dataset_freiburg1_xyz.bag">
-    </node>
-</launch>

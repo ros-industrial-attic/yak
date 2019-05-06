@@ -1,4 +1,0 @@
-<launch>
-    <node name="Dataset" pkg="rosbag" type="play" output="screen" args="--clock --delay 5 /home/jschornak/BagFiles/xtion_bookcase_test.bag">
-    </node>
-</launch>
