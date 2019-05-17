@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.0)
+cmake_minimum_required(VERSION 3.5.0)
 project(yak)
 
 # Default to C++14 for cross-compatibility
