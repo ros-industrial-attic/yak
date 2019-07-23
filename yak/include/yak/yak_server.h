@@ -29,6 +29,10 @@ public:
 
   bool fuse(const cv::Mat& depth_data, const Eigen::Affine3f& world_to_camera);
 
+  bool reset();
+
+  bool resetWithNewParams(const kfusion::KinFuParams& params);
+
 //  void getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const;
 
   yak::TSDFContainer downloadTSDF();
