@@ -82,6 +82,7 @@ if ($ENV{ROS_VERSION} VERSION_EQUAL "1")
          include
          ${ROS_INCLUDE_DIRS}
          ${OpenCV_INCLUDE_DIRS}
+         ${PCL_INCLUDE_DIRS}
          ${CUDA_INCLUDE_DIRS}
          ${Eigen_INCLUDE_DIRS}
        LIBRARIES
@@ -106,6 +107,7 @@ else()
 
     ament_export_include_directories(include
                                     ${OpenCV_INCLUDE_DIRS}
+                                    ${PCL_INCLUDE_DIRS}
                                     ${CUDA_INCLUDE_DIRS}
                                     ${Eigen_INCLUDE_DIRS}
                                     )
