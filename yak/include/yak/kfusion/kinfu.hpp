@@ -4,6 +4,8 @@
 #include "yak/kfusion/types.hpp"
 #include "yak/kfusion/cuda/tsdf_volume.hpp"
 #include "yak/kfusion/cuda/projective_icp.hpp"
+#include <Eigen/Core>
+#include <Eigen/StdVector>
 #include <vector>
 #include <string>
 
@@ -55,7 +57,7 @@ namespace kfusion
             bool use_pose_hints;
             bool use_icp;
             bool update_via_sensor_motion;
-
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
 
     class KF_EXPORTS KinFu
@@ -92,7 +94,7 @@ namespace kfusion
             KinFuParams params_;
 
             // Sensor pose, currenly calculated  via ICP
-            std::vector<Affine3f> poses_;
+            std::vector<Affine3f, Eigen::aligned_allocator<Affine3f>> poses_;
 
             cuda::Dists dists_;
             cuda::Frame curr_, prev_;
@@ -103,6 +105,8 @@ namespace kfusion
 
             cv::Ptr<cuda::TsdfVolume> volume_;
             cv::Ptr<cuda::ProjectiveICP> icp_;
+        public:
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
 }
 #endif

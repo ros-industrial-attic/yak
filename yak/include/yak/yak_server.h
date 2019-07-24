@@ -29,9 +29,17 @@ public:
 
   bool fuse(const cv::Mat& depth_data, const Eigen::Affine3f& world_to_camera);
 
+  bool reset();
+
+  bool resetWithNewParams(const kfusion::KinFuParams& params);
+
 //  void getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const;
 
   yak::TSDFContainer downloadTSDF();
+
+  void display();
+
+  void display(const Eigen::Affine3f& pose);
 
 private:
   bool step(const Eigen::Affine3f& current_pose, const Eigen::Affine3f& last_pose, const cv::Mat& depth);
@@ -41,18 +49,15 @@ private:
    */
   void downloadAndDisplayView();
 
-public:
-  void display();
-  void display(const Eigen::Affine3f& pose);
-
-
-private:
   kfusion::KinFu::Ptr kinfu_;
   kfusion::cuda::Image viewDevice_;
   kfusion::cuda::Depth depthDevice_;
 
   Eigen::Affine3f volume_to_world_;
   Eigen::Affine3f last_camera_pose_;
+
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 } /* namespace yak */

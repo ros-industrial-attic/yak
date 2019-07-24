@@ -10,8 +10,8 @@ namespace
 
 struct Triangle
 {
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Eigen::Vector3f v[3];
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 float getOffset(float value1, float value2, float value_desired)

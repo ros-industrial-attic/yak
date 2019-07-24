@@ -2,7 +2,7 @@
 #include <opencv2/highgui.hpp> // named-window apparatus; TODO: Remove this
 
 yak::FusionServer::FusionServer(const kfusion::KinFuParams& params,
-                                                      const Eigen::Affine3f& world_to_volume)
+                                const Eigen::Affine3f& world_to_volume)
   : kinfu_(new kfusion::KinFu(params))
   , volume_to_world_(world_to_volume.inverse())
   , last_camera_pose_(Eigen::Affine3f::Identity())
@@ -36,6 +36,18 @@ bool yak::FusionServer::fuse(const cv::Mat& depth_data, const Eigen::Affine3f& w
   display();
 
   return result;
+}
+
+bool yak::FusionServer::reset()
+{
+  kinfu_->resetVolume();
+  return true;
+}
+
+bool yak::FusionServer::resetWithNewParams(const kfusion::KinFuParams &params)
+{
+  kinfu_.reset(new kfusion::KinFu(params));
+  return true;
 }
 
 //void yak::FusionServer::getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const
