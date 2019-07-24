@@ -52,9 +52,11 @@ private:
     std::memcpy(&weight, ((char*)(&data)) + 2, 2);
   }
 
-private:
   std::shared_ptr<std::vector<uint32_t>> data_;
   Eigen::Vector3i dims_;
+
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 }
