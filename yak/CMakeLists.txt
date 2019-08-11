@@ -67,7 +67,7 @@ message(STATUS ${CUDA_NVCC_FLAGS})
 
 find_package(OpenCV 3 REQUIRED COMPONENTS core highgui)
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.9 REQUIRED COMPONENTS common io geometry)  # need to use PCL 1.9 because there's a GCC flag problem when building with 1.8
+find_package(PCL 1.8 REQUIRED COMPONENTS common io geometry)
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 
 link_directories(${PCL_LIBRARY_DIRS})
