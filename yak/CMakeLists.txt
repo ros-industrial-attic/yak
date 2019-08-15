@@ -73,6 +73,11 @@ set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
+if(${CMAKE_VERSION} VERSION_LESS "3.9.0")
+  message(WARNING "You are using CMake version ${CMAKE_VERSION}. Consider upgrading!")
+  include_directories(include)  # TODO: Avoid using include_directories at all!
+endif()
+
 if ($ENV{ROS_VERSION} VERSION_EQUAL "1")
     # Build for ROS 1 using Catkin
      find_package(catkin)
@@ -98,7 +103,6 @@ if ($ENV{ROS_VERSION} VERSION_EQUAL "1")
          OpenCV
          EIGEN3
          CUDA
-         OpenMP
          PCL
    )
 else()
@@ -190,7 +194,7 @@ target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
 target_link_libraries(${PROJECT_NAME}_marching_cubes
     PUBLIC
   ${PROJECT_NAME}
-  OpenMP::OpenMP_CXX
+  ${OpenMP_CXX_LIBRARIES}
 )
 
 # Jmeyer Marching Cubes
