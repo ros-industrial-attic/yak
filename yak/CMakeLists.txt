@@ -11,11 +11,22 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
   set(CMAKE_CUDA_STANDARD_REQUIRED True)
 endif()
 
-find_package(OpenMP REQUIRED)
 find_package(CUDA 9.0 REQUIRED)
 find_package(OpenCV 3 REQUIRED COMPONENTS core highgui)
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS common io geometry)
+
+find_package(OpenMP REQUIRED)
+if(NOT TARGET OpenMP::OpenMP_CXX)
+    find_package(Threads REQUIRED)
+    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+    set_property(TARGET OpenMP::OpenMP_CXX
+                 PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+    # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
+    set_property(TARGET OpenMP::OpenMP_CXX
+                 PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+endif()
+
 
 # Core CUDA Library for depth image processing
 add_library(${PROJECT_NAME} SHARED
