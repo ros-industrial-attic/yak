@@ -54,6 +54,16 @@ message(STATUS "CMAKE MODULE PATH IS ${CMAKE_MODULE_PATH}")
 
 find_package(OpenMP REQUIRED)
 
+if(NOT TARGET OpenMP::OpenMP_CXX)
+    find_package(Threads REQUIRED)
+    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+    set_property(TARGET OpenMP::OpenMP_CXX
+                 PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+    # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
+    set_property(TARGET OpenMP::OpenMP_CXX
+      PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+endif()
+	     
 find_package(CUDA REQUIRED)
 
 if (CUDA_VERSION_MAJOR GREATER 8)
@@ -72,6 +82,8 @@ set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
+
+include_directories(include)
 
 if ($ENV{ROS_VERSION} VERSION_EQUAL "1")
     # Build for ROS 1 using Catkin
@@ -147,6 +159,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${PCL_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
+  ${PROJECT_NAME}/include
 )
 
 target_link_libraries(${PROJECT_NAME}
