@@ -54,6 +54,15 @@ message(STATUS "CMAKE MODULE PATH IS ${CMAKE_MODULE_PATH}")
 
 find_package(OpenMP REQUIRED)
 
+if(NOT TARGET OpenMP::OpenMP_CXX)
+    find_package(Threads REQUIRED)
+    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+    set_property(TARGET OpenMP::OpenMP_CXX
+                 PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+    set_property(TARGET OpenMP::OpenMP_CXX
+                 PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+endif()
+
 find_package(CUDA REQUIRED)
 
 if (CUDA_VERSION_MAJOR GREATER 8)
@@ -97,7 +106,7 @@ if ($ENV{ROS_VERSION} VERSION_EQUAL "1")
          ${CUDA_LIBRARIES}
          ${CUDA_CUDA_LIBRARY}
          ${OpenCV_LIBS}
-         ${OpenMP_CXX_LIBRARIES}
+         OpenMP::OpenMP_CXX
        CATKIN_DEPENDS
        DEPENDS
          OpenCV
@@ -194,7 +203,7 @@ target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
 target_link_libraries(${PROJECT_NAME}_marching_cubes
     PUBLIC
   ${PROJECT_NAME}
-  ${OpenMP_CXX_LIBRARIES}
+  OpenMP::OpenMP_CXX
 )
 
 # Jmeyer Marching Cubes
