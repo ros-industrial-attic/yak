@@ -70,6 +70,7 @@ target_include_directories(${PROJECT_NAME}_frontend PUBLIC
   "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_frontend SYSTEM PUBLIC
   ${PCL_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
 target_link_libraries(${PROJECT_NAME}_frontend PUBLIC
   ${PROJECT_NAME}
   ${PCL_LIBRARIES}
@@ -85,6 +86,7 @@ target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
   "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
   ${PCL_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME}_marching_cubes PUBLIC ${PCL_DEFINITIONS})
 target_link_libraries(${PROJECT_NAME}_marching_cubes PUBLIC
   ${PROJECT_NAME}
   ${PCL_LIBRARIES}
@@ -139,4 +141,3 @@ install(FILES
 
 export(EXPORT ${PROJECT_NAME}-targets FILE
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
-
