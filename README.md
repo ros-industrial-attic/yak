@@ -82,7 +82,7 @@ driver   : xserver-xorg-video-nouveau - distro free builtin
 
 ### OpenMP
 
-Yak required OpenMP for parallelization of the marching cubes surface reconstruction process.
+Yak requires OpenMP for parallelization of the marching cubes surface reconstruction process.
 ```
 sudo apt install libomp-dev
 ```
@@ -115,6 +115,8 @@ sudo apt install libpcl-dev
 Installing ROS is beyond the scope of this readme. There are installation instructions [here for ROS1](http://wiki.ros.org/melodic/Installation/Ubuntu) and [here for ROS2](https://index.ros.org/doc/ros2/Installation/Dashing/Linux-Install-Debians/).
 
 Clone this package into the `src` directory of a ROS workspace. For ROS1 use `catkin build` to build the workspace. For ROS2 use `colcon build` to build the workspace.
+
+Take a look at the [yak_ros](https://github.com/ros-industrial/yak_ros) package for example implementations of ROS nodes using Yak.
 
 ### Build Standalone (in development)
 
