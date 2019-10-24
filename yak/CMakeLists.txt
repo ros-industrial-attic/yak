@@ -60,6 +60,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   Eigen3::Eigen)
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 
+add_definitions(${PCL_DEFINITIONS})
+
 # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
 # a minimal interface of pushing and image with a pose guess into the server and integrating.
 add_library(${PROJECT_NAME}_frontend SHARED
@@ -70,7 +72,6 @@ target_include_directories(${PROJECT_NAME}_frontend PUBLIC
   "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_frontend SYSTEM PUBLIC
   ${PCL_INCLUDE_DIRS})
-target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
 target_link_libraries(${PROJECT_NAME}_frontend PUBLIC
   ${PROJECT_NAME}
   ${PCL_LIBRARIES}
@@ -86,7 +87,6 @@ target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
   "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
   ${PCL_INCLUDE_DIRS})
-target_compile_definitions(${PROJECT_NAME}_marching_cubes PUBLIC ${PCL_DEFINITIONS})
 target_link_libraries(${PROJECT_NAME}_marching_cubes PUBLIC
   ${PROJECT_NAME}
   ${PCL_LIBRARIES}
