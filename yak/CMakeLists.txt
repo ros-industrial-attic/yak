@@ -35,6 +35,25 @@ if(NOT TARGET Eigen3::Eigen)
                  PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIRS})
 endif()
 
+# Macro to sanitize and separate a mixed list of options and definitions and add them to the specified target
+macro(target_add_options_and_definitions TARGET)
+  set(DEFINITIONS "${ARGN}")
+  foreach(DEF IN LISTS DEFINITIONS)
+    string(STRIP ${DEF} DEF)
+    if (NOT "${DEF}" STREQUAL "")
+      string(SUBSTRING "${DEF}" 0 2 DEF_PREFIX)
+      if ("${DEF_PREFIX}" STREQUAL "-m")
+        string(REPLACE " " ";" DEF ${DEF})
+        foreach(OPTION_DEF ${DEF})
+          target_compile_options(${TARGET} PUBLIC ${OPTION_DEF})
+        endforeach()
+      else()
+        target_compile_definitions(${TARGET} PUBLIC ${DEF})
+      endif()
+    endif()
+  endforeach()
+endmacro()
+
 # Core CUDA Library for depth image processing
 add_library(${PROJECT_NAME} SHARED
   src/kfusion/core.cpp
@@ -60,13 +79,12 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   Eigen3::Eigen)
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 
-add_definitions(${PCL_DEFINITIONS})
-
 # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
 # a minimal interface of pushing and image with a pose guess into the server and integrating.
 add_library(${PROJECT_NAME}_frontend SHARED
     src/yak_server.cpp
     src/kfusion/tsdf_container.cpp)
+target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS})
 target_include_directories(${PROJECT_NAME}_frontend PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
@@ -82,6 +100,7 @@ list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_frontend)
 add_library(${PROJECT_NAME}_marching_cubes SHARED
   src/mc/marching_cubes.cpp
   src/mc/marching_cubes_tables.cpp)
+target_add_options_and_definitions(${PROJECT_NAME}_marching_cubes ${PCL_DEFINITIONS})
 target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
@@ -96,6 +115,7 @@ list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_marching_cubes)
 
 # Jmeyer Marching Cubes
 add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
+target_add_options_and_definitions(marching_cubes_tests ${PCL_DEFINITIONS})
 target_include_directories(marching_cubes_tests PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
