@@ -84,7 +84,12 @@ list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 add_library(${PROJECT_NAME}_frontend SHARED
     src/yak_server.cpp
     src/kfusion/tsdf_container.cpp)
-target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS})
+if(${PCL_VERSION} VERSION_LESS 1.9)
+  target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS} ${PCL_COMPILE_OPTIONS})
+else()
+  target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
+  target_compile_options(${PROJECT_NAME}_frontend PUBLIC ${PCL_COMPILE_OPTIONS})
+endif()
 target_include_directories(${PROJECT_NAME}_frontend PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
@@ -100,7 +105,12 @@ list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_frontend)
 add_library(${PROJECT_NAME}_marching_cubes SHARED
   src/mc/marching_cubes.cpp
   src/mc/marching_cubes_tables.cpp)
-target_add_options_and_definitions(${PROJECT_NAME}_marching_cubes ${PCL_DEFINITIONS})
+if(${PCL_VERSION} VERSION_LESS 1.9)
+  target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS} ${PCL_COMPILE_OPTIONS})
+else()
+  target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
+  target_compile_options(${PROJECT_NAME}_frontend PUBLIC ${PCL_COMPILE_OPTIONS})
+endif()
 target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
@@ -115,7 +125,12 @@ list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_marching_cubes)
 
 # Jmeyer Marching Cubes
 add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
-target_add_options_and_definitions(marching_cubes_tests ${PCL_DEFINITIONS})
+if(${PCL_VERSION} VERSION_LESS 1.9)
+  target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS} ${PCL_COMPILE_OPTIONS})
+else()
+  target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
+  target_compile_options(${PROJECT_NAME}_frontend PUBLIC ${PCL_COMPILE_OPTIONS})
+endif()
 target_include_directories(marching_cubes_tests PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
