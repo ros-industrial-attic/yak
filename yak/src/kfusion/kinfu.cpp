@@ -24,7 +24,7 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
     p.volume_dims = Vec3i::all(512);  //number of voxels
     p.volume_resolution = 0.005859375;
 
-    p.volume_pose = Affine3f::Identity().translate(Vec3f(1,0,0));
+    p.volume_pose = Affine3f::Identity().translate(Vec3f(0,0,0));
 
     p.bilateral_sigma_depth = 0.04f;  //meter
     p.bilateral_sigma_spatial = 4.5; //pixels
