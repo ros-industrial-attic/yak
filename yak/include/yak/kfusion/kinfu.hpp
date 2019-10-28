@@ -23,40 +23,64 @@ KF_EXPORTS void printShortCudaDeviceInfo(int device);
 
 struct KF_EXPORTS KinFuParams
 {
+  /** @brief Default values for KinFuParams. Note that some of these are almost certainly incorrect for your setup (e.g.
+   * camera intrinsics)*/
   static KinFuParams default_params();
 
-  int cols;  // pixels
-  int rows;  // pixels
+  /** @brief Number of column pixels in input images*/
+  int cols;
+  /** @brief Number of row pixels in input images*/
+  int rows;
 
-  Intr intr;  // Camera intrinsic parameters
+  /** @brief Camera intrinsic parameters [fx, fy, cx, xy]*/
+  Intr intr;
 
-  Vec3i volume_dims;  // number of voxels
-  //            Vec3f volume_size; //meters
-  float volume_resolution;  // meters per voxel
+  /** @brief Dimensions of the TSDF volume in voxels. Multiply by resolution to get meters*/
+  Vec3i volume_dims;
+  /** @brief Resolution of the TSDF volume voxels (meters/voxel)*/
+  float volume_resolution;
 
-  Affine3f volume_pose;  // meters, inital pose
+  /** @brief Static tranform applied to the volume*/
+  Affine3f volume_pose;
 
-  float bilateral_sigma_depth;    // meters
-  float bilateral_sigma_spatial;  // pixels
-  int bilateral_kernel_size;      // pixels
+  /** @brief Pixels - Description TODO*/
+  float bilateral_sigma_depth;
+  /** @brief Pixels - Description TODO*/
+  float bilateral_sigma_spatial;
+  /** @brief Pixels - Description TODO*/
+  int bilateral_kernel_size;
 
-  float icp_truncate_depth_dist;  // meters
-  float icp_dist_thres;           // meters
-  float icp_angle_thres;          // radians
-  std::vector<int> icp_iter_num;  // iterations for level index 0,1,..,3
+  /** @brief meters - Description TODO*/
+  float icp_truncate_depth_dist;
+  /** @brief meters - Description TODO*/
+  float icp_dist_thres;
+  /** @brief radians - Description TODO*/
+  float icp_angle_thres;
+  /** @brief iterations for level index 0,1,..,3*/
+  std::vector<int> icp_iter_num;
 
-  float tsdf_min_camera_movement;  // meters, integrate only if exceeds
-  float tsdf_trunc_dist;           // meters;
-  int tsdf_max_weight;             // frames
+  /** @brief meters - Camera must move by this amount in order for a new image to be incorporated*/
+  float tsdf_min_camera_movement;
+  /** @brief meters - TSDF truncation distance*/
+  float tsdf_trunc_dist;
+  /** @brief frames - Description TODO*/
+  int tsdf_max_weight;
 
-  float raycast_step_factor;    // in voxel sizes
-  float gradient_delta_factor;  // in voxel sizes
+  /** @brief in voxel sizes - Description TODO*/
+  float raycast_step_factor;
+  /** @brief in voxel sizes - Description TODO*/
+  float gradient_delta_factor;
 
-  Vec3f light_pose;  // meters
+  /** @brief meters - Description TODO*/
+  Vec3f light_pose;
 
+  /** @brief If true use the pose given from an external source (e.g. robot kinematics)*/
   bool use_pose_hints;
+  /** @brief If true use ICP to correlate new images to the existing TSDF*/
   bool use_icp;
+  /** @brief If true only apply new sensor readings when the pose has sufficiently changed from the previous reading*/
   bool update_via_sensor_motion;
+
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
