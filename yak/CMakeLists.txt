@@ -35,6 +35,25 @@ if(NOT TARGET Eigen3::Eigen)
                  PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIRS})
 endif()
 
+# Macro to sanitize and separate a mixed list of options and definitions and add them to the specified target
+macro(target_add_options_and_definitions TARGET)
+  set(DEFINITIONS "${ARGN}")
+  foreach(DEF IN LISTS DEFINITIONS)
+    string(STRIP ${DEF} DEF)
+    if (NOT "${DEF}" STREQUAL "")
+      string(SUBSTRING "${DEF}" 0 2 DEF_PREFIX)
+      if ("${DEF_PREFIX}" STREQUAL "-m")
+        string(REPLACE " " ";" DEF ${DEF})
+        foreach(OPTION_DEF ${DEF})
+          target_compile_options(${TARGET} PUBLIC ${OPTION_DEF})
+        endforeach()
+      else()
+        target_compile_definitions(${TARGET} PUBLIC ${DEF})
+      endif()
+    endif()
+  endforeach()
+endmacro()
+
 # Core CUDA Library for depth image processing
 add_library(${PROJECT_NAME} SHARED
   src/kfusion/core.cpp
@@ -65,12 +84,17 @@ list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 add_library(${PROJECT_NAME}_frontend SHARED
     src/yak_server.cpp
     src/kfusion/tsdf_container.cpp)
+if(${PCL_VERSION} VERSION_LESS 1.9)
+  target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS} ${PCL_COMPILE_OPTIONS})
+else()
+  target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
+  target_compile_options(${PROJECT_NAME}_frontend PUBLIC ${PCL_COMPILE_OPTIONS})
+endif()
 target_include_directories(${PROJECT_NAME}_frontend PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_frontend SYSTEM PUBLIC
   ${PCL_INCLUDE_DIRS})
-target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
 target_link_libraries(${PROJECT_NAME}_frontend PUBLIC
   ${PROJECT_NAME}
   ${PCL_LIBRARIES}
@@ -81,12 +105,17 @@ list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_frontend)
 add_library(${PROJECT_NAME}_marching_cubes SHARED
   src/mc/marching_cubes.cpp
   src/mc/marching_cubes_tables.cpp)
+if(${PCL_VERSION} VERSION_LESS 1.9)
+  target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS} ${PCL_COMPILE_OPTIONS})
+else()
+  target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
+  target_compile_options(${PROJECT_NAME}_frontend PUBLIC ${PCL_COMPILE_OPTIONS})
+endif()
 target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
 target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
   ${PCL_INCLUDE_DIRS})
-target_compile_definitions(${PROJECT_NAME}_marching_cubes PUBLIC ${PCL_DEFINITIONS})
 target_link_libraries(${PROJECT_NAME}_marching_cubes PUBLIC
   ${PROJECT_NAME}
   ${PCL_LIBRARIES}
@@ -96,6 +125,12 @@ list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_marching_cubes)
 
 # Jmeyer Marching Cubes
 add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
+if(${PCL_VERSION} VERSION_LESS 1.9)
+  target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS} ${PCL_COMPILE_OPTIONS})
+else()
+  target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
+  target_compile_options(${PROJECT_NAME}_frontend PUBLIC ${PCL_COMPILE_OPTIONS})
+endif()
 target_include_directories(marching_cubes_tests PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include>")
