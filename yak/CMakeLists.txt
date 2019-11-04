@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.0)
-project(yak VERSION 0.2.0 LANGUAGES CUDA CXX)
+project(yak VERSION 0.2.0 LANGUAGES CXX)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -54,8 +54,12 @@ macro(target_add_options_and_definitions TARGET)
   endforeach()
 endmacro()
 
+CUDA_SELECT_NVCC_ARCH_FLAGS(ARCH_FLAGS Auto)
+LIST(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
+list(APPEND CUDA_NVCC_FLAGS "--compiler-options -fPIC")
+
 # Core CUDA Library for depth image processing
-add_library(${PROJECT_NAME} SHARED
+cuda_add_library(${PROJECT_NAME}
   src/kfusion/core.cpp
   src/kfusion/device_memory.cpp
   src/kfusion/imgproc.cpp
@@ -72,10 +76,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
   ${OpenCV_INCLUDE_DIRS}
   ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBRARIES}
   ${CUDA_LIBRARIES}
   ${CUDA_CUDA_LIBRARY}
+  ${PCL_LIBRARIES}  # BUG: shouldn't need this, but get -fPIC errors if it's not included
   Eigen3::Eigen)
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 
