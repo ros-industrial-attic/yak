@@ -9,9 +9,8 @@
   <license>MIT</license>
 
   <depend>libpcl-all-dev</depend>
-  <depend>OpenMP</depend>
   <depend>eigen</depend>
-  <depend>CUDA</depend>
+  <depend>nvidia-cuda-dev</depend>
   <depend>libopencv-dev</depend>
 
   <export>
