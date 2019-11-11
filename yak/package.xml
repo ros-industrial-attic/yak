@@ -10,9 +10,9 @@
 
   <depend>libpcl-all-dev</depend>
   <depend>OpenMP</depend>
-  <depend>Eigen3</depend>
+  <depend>eigen</depend>
   <depend>CUDA</depend>
-  <depend>OpenCV</depend>
+  <depend>libopencv-dev</depend>
 
   <export>
     <build_type>cmake</build_type>
