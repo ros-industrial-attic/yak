@@ -17,7 +17,7 @@ bool yak::FusionServer::fuse(const cv::Mat& depth_data, const Eigen::Affine3f& w
   // we want volume to camera
   const Eigen::Affine3f current_camera_in_volume = volume_to_world_ * world_to_camera;
 
-  std::cout << "Offline camera pose:\n" << current_camera_in_volume.matrix() << "\n";
+  // std::cout << "Offline camera pose:\n" << current_camera_in_volume.matrix() << "\n";
 
   // Compute the 'motion' from the last_pose to the current pose
   Eigen::Affine3f motion = current_camera_in_volume * last_camera_pose_.inverse();
