@@ -281,7 +281,8 @@ bool kfusion::KinFu::operator()(const Affine3f& inputCameraMotion,
   float rnorm = (float)cv::norm(cameraMotion.rvec());
   float tnorm = (float)cv::norm(cameraMotion.translation());
 
-  cout << "Rnorm " << rnorm << "  Tnorm " << tnorm << endl;
+  // TODO: Switch this to console_bridge. Disabling for now
+  // cout << "Rnorm " << rnorm << "  Tnorm " << tnorm << endl;
 
   bool integrate = (rnorm + tnorm) / 2 >= p.tsdf_min_camera_movement;
   if (integrate)
