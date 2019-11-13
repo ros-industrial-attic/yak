@@ -8,7 +8,6 @@
 
 namespace yak
 {
-
 /**
  * @brief A container for storing and reading from a dense TSDF grid
  * comprised of 32-bit entries (16 bits of distance in half-format, 16 bits
@@ -19,10 +18,7 @@ class TSDFContainer
 public:
   TSDFContainer(int x, int y, int z);
 
-  void read(int index, half_float::half& dist, uint16_t& weight) const
-  {
-    unpack((*data_)[index], dist, weight);
-  }
+  void read(int index, half_float::half& dist, uint16_t& weight) const { unpack((*data_)[index], dist, weight); }
 
   int toIndex(int x, int y, int z) const
   {
@@ -59,6 +55,6 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
-}
+}  // namespace yak
 
-#endif // YAK_TSDF_CONTAINER_H
+#endif  // YAK_TSDF_CONTAINER_H

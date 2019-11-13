@@ -1,8 +1,7 @@
 #include <yak/yak_server.h>
-#include <opencv2/highgui.hpp> // named-window apparatus; TODO: Remove this
+#include <opencv2/highgui.hpp>  // named-window apparatus; TODO: Remove this
 
-yak::FusionServer::FusionServer(const kfusion::KinFuParams& params,
-                                const Eigen::Affine3f& world_to_volume)
+yak::FusionServer::FusionServer(const kfusion::KinFuParams& params, const Eigen::Affine3f& world_to_volume)
   : kinfu_(new kfusion::KinFu(params))
   , volume_to_world_(world_to_volume.inverse())
   , last_camera_pose_(Eigen::Affine3f::Identity())
@@ -44,13 +43,13 @@ bool yak::FusionServer::reset()
   return true;
 }
 
-bool yak::FusionServer::resetWithNewParams(const kfusion::KinFuParams &params)
+bool yak::FusionServer::resetWithNewParams(const kfusion::KinFuParams& params)
 {
   kinfu_.reset(new kfusion::KinFu(params));
   return true;
 }
 
-//void yak::FusionServer::getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const
+// void yak::FusionServer::getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const
 //{
 //  const auto points = kinfu_->downloadCloud();
 //  cloud.resize(points.size());
@@ -69,13 +68,15 @@ yak::TSDFContainer yak::FusionServer::downloadTSDF()
   const kfusion::cuda::TsdfVolume& vol = kinfu_->tsdf();
   const cv::Vec3i& vol_dims = vol.getDims();
 
-  yak::TSDFContainer result (vol_dims[0], vol_dims[1], vol_dims[2]);
+  yak::TSDFContainer result(vol_dims[0], vol_dims[1], vol_dims[2]);
   vol.data().download(result.data());
 
   return result;
 }
 
-bool yak::FusionServer::step(const Eigen::Affine3f& current_pose, const Eigen::Affine3f& last_pose, const cv::Mat& depth)
+bool yak::FusionServer::step(const Eigen::Affine3f& current_pose,
+                             const Eigen::Affine3f& last_pose,
+                             const cv::Mat& depth)
 {
   // Compute the 'step' from the last_pose to the current pose
   Eigen::Affine3f step = current_pose * last_pose.inverse();

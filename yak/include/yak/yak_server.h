@@ -16,7 +16,6 @@
 
 namespace yak
 {
-    
 /**
  * @brief The OfflineFusionServer class
  *
@@ -33,7 +32,7 @@ public:
 
   bool resetWithNewParams(const kfusion::KinFuParams& params);
 
-//  void getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const;
+  //  void getCloud(pcl::PointCloud<pcl::PointXYZ>& cloud) const;
 
   yak::TSDFContainer downloadTSDF();
 

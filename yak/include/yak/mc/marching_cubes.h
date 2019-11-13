@@ -6,7 +6,6 @@
 
 namespace yak
 {
-
 struct MarchingCubesParameters
 {
   // Scale factor applied to vertices. Usually equal to physical size of a single
@@ -16,6 +15,6 @@ struct MarchingCubesParameters
 
 pcl::PolygonMesh marchingCubesCPU(const yak::TSDFContainer& tsdf, const MarchingCubesParameters& params = {});
 
-}
+}  // namespace yak
 
 #endif
