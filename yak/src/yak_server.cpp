@@ -7,8 +7,9 @@ yak::FusionServer::FusionServer(const kfusion::KinFuParams& params, const Eigen:
   , last_camera_pose_(Eigen::Affine3f::Identity())
 {
   // Debug displays
-  cv::namedWindow("output");
-  cv::moveWindow("output", 10, 600);
+  cv::namedWindow("output", CV_WINDOW_NORMAL);
+  cv::moveWindow("output", 10, 10);
+  cv::resizeWindow("output", kinfu_->params().cols * 2, kinfu_->params().rows);
 }
 
 bool yak::FusionServer::fuse(const cv::Mat& depth_data, const Eigen::Affine3f& world_to_camera)
