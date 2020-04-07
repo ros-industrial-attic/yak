@@ -49,8 +49,6 @@ kfusion::KinFuParams kfusion::KinFuParams::default_params()
 
 kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(params)
 {
-  CV_Assert(params.volume_dims[0] % 32 == 0);
-
   volume_ = cv::Ptr<cuda::TsdfVolume>(new cuda::TsdfVolume(params_.volume_dims));
 
   volume_->setTruncDist(params_.tsdf_trunc_dist);
