@@ -82,7 +82,7 @@ target_link_libraries(${PROJECT_NAME}
   ${CUDA_CUDA_LIBRARY}
   ${PCL_LIBRARIES}  # BUG: shouldn't need this, but get -fPIC errors if it's not included
   Eigen3::Eigen)
-set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS -fPIC)
+set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 
 # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
