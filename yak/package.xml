@@ -11,7 +11,8 @@
   <depend>libpcl-all-dev</depend>
   <depend>eigen</depend>
   <depend>nvidia-cuda-dev</depend>
-  <depend>libopencv-dev</depend>
+  <depend>opencv3</depend> <!-- key for Xenial -->
+  <depend>libopencv-dev</depend> <!-- key for Bionic -->
 
   <export>
     <build_type>cmake</build_type>

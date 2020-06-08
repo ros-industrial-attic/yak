@@ -1,0 +1,46 @@
+name: CI
+
+on: [push, pull_request]
+jobs:
+  industrial_ci:
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: bionic,
+             ROS_DISTRO: melodic,
+             ROSDEP_SKIP_KEYS: nvidia-cuda-dev opencv3,
+             BADGE: bionic,
+             TARGET_CMAKE_ARGS: "-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/",
+             DOCKER_PULL: false,
+             DOCKER_FILE: '.docker/bionic/cuda10.2'}
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: bionic,
+             ROS_DISTRO: melodic,
+             ROSDEP_SKIP_KEYS: nvidia-cuda-dev opencv3,
+             BADGE: bionic,
+             TARGET_CMAKE_ARGS: "-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/",
+             DOCKER_PULL: false,
+             DOCKER_FILE: '.docker/bionic/cuda9.2'}
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: xenial,
+             ROS_DISTRO: kinetic,
+             ROSDEP_SKIP_KEYS: nvidia-cuda-dev opencv libpcl-all-dev,
+             BADGE: xenial,
+             TARGET_CMAKE_ARGS: "-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/",
+             DOCKER_PULL: false,
+             DOCKER_IMAGE: "schornakj/yak-1:xenial-cuda10.2"}
+          - {OS_NAME: ubuntu,
+             OS_CODE_NAME: xenial,
+             ROS_DISTRO: kinetic,
+             ROSDEP_SKIP_KEYS: nvidia-cuda-dev opencv libpcl-all-dev,
+             BADGE: xenial,
+             TARGET_CMAKE_ARGS: "-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/",
+             DOCKER_PULL: false,
+             DOCKER_IMAGE: "schornakj/yak-1:xenial-cuda9.2"}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'schornakj/industrial_ci@fix/docker-image-default-tag'
+        env: ${{matrix.env}}
