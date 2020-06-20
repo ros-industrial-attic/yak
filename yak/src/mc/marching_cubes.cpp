@@ -39,7 +39,7 @@ std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, 
     return 5.0f * float(f);
   };
 
-  const static uint16_t min_weight = 4;
+  const static uint16_t min_weight = 1;
 
   uint16_t w;
   val[0] = read(x + 1, y + 1, z, w);
