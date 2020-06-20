@@ -14,7 +14,7 @@ jobs:
              BADGE: bionic,
              TARGET_CMAKE_ARGS: "-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/",
              DOCKER_PULL: false,
-             DOCKER_FILE: '.docker/bionic/cuda10.2'}
+             DOCKER_IMAGE: "schornakj/yak_ci:bionic-cuda10.2"}
           - {OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
@@ -22,7 +22,7 @@ jobs:
              BADGE: bionic,
              TARGET_CMAKE_ARGS: "-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/",
              DOCKER_PULL: false,
-             DOCKER_FILE: '.docker/bionic/cuda9.2'}
+             DOCKER_IMAGE: "schornakj/yak_ci:bionic-cuda9.2"}
           - {OS_NAME: ubuntu,
              OS_CODE_NAME: xenial,
              ROS_DISTRO: kinetic,
