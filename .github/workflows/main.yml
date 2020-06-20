@@ -42,5 +42,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: 'schornakj/industrial_ci@fix/docker-image-default-tag'
+      - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
