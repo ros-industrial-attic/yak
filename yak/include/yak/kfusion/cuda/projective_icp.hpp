@@ -2,6 +2,7 @@
 #define KFUSION_PROJECTIVE_ICP_H_
 
 #include <yak/kfusion/types.hpp>
+#include <memory>
 
 namespace kfusion
 {
@@ -57,7 +58,7 @@ private:
   DeviceArray2D<float> buffer_;
 
   struct StreamHelper;
-  cv::Ptr<StreamHelper> shelp_;
+  std::shared_ptr<StreamHelper> shelp_;
 };
 }  // namespace cuda
 }  // namespace kfusion

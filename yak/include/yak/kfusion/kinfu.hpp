@@ -8,6 +8,7 @@
 #include <Eigen/StdVector>
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace kfusion
 {
@@ -87,7 +88,7 @@ struct KF_EXPORTS KinFuParams
 class KF_EXPORTS KinFu
 {
 public:
-  typedef cv::Ptr<KinFu> Ptr;
+  typedef std::shared_ptr<KinFu> Ptr;
 
   KinFu(const KinFuParams& params);
 
@@ -132,8 +133,8 @@ private:
   cuda::Normals normals_;
   cuda::Depth depths_;
 
-  cv::Ptr<cuda::TsdfVolume> volume_;
-  cv::Ptr<cuda::ProjectiveICP> icp_;
+  std::shared_ptr<cuda::TsdfVolume> volume_;
+  std::shared_ptr<cuda::ProjectiveICP> icp_;
 
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
