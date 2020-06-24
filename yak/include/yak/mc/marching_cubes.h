@@ -11,6 +11,9 @@ struct MarchingCubesParameters
   // Scale factor applied to vertices. Usually equal to physical size of a single
   // voxel element.
   double scale = 1.0;
+
+  // Minimum weight of a voxel to not be dropped in the meshing process.
+  int min_weight = 4;
 };
 
 pcl::PolygonMesh marchingCubesCPU(const yak::TSDFContainer& tsdf, const MarchingCubesParameters& params = {});

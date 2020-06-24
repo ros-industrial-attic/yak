@@ -29,7 +29,7 @@ const static int cubeOffsets[8][3] = {
   { 1, 1, 1 }, { 1, 0, 1 }, { 0, 0, 1 }, { 0, 1, 1 },
 };
 
-std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, int z)
+std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, int z, int min_weight)
 {
   // Copy the isovalues of the nearby surfaces into a local array
   float val[8];
@@ -38,8 +38,6 @@ std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, 
     grid.read(grid.toIndex(x, y, z), f, w);
     return 5.0f * float(f);
   };
-
-  const static uint16_t min_weight = 4;
 
   uint16_t w;
   val[0] = read(x + 1, y + 1, z, w);
@@ -164,7 +162,7 @@ pcl::PolygonMesh makeMesh(const yak::TSDFContainer& grid, const yak::MarchingCub
     {
       for (int z = 1; z < grid.dims().z(); ++z)
       {
-        std::vector<Triangle> ts = processCube(grid, x - 1, y - 1, z - 1);
+        std::vector<Triangle> ts = processCube(grid, x - 1, y - 1, z - 1, params.min_weight);
         triangle_buffers[tid].insert(triangle_buffers[tid].end(), ts.begin(), ts.end());
       }
     }
