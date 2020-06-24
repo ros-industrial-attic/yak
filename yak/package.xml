@@ -12,6 +12,7 @@
   <depend>eigen</depend>
   <depend>nvidia-cuda-dev</depend>
   <depend>libopencv-dev</depend>
+  <depend>libomp-dev</depend>
 
   <export>
     <build_type>cmake</build_type>
