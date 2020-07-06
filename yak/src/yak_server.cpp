@@ -1,5 +1,5 @@
 #include <yak/yak_server.h>
-#include <opencv2/highgui/highgui.hpp> // named-window apparatus; TODO: Remove this
+#include <opencv2/highgui/highgui.hpp>  // named-window apparatus; TODO: Remove this
 
 yak::FusionServer::FusionServer(const kfusion::KinFuParams& params, const Eigen::Affine3f& world_to_volume)
   : kinfu_(new kfusion::KinFu(params))
