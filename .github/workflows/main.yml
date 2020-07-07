@@ -11,12 +11,10 @@ jobs:
              OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
-             ROSDEP_SKIP_KEYS: nvidia-cuda-dev,
              BADGE: bionic,
              CLANG_FORMAT_CHECK: file,
              CLANG_FORMAT_VERSION: 8,
-             DOCKER_PULL: false,
-             DOCKER_IMAGE: "schornakj/yak_ci:bionic-cuda10.2"}
+             }
           - {OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
