@@ -9,10 +9,14 @@
   <license>MIT</license>
 
   <depend>libpcl-all-dev</depend>
+  <depend>cmake_common_scripts</depend>
   <depend>eigen</depend>
   <depend>nvidia-cuda-dev</depend>
   <depend>libopencv-dev</depend>
   <depend>libomp-dev</depend>
+
+  <test_depend>yak_ext</test_depend>
+  <test_depend>gtest</test_depend>
 
   <export>
     <build_type>cmake</build_type>
