@@ -1,5 +1,10 @@
 # Yak
 
+[![GitHub Actions status](https://github.com/ros-industrial/yak/workflows/CI/badge.svg?branch=devel)](https://github.com/ros-industrial/yak/actions)
+[![GitHub issues open](https://img.shields.io/github/issues/ros-industrial/yak.svg?)](https://github.com/ros-industrial/yak/issues)
+[![license - MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![support level: consortium / vendor](https://img.shields.io/badge/support%20level-consortium%20/%20vendor-brightgreen.png)](http://rosindustrial.org/news/2016/10/7/better-supporting-a-growing-ros-industrial-software-platform)
+
 Yak is a library for integrating depth images into Truncated Signed Distance Fields (TSDFs). It is currently supported for Ubuntu 16.04 and Ubuntu 18.04. An example ROS node using Yak is provided in the [yak_ros](https://github.com/ros-industrial/yak_ros) repository.
 
 ## Technical Background
