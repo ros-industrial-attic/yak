@@ -1,6 +1,6 @@
 # Yak
 
-[![GitHub Actions status](https://github.com/ros-industrial/yak/workflows/CI/badge.svg?branch=devel)](http://build.ros.org/job/Kdev__universal_robot__ubuntu_xenial_amd64)
+[![GitHub Actions status](https://github.com/ros-industrial/yak/workflows/CI/badge.svg?branch=devel)](https://github.com/ros-industrial/yak/actions)
 [![GitHub issues open](https://img.shields.io/github/issues/ros-industrial/yak.svg?)](https://github.com/ros-industrial/yak/issues)
 [![license - MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![support level: community](https://img.shields.io/badge/support%20level-community-lightgray.png)](http://rosindustrial.org/news/2016/10/7/better-supporting-a-growing-ros-industrial-software-platform)
