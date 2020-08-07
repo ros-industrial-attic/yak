@@ -7,7 +7,7 @@ yak::FusionServer::FusionServer(const kfusion::KinFuParams& params, const Eigen:
   , last_camera_pose_(Eigen::Affine3f::Identity())
 {
   // Debug displays
-  cv::namedWindow("output", CV_WINDOW_NORMAL);
+  cv::namedWindow("output", cv::WINDOW_NORMAL);
   cv::moveWindow("output", 10, 10);
   cv::resizeWindow("output", kinfu_->params().cols * 2, kinfu_->params().rows);
 }
