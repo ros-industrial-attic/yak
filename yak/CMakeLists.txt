@@ -91,9 +91,6 @@ add_library(${PROJECT_NAME}_frontend SHARED
     src/kfusion/tsdf_container.cpp)
 if(${PCL_VERSION} VERSION_LESS 1.9)
   target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS} ${PCL_COMPILE_OPTIONS})
-else()
-  target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
-  target_compile_options(${PROJECT_NAME}_frontend PUBLIC ${PCL_COMPILE_OPTIONS})
 endif()
 target_include_directories(${PROJECT_NAME}_frontend PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -112,9 +109,6 @@ add_library(${PROJECT_NAME}_marching_cubes SHARED
   src/mc/marching_cubes_tables.cpp)
 if(${PCL_VERSION} VERSION_LESS 1.9)
   target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS} ${PCL_COMPILE_OPTIONS})
-else()
-  target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
-  target_compile_options(${PROJECT_NAME}_frontend PUBLIC ${PCL_COMPILE_OPTIONS})
 endif()
 target_include_directories(${PROJECT_NAME}_marching_cubes PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -132,9 +126,6 @@ list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_marching_cubes)
 add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
 if(${PCL_VERSION} VERSION_LESS 1.9)
   target_add_options_and_definitions(${PROJECT_NAME}_frontend ${PCL_DEFINITIONS} ${PCL_COMPILE_OPTIONS})
-else()
-  target_compile_definitions(${PROJECT_NAME}_frontend PUBLIC ${PCL_DEFINITIONS})
-  target_compile_options(${PROJECT_NAME}_frontend PUBLIC ${PCL_COMPILE_OPTIONS})
 endif()
 target_include_directories(marching_cubes_tests PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
