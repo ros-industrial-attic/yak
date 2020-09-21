@@ -11,7 +11,7 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
   set(CMAKE_CUDA_STANDARD_REQUIRED True)
 endif()
 
-find_package(CUDA REQUIRED)
+find_package(CUDA 9.0 REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core highgui)
 find_package(PCL 1.8 REQUIRED COMPONENTS common io geometry)
 
