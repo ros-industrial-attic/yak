@@ -13,7 +13,7 @@ endif()
 
 find_package(CUDA 9.0 REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core highgui)
-find_package(PCL 1.8 REQUIRED COMPONENTS common io geometry)
+find_package(PCL 1.8 REQUIRED COMPONENTS common io geometry surface)
 
 find_package(OpenMP REQUIRED)
 if(NOT TARGET OpenMP::OpenMP_CXX)
@@ -54,7 +54,12 @@ macro(target_add_options_and_definitions TARGET)
   endforeach()
 endmacro()
 
-CUDA_SELECT_NVCC_ARCH_FLAGS(ARCH_FLAGS Auto)
+if (NOT DEFINED CUDA_ARCH_AND_PTX)
+  CUDA_SELECT_NVCC_ARCH_FLAGS(ARCH_FLAGS Auto)
+else()
+  CUDA_SELECT_NVCC_ARCH_FLAGS(ARCH_FLAGS ${CUDA_ARCH_AND_PTX})
+endif()
+
 LIST(APPEND CUDA_NVCC_FLAGS ${ARCH_FLAGS})
 list(APPEND CUDA_NVCC_FLAGS "--compiler-options -fPIC")
 
