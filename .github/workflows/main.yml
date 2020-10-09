@@ -1,8 +1,14 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
 jobs:
   industrial_ci:
+    name: ${{ matrix.env.CI_NAME }}
     strategy:
       fail-fast: false
       matrix:
@@ -13,9 +19,9 @@ jobs:
              ROS_DISTRO: melodic,
              BADGE: bionic,
              CLANG_FORMAT_CHECK: file,
-             CLANG_FORMAT_VERSION: 8,
-             }
-          - {OS_NAME: ubuntu,
+             CLANG_FORMAT_VERSION: 8}
+          - {CI_NAME: Melodic-Cuda10.2,
+             OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROSDEP_SKIP_KEYS: nvidia-cuda-dev,
@@ -23,7 +29,8 @@ jobs:
              TARGET_CMAKE_ARGS: "-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/",
              DOCKER_PULL: false,
              DOCKER_IMAGE: "schornakj/yak_ci:bionic-cuda10.2"}
-          - {OS_NAME: ubuntu,
+          - {CI_NAME: Melodic-Cuda9.2,
+             OS_NAME: ubuntu,
              OS_CODE_NAME: bionic,
              ROS_DISTRO: melodic,
              ROSDEP_SKIP_KEYS: nvidia-cuda-dev,
@@ -31,7 +38,8 @@ jobs:
              TARGET_CMAKE_ARGS: "-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/",
              DOCKER_PULL: false,
              DOCKER_IMAGE: "schornakj/yak_ci:bionic-cuda9.2"}
-          - {OS_NAME: ubuntu,
+          - {CI_NAME: Xenial-Cuda10.2,
+             OS_NAME: ubuntu,
              OS_CODE_NAME: xenial,
              ROS_DISTRO: kinetic,
              ROSDEP_SKIP_KEYS: nvidia-cuda-dev libpcl-all-dev,
@@ -39,7 +47,8 @@ jobs:
              TARGET_CMAKE_ARGS: "-DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/",
              DOCKER_PULL: false,
              DOCKER_IMAGE: "schornakj/yak-1:xenial-cuda10.2"}
-          - {OS_NAME: ubuntu,
+          - {CI_NAME: Kinetic-Cuda9.2,
+             OS_NAME: ubuntu,
              OS_CODE_NAME: xenial,
              ROS_DISTRO: kinetic,
              ROSDEP_SKIP_KEYS: nvidia-cuda-dev libpcl-all-dev,
@@ -49,6 +58,6 @@ jobs:
              DOCKER_IMAGE: "schornakj/yak-1:xenial-cuda9.2"}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}

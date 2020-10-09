@@ -1,6 +1,13 @@
 #include "yak/mc/marching_cubes.h"
 #include "marching_cubes_tables.h"
 #include <pcl/io/ply_io.h>
+#include <pcl/surface/vtk_smoothing/vtk_utils.h>
+
+#include <vtkSmartPointer.h>
+#include <vtkTriangle.h>
+#include <vtkCellArray.h>
+#include <vtkPolyData.h>
+#include <vtkCleanPolyData.h>
 
 #include <omp.h>
 
@@ -150,55 +157,64 @@ std::vector<Triangle> processCube(const yak::TSDFContainer& grid, int x, int y, 
 
 pcl::PolygonMesh makeMesh(const yak::TSDFContainer& grid, const yak::MarchingCubesParameters& params)
 {
-  const int max_threads = omp_get_max_threads();
-  std::vector<std::vector<Triangle>> triangle_buffers(max_threads);
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
 
 #pragma omp parallel for
   for (int x = 1; x < grid.dims().x(); ++x)
   {
-    const int tid = omp_get_thread_num();
-
     for (int y = 1; y < grid.dims().y(); ++y)
     {
       for (int z = 1; z < grid.dims().z(); ++z)
       {
         std::vector<Triangle> ts = processCube(grid, x - 1, y - 1, z - 1, params.min_weight);
-        triangle_buffers[tid].insert(triangle_buffers[tid].end(), ts.begin(), ts.end());
+#pragma omp critical
+        {
+          for (auto& t : ts)
+          {
+            vtkIdType p1 = points->InsertNextPoint(
+                static_cast<double>(t.v[0].x()), static_cast<double>(t.v[0].y()), static_cast<double>(t.v[0].z()));
+            vtkIdType p2 = points->InsertNextPoint(
+                static_cast<double>(t.v[1].x()), static_cast<double>(t.v[1].y()), static_cast<double>(t.v[1].z()));
+            vtkIdType p3 = points->InsertNextPoint(
+                static_cast<double>(t.v[2].x()), static_cast<double>(t.v[2].y()), static_cast<double>(t.v[2].z()));
+
+            vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
+            triangle->GetPointIds()->SetId(0, p1);
+            triangle->GetPointIds()->SetId(1, p2);
+            triangle->GetPointIds()->SetId(2, p3);
+            triangles->InsertNextCell(triangle);
+          }
+        }
       }
     }
   }
 
-  std::size_t n_triangles = 0;
-  for (const auto& buffer : triangle_buffers)
-    n_triangles += buffer.size();
+  // Create a polydata object
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
 
-  // Now we have polygon soup. Let's add em all to the polygon mesh
+  // Add the geometry and topology to the polydata
+  polyData->SetPoints(points);
+  polyData->SetPolys(triangles);
+
   pcl::PolygonMesh mesh;
-  mesh.polygons.resize(n_triangles);  // We have N_TRIANGLES number of polygons, each of size 3
-  pcl::PointCloud<pcl::PointXYZ> vertices;
-  vertices.resize(n_triangles * 3);  // We have 3 times triangles number of vertices
+  if (params.clean)
+  {
+    // Marching cubes produces duplicate vertices so lets clean up the mesh
+    vtkSmartPointer<vtkCleanPolyData> cleanPolyData = vtkSmartPointer<vtkCleanPolyData>::New();
+    cleanPolyData->SetInputData(polyData);
+    cleanPolyData->SetPointMerging(true);
+    cleanPolyData->SetConvertPolysToLines(true);
+    cleanPolyData->SetConvertLinesToPoints(true);
+    cleanPolyData->SetConvertStripsToPolys(true);
+    cleanPolyData->Update();
 
-  unsigned int counter = 0;
-  for (std::size_t j = 0; j < triangle_buffers.size(); ++j)
-    for (unsigned i = 0; i < triangle_buffers[j].size(); ++i)
-    {
-      auto idx = counter * 3;
-      auto& verts = mesh.polygons[counter];
-      verts.vertices = { idx, idx + 1, idx + 2 };
-
-      const float scale = static_cast<float>(params.scale);
-      const auto v0 = triangle_buffers[j][i].v[0] * scale;
-      const auto v1 = triangle_buffers[j][i].v[1] * scale;
-      const auto v2 = triangle_buffers[j][i].v[2] * scale;
-
-      vertices[idx + 0] = pcl::PointXYZ(v0.x(), v0.y(), v0.z());
-      vertices[idx + 1] = pcl::PointXYZ(v1.x(), v1.y(), v1.z());
-      vertices[idx + 2] = pcl::PointXYZ(v2.x(), v2.y(), v2.z());
-
-      counter++;
-    }
-
-  pcl::toPCLPointCloud2(vertices, mesh.cloud);
+    pcl::VTKUtils::vtk2mesh(cleanPolyData->GetOutput(), mesh);
+  }
+  else
+  {
+    pcl::VTKUtils::vtk2mesh(polyData, mesh);
+  }
 
   return mesh;
 }
