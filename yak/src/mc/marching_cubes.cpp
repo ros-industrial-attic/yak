@@ -172,12 +172,15 @@ pcl::PolygonMesh makeMesh(const yak::TSDFContainer& grid, const yak::MarchingCub
         {
           for (auto& t : ts)
           {
-            vtkIdType p1 = points->InsertNextPoint(
-                s*static_cast<double>(t.v[0].x()), s*static_cast<double>(t.v[0].y()), s*static_cast<double>(t.v[0].z()));
-            vtkIdType p2 = points->InsertNextPoint(
-                s*static_cast<double>(t.v[1].x()), s*static_cast<double>(t.v[1].y()), s*static_cast<double>(t.v[1].z()));
-            vtkIdType p3 = points->InsertNextPoint(
-                s*static_cast<double>(t.v[2].x()), s*static_cast<double>(t.v[2].y()), s*static_cast<double>(t.v[2].z()));
+            vtkIdType p1 = points->InsertNextPoint(s * static_cast<double>(t.v[0].x()),
+                                                   s * static_cast<double>(t.v[0].y()),
+                                                   s * static_cast<double>(t.v[0].z()));
+            vtkIdType p2 = points->InsertNextPoint(s * static_cast<double>(t.v[1].x()),
+                                                   s * static_cast<double>(t.v[1].y()),
+                                                   s * static_cast<double>(t.v[1].z()));
+            vtkIdType p3 = points->InsertNextPoint(s * static_cast<double>(t.v[2].x()),
+                                                   s * static_cast<double>(t.v[2].y()),
+                                                   s * static_cast<double>(t.v[2].z()));
 
             vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
             triangle->GetPointIds()->SetId(0, p1);
