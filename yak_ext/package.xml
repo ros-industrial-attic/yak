@@ -6,7 +6,7 @@
   <maintainer email="joseph.schornak@swri.org">Joseph Schornak</maintainer>
   <author email="joseph.schornak@swri.org">Joseph Schornak</author>
   <license>Apache 2.0</license>
-  <depend>cmake_common_scripts</depend>
+  <build_depend>cmake_common_scripts</build_depend>
   <export>
     <build_type>cmake</build_type>
   </export>

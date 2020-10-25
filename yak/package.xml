@@ -8,8 +8,9 @@
   <maintainer email="Joseph.Schornak@SwRI.org">Joseph Schornak</maintainer>
   <license>MIT</license>
 
+  <build_depend>cmake_common_scripts</build_depend>
+
   <depend>libpcl-all-dev</depend>
-  <depend>cmake_common_scripts</depend>
   <depend>eigen</depend>
   <depend>nvidia-cuda-dev</depend>
   <depend>libopencv-dev</depend>
