@@ -11,6 +11,7 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
   set(CMAKE_CUDA_STANDARD_REQUIRED True)
 endif()
 
+find_package(cmake_common_scripts REQUIRED)
 find_package(CUDA 9.0 REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core highgui)
 find_package(PCL 1.8 REQUIRED COMPONENTS common io geometry surface)
@@ -93,7 +94,6 @@ target_link_libraries(${PROJECT_NAME}
   ${CUDA_CUDA_LIBRARY}
   Eigen3::Eigen)
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME})
 
 # Jmeyer - Create a new interface library that I want to be the front end for future processing. It should support
 # a minimal interface of pushing and image with a pose guess into the server and integrating.
@@ -112,7 +112,6 @@ target_link_libraries(${PROJECT_NAME}_frontend PUBLIC
   ${PROJECT_NAME}
   ${PCL_LIBRARIES}
   Eigen3::Eigen)
-list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_frontend)
 
 # Marching Cubes Meshing Impl
 add_library(${PROJECT_NAME}_marching_cubes SHARED
@@ -131,7 +130,6 @@ target_link_libraries(${PROJECT_NAME}_marching_cubes PUBLIC
   ${PCL_LIBRARIES}
   OpenMP::OpenMP_CXX
   Eigen3::Eigen)
-list(APPEND PACKAGE_LIBRARIES ${PROJECT_NAME}_marching_cubes)
 
 # Jmeyer Marching Cubes
 add_executable(marching_cubes_tests src/mc/marching_cubes_tests.cpp)
@@ -148,41 +146,12 @@ target_link_libraries(marching_cubes_tests
   ${PCL_LIBRARIES}
   Eigen3::Eigen)
 
-# Install project files
+# Install project include directories
 install(DIRECTORY include/${PROJECT_NAME}
-  DESTINATION include
-  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
-  PATTERN "*.svn" EXCLUDE)
+  DESTINATION include)
 
-install(FILES package.xml DESTINATION share/${PROJECT_NAME})
-
-install(TARGETS marching_cubes_tests
-        RUNTIME DESTINATION lib)
-
-# Install CMake targets and config files
-install(TARGETS ${PACKAGE_LIBRARIES}
-  EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
-install(EXPORT ${PROJECT_NAME}-targets
-  NAMESPACE yak:: DESTINATION lib/cmake/${PROJECT_NAME})
-
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-  ${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}-config.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
-  INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
-  NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-
-write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
-  VERSION ${PROJECT_VERSION} COMPATIBILITY ExactVersion)
-
-install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
-  DESTINATION lib/cmake/${PROJECT_NAME})
-
-export(EXPORT ${PROJECT_NAME}-targets FILE
-  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-targets.cmake)
+# cmake_common_scripts package configure
+configure_package(NAMESPACE yak TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_frontend ${PROJECT_NAME}_marching_cubes)
 
 # uninstall target
 if (NOT TARGET uninstall)
@@ -193,3 +162,9 @@ if (NOT TARGET uninstall)
     add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P
                       ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif ()
+
+if (BUILD_TESTING)
+  enable_testing()
+  add_run_tests_target(ENABLE FALSE)
+  add_subdirectory(test)
+endif()
