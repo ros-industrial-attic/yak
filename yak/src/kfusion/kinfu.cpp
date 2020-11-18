@@ -59,7 +59,8 @@ kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(pa
                    params_.volume_dims[1] * params_.volume_resolution,
                    params_.volume_dims[2] * params_.volume_resolution);
   volume_->setSize(volumeSize);
-  //    volume_->setPose(params_.volume_pose);
+  //This is not enough to translate the actual volume; still @ world 0
+  //volume_->setPose(params_.volume_pose);
 
   volume_->setRaycastStepFactor(params_.raycast_step_factor);
   volume_->setGradientDeltaFactor(params_.gradient_delta_factor);
@@ -76,7 +77,7 @@ kfusion::KinFu::KinFu(const KinFuParams& params) : frame_counter_(0), params_(pa
   poses_.reserve(30000);
 
   // TODO: Allow loading of robot pose instead of default volume pose
-  poses_.push_back(params_.volume_pose.matrix);
+  poses_.push_back(params_.volume_pose);
 }
 
 const kfusion::KinFuParams& kfusion::KinFu::params() const { return params_; }
@@ -139,7 +140,7 @@ void kfusion::KinFu::resetPose()
   poses_.reserve(30000);
 
   // TODO: Allow loading of robot pose instead of default volume pose
-  poses_.push_back(params_.volume_pose.matrix);
+  poses_.push_back(params_.volume_pose);
   cout << "Resetting to: " << params_.volume_pose.matrix << endl;
 
   //    volume_->clear();
