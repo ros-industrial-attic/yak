@@ -11,7 +11,7 @@ if(NOT DEFINED CMAKE_CUDA_STANDARD)
   set(CMAKE_CUDA_STANDARD_REQUIRED True)
 endif()
 
-find_package(cmake_common_scripts REQUIRED)
+find_package(ros_industrial_cmake_boilerplate REQUIRED)
 find_package(CUDA 9.0 REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core highgui)
 find_package(PCL 1.8 REQUIRED COMPONENTS common io geometry surface)
@@ -150,7 +150,7 @@ target_link_libraries(marching_cubes_tests
 install(DIRECTORY include/${PROJECT_NAME}
   DESTINATION include)
 
-# cmake_common_scripts package configure
+# ros_industrial_cmake_boilerplate package configure
 configure_package(NAMESPACE yak TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_frontend ${PROJECT_NAME}_marching_cubes)
 
 # uninstall target

@@ -113,6 +113,11 @@ Yak requires PCL 1.8 or newer. If you are using ROS then this dependency is alre
 sudo apt install libpcl-dev
 ```
 
+### ros_industrial_cmake_boilerplate
+
+Yak depends on the `ros_industrial_cmake_boilerplate <https://github.com/ros-industrial/ros_industrial_cmake_boilerplate>`_ package to facilitate package setup and installation.
+
+
 ## Installation
 
 ### Build with ROS (recommended)
