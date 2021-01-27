@@ -115,7 +115,7 @@ sudo apt install libpcl-dev
 
 ### ros_industrial_cmake_boilerplate
 
-Yak depends on the `ros_industrial_cmake_boilerplate <https://github.com/ros-industrial/ros_industrial_cmake_boilerplate>`_ package to facilitate package setup and installation.
+Yak depends on the [`ros_industrial_cmake_boilerplate`](https://github.com/ros-industrial/ros_industrial_cmake_boilerplate>) package to facilitate package setup and installation.
 
 
 ## Installation
