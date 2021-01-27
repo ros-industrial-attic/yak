@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(yak_ext VERSION 0.1.0)
 
-find_package(cmake_common_scripts REQUIRED)
+find_package(ros_industrial_cmake_boilerplate REQUIRED)
 
 if(BUILD_TESTING)
   find_package(GTest QUIET)
