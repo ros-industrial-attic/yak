@@ -8,7 +8,7 @@
   <maintainer email="Joseph.Schornak@SwRI.org">Joseph Schornak</maintainer>
   <license>MIT</license>
 
-  <build_depend>cmake_common_scripts</build_depend>
+  <build_depend>ros_industrial_cmake_boilerplate</build_depend>
 
   <depend>libpcl-all-dev</depend>
   <depend>eigen</depend>
