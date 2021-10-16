@@ -1,4 +1,5 @@
 #include <yak/yak_server.h>
+#include <opencv2/core/eigen.hpp>
 #include <opencv2/highgui/highgui.hpp>  // named-window apparatus; TODO: Remove this
 
 yak::FusionServer::FusionServer(const kfusion::KinFuParams& params, const Eigen::Affine3f& world_to_volume)
@@ -47,6 +48,7 @@ bool yak::FusionServer::reset()
 bool yak::FusionServer::resetWithNewParams(const kfusion::KinFuParams& params)
 {
   kinfu_.reset(new kfusion::KinFu(params));
+  cv::cv2eigen(params.volume_pose.inv().matrix, volume_to_world_.matrix());
   return true;
 }
 
