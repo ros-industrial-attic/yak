@@ -1,5 +1,4 @@
 #include "yak/kfusion/cuda/device.hpp"
-#include "yak/kfusion/cuda/texture_binder.hpp"
 //#include <stdio.h>
 
 using namespace kfusion::device;
@@ -46,8 +45,6 @@ namespace kfusion
 {
     namespace device
     {
-        texture<float, 2> dists_tex(0, cudaFilterModePoint, cudaAddressModeBorder, cudaCreateChannelDescHalf());
-
         struct TsdfIntegrator
         {
                 Aff3f vol2cam;
@@ -57,7 +54,7 @@ namespace kfusion
                 float tranc_dist_inv;
 
                 __kf_device__
-                void operator()(TsdfVolume& volume) const
+                void operator()(TsdfVolume& volume, cudaTextureObject_t& dists_tex) const
                 {
                     int x = blockIdx.x * blockDim.x + threadIdx.x;
                     int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -84,7 +81,7 @@ namespace kfusion
                             continue;
                         //#endif
 
-                        float Dp = tex2D(dists_tex, coo.x, coo.y);
+                        float Dp = tex2D<float>(dists_tex, coo.x, coo.y);
 
                         if (Dp == 0 || vc.z <= 0)
                             continue;
@@ -109,9 +106,9 @@ namespace kfusion
                 }
         };
 
-        __global__ void integrate_kernel(const TsdfIntegrator integrator, TsdfVolume volume)
+        __global__ void integrate_kernel(const TsdfIntegrator integrator, TsdfVolume volume, cudaTextureObject_t dists_tex)
         {
-            integrator(volume);
+            integrator(volume, dists_tex);
         }
     }
 }
@@ -124,17 +121,30 @@ void kfusion::device::integrate(const Dists& dists, TsdfVolume& volume, const Af
     ti.proj = proj;
     ti.tranc_dist_inv = 1.f / volume.trunc_dist;
 
-    dists_tex.filterMode = cudaFilterModePoint;
-    dists_tex.addressMode[0] = cudaAddressModeBorder;
-    dists_tex.addressMode[1] = cudaAddressModeBorder;
-    dists_tex.addressMode[2] = cudaAddressModeBorder;
-    TextureBinder binder(dists, dists_tex, cudaCreateChannelDescHalf());
-    (void) binder;
+    cudaResourceDesc res_desc;
+    memset(&res_desc, 0x00, sizeof(res_desc));
+    res_desc.resType = cudaResourceTypePitch2D;
+    res_desc.res.pitch2D.devPtr = reinterpret_cast<void*>(dists.data);
+    res_desc.res.pitch2D.width  = dists.cols;
+    res_desc.res.pitch2D.height = dists.rows;
+    res_desc.res.pitch2D.pitchInBytes = dists.step;
+    res_desc.res.pitch2D.desc = cudaCreateChannelDescHalf();
+
+    cudaTextureDesc tex_desc;
+    memset(&tex_desc, 0x00, sizeof(tex_desc));
+    tex_desc.filterMode = cudaFilterModePoint;
+    tex_desc.addressMode[0] = cudaAddressModeBorder;
+    tex_desc.addressMode[1] = cudaAddressModeBorder;
+    tex_desc.readMode = cudaReadModeElementType;
+    tex_desc.normalizedCoords = 0;
+
+    cudaTextureObject_t dists_tex;
+    cudaSafeCall(cudaCreateTextureObject(&dists_tex, &res_desc, &tex_desc, nullptr));
 
     dim3 block(32, 8);
     dim3 grid(divUp(volume.dims.x, block.x), divUp(volume.dims.y, block.y));
 
-    integrate_kernel<<<grid, block>>>(ti, volume);
+    integrate_kernel<<<grid, block>>>(ti, volume, dists_tex);
     cudaSafeCall(cudaGetLastError());
     cudaSafeCall(cudaDeviceSynchronize());
 }
