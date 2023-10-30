@@ -1,13 +1,12 @@
 #include "yak/kfusion/cuda/device.hpp"
-#include "yak/kfusion/cuda/texture_binder.hpp"
 
 namespace kfusion
 {
     namespace device
     {
-        texture<ushort, 2> dprev_tex;
-        texture<Normal, 2> nprev_tex;
-        texture<Point, 2> vprev_tex;
+        __constant__ cudaTextureObject_t dprev_tex;
+        __constant__ cudaTextureObject_t nprev_tex;
+        __constant__ cudaTextureObject_t vprev_tex;
 
         struct ComputeIcpHelper::Policy
         {
@@ -52,7 +51,7 @@ namespace kfusion
             if (s.z <= 0 || coo.x < 0 || coo.y < 0 || coo.x >= cols || coo.y >= rows)
             return 80;
 
-            int dst_z = tex2D(dprev_tex, coo.x, coo.y);
+            int dst_z = tex2D<ushort>(dprev_tex, coo.x, coo.y);
             if (dst_z == 0)
             return 120;
 
@@ -63,7 +62,7 @@ namespace kfusion
             return 160;
 
             float3 ns = aff.R * tr(ncurr(y, x));
-            nd = tr(tex2D(nprev_tex, coo.x, coo.y));
+            nd = tr(tex2D<float4>(nprev_tex, coo.x, coo.y));
 
             float cosine = fabs(dot(ns, nd));
             if (cosine < min_cosine)
@@ -84,7 +83,7 @@ namespace kfusion
             if (s.z <= 0 || coo.x < 0 || coo.y < 0 || coo.x >= cols || coo.y >= rows)
                 return 80;
 
-            d = tr(tex2D(vprev_tex, coo.x, coo.y));
+            d = tr(tex2D<float4>(vprev_tex, coo.x, coo.y));
             if (isnan(d.x))
                 return 120;
 
@@ -93,7 +92,7 @@ namespace kfusion
                 return 160;
 
             float3 ns = aff.R * tr(ncurr(y, x));
-            nd = tr(tex2D(nprev_tex, coo.x, coo.y));
+            nd = tr(tex2D<float4>(nprev_tex, coo.x, coo.y));
 
             float cosine = fabs(dot(ns, nd));
             if (cosine < min_cosine)
@@ -390,10 +389,35 @@ namespace kfusion
 
 void kfusion::device::ComputeIcpHelper::operator()(const Depth& dprev, const Normals& nprev, DeviceArray2D<float>& buffer, float* data, cudaStream_t s)
 {
-    dprev_tex.filterMode = cudaFilterModePoint;
-    nprev_tex.filterMode = cudaFilterModePoint;
-    TextureBinder dprev_binder(dprev, dprev_tex);
-    TextureBinder nprev_binder(nprev, nprev_tex);
+    cudaResourceDesc res_desc_dprev;
+    memset(&res_desc_dprev, 0x00, sizeof(res_desc_dprev));
+    res_desc_dprev.resType = cudaResourceTypePitch2D;
+    res_desc_dprev.res.pitch2D.devPtr = const_cast<void*>(reinterpret_cast<const void*>(dprev.ptr()));
+    res_desc_dprev.res.pitch2D.width  = dprev.cols();
+    res_desc_dprev.res.pitch2D.height = dprev.rows();
+    res_desc_dprev.res.pitch2D.pitchInBytes = dprev.step();
+
+    cudaResourceDesc res_desc_nprev;
+    memset(&res_desc_nprev, 0x00, sizeof(res_desc_nprev));
+    res_desc_nprev.resType = cudaResourceTypePitch2D;
+    res_desc_nprev.res.pitch2D.devPtr = const_cast<void*>(reinterpret_cast<const void*>(nprev.ptr()));
+    res_desc_nprev.res.pitch2D.width  = nprev.cols();
+    res_desc_nprev.res.pitch2D.height = nprev.rows();
+    res_desc_nprev.res.pitch2D.pitchInBytes = nprev.step();
+
+    cudaTextureDesc tex_desc;
+    memset(&tex_desc, 0x00, sizeof(tex_desc));
+    tex_desc.filterMode = cudaFilterModePoint;
+    tex_desc.addressMode[0] = cudaAddressModeBorder;
+    tex_desc.addressMode[1] = cudaAddressModeBorder;
+    tex_desc.readMode = cudaReadModeElementType;
+    tex_desc.normalizedCoords = 0;
+
+    cudaTextureObject_t dprev_tex_host, nprev_tex_host;
+    cudaSafeCall(cudaCreateTextureObject(&dprev_tex_host, &res_desc_dprev, &tex_desc, nullptr));
+    cudaSafeCall(cudaCreateTextureObject(&nprev_tex_host, &res_desc_nprev, &tex_desc, nullptr));
+    cudaSafeCall(cudaMemcpyToSymbol(&dprev_tex, &dprev_tex_host, sizeof(dprev_tex)));
+    cudaSafeCall(cudaMemcpyToSymbol(&nprev_tex, &nprev_tex_host, sizeof(nprev_tex)));
 
     dim3 block(Policy::CTA_SIZE_X, Policy::CTA_SIZE_Y);
     dim3 grid(divUp((int) cols, block.x), divUp((int) rows, block.y));
@@ -415,10 +439,35 @@ void kfusion::device::ComputeIcpHelper::operator()(const Depth& dprev, const Nor
 
 void kfusion::device::ComputeIcpHelper::operator()(const Points& vprev, const Normals& nprev, DeviceArray2D<float>& buffer, float* data, cudaStream_t s)
 {
-    dprev_tex.filterMode = cudaFilterModePoint;
-    nprev_tex.filterMode = cudaFilterModePoint;
-    TextureBinder vprev_binder(vprev, vprev_tex);
-    TextureBinder nprev_binder(nprev, nprev_tex);
+    cudaResourceDesc res_desc_vprev;
+    memset(&res_desc_vprev, 0x00, sizeof(res_desc_vprev));
+    res_desc_vprev.resType = cudaResourceTypePitch2D;
+    res_desc_vprev.res.pitch2D.devPtr = const_cast<void*>(reinterpret_cast<const void*>(vprev.ptr()));
+    res_desc_vprev.res.pitch2D.width  = vprev.cols();
+    res_desc_vprev.res.pitch2D.height = vprev.rows();
+    res_desc_vprev.res.pitch2D.pitchInBytes = vprev.step();
+
+    cudaResourceDesc res_desc_nprev;
+    memset(&res_desc_nprev, 0x00, sizeof(res_desc_nprev));
+    res_desc_nprev.resType = cudaResourceTypePitch2D;
+    res_desc_nprev.res.pitch2D.devPtr = const_cast<void*>(reinterpret_cast<const void*>(nprev.ptr()));
+    res_desc_nprev.res.pitch2D.width  = nprev.cols();
+    res_desc_nprev.res.pitch2D.height = nprev.rows();
+    res_desc_nprev.res.pitch2D.pitchInBytes = nprev.step();
+
+    cudaTextureDesc tex_desc;
+    memset(&tex_desc, 0x00, sizeof(tex_desc));
+    tex_desc.filterMode = cudaFilterModePoint;
+    tex_desc.addressMode[0] = cudaAddressModeBorder;
+    tex_desc.addressMode[1] = cudaAddressModeBorder;
+    tex_desc.readMode = cudaReadModeElementType;
+    tex_desc.normalizedCoords = 0;
+
+    cudaTextureObject_t vprev_tex_host, nprev_tex_host;
+    cudaSafeCall(cudaCreateTextureObject(&vprev_tex_host, &res_desc_vprev, &tex_desc, nullptr));
+    cudaSafeCall(cudaCreateTextureObject(&nprev_tex_host, &res_desc_nprev, &tex_desc, nullptr));
+    cudaSafeCall(cudaMemcpyToSymbol(&vprev_tex, &vprev_tex_host, sizeof(vprev_tex)));
+    cudaSafeCall(cudaMemcpyToSymbol(&nprev_tex, &nprev_tex_host, sizeof(nprev_tex)));
 
     dim3 block(Policy::CTA_SIZE_X, Policy::CTA_SIZE_Y);
     dim3 grid(divUp((int) cols, block.x), divUp((int) rows, block.y));
